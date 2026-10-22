@@ -3007,3 +3007,145 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .folder-list-view .library-folder-open::after{height:29px}
   .app-shell .folder-list-view .library-folder-info small{font-size:8px}
 }
+
+
+/* Refined folder and quiz list presentation: clearer hierarchy, quieter surfaces, precise icon geometry. */
+.app-shell .folder-list-view .library-folder-card{
+  min-height:64px;
+  padding:9px 48px 9px 12px;
+  border-radius:15px;
+  border-color:color-mix(in srgb,var(--lib-line) 82%,var(--folder-tone));
+  background:linear-gradient(105deg,color-mix(in srgb,var(--folder-tone) 3.5%,var(--lib-panel)),var(--lib-panel) 45%);
+  box-shadow:0 2px 7px rgba(28,30,65,.025);
+}
+.app-shell .folder-list-view .library-folder-card:before{opacity:.06}
+.app-shell .folder-list-view .library-folder-card:after{opacity:.18;background:radial-gradient(ellipse at 0% 50%,color-mix(in srgb,var(--folder-tone) 7%,transparent),transparent 62%)}
+.app-shell .folder-list-view .library-folder-card:hover{transform:translateY(-1px);box-shadow:0 5px 14px rgba(34,30,82,.055)}
+.app-shell .folder-list-view .library-folder-card.is-active{
+  border-color:color-mix(in srgb,var(--folder-tone) 42%,var(--lib-line));
+  box-shadow:inset 3px 0 0 var(--folder-tone),0 3px 10px rgba(34,30,82,.04);
+}
+.app-shell .folder-list-view .library-folder-open{
+  grid-template-columns:38px 1px minmax(0,1fr);
+  column-gap:12px;
+}
+.app-shell .folder-list-view .library-folder-art{
+  width:38px;height:38px;min-width:38px;
+  border:1px solid color-mix(in srgb,var(--folder-tone) 13%,var(--lib-line));
+  border-radius:11px;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--folder-tone) 13%,var(--lib-soft)),color-mix(in srgb,var(--folder-tone) 4%,var(--lib-panel)));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+.app-shell .folder-list-view .library-folder-art:after{opacity:.07;background-size:9px 9px}
+.app-shell .folder-list-view .library-folder-art .folder-art-sheet{
+  width:23px;height:22px;border-radius:6px;
+  box-shadow:0 2px 4px rgba(30,30,70,.07);
+}
+.app-shell .folder-list-view .library-folder-art .sheet-back{transform:translate(-4px,-2px) rotate(-12deg);opacity:.45}
+.app-shell .folder-list-view .library-folder-art .sheet-mid{transform:translate(4px,-1px) rotate(12deg);opacity:.62}
+.app-shell .folder-list-view .library-folder-art .sheet-front{transform:translateY(2px)}
+.app-shell .folder-list-view .library-folder-card:hover .sheet-back{transform:translate(-6px,-3px) rotate(-15deg)}
+.app-shell .folder-list-view .library-folder-card:hover .sheet-mid{transform:translate(6px,-2px) rotate(15deg)}
+.app-shell .folder-list-view .library-folder-card:hover .sheet-front{transform:translateY(0) scale(1.04)}
+.app-shell .folder-list-view .library-folder-art .sheet-back svg,
+.app-shell .folder-list-view .library-folder-art .sheet-mid svg{width:11px;height:11px}
+.app-shell .folder-list-view .library-folder-art .sheet-front svg{width:17px;height:17px}
+.app-shell .folder-list-view .library-folder-open::after{
+  height:34px;background:color-mix(in srgb,var(--lib-line) 82%,var(--folder-tone));
+}
+.app-shell .folder-list-view .library-folder-info b{font-size:12px;letter-spacing:-.015em;line-height:1.4}
+.app-shell .folder-list-view .library-folder-info small{font-size:10px;line-height:1.35;color:var(--lib-muted);opacity:1;margin-top:2px}
+.app-shell .folder-list-view .library-folder-count{
+  right:auto;left:36px;bottom:calc(50% - 20px);
+  min-width:19px;max-width:39px;height:19px;padding:0 5px;
+  border:2px solid var(--lib-panel,#fff);
+  background:var(--folder-tone);color:#fff;
+  font-size:9px;font-weight:800;letter-spacing:-.02em;
+  box-shadow:0 2px 5px rgba(24,24,40,.15);
+}
+.app-shell .folder-list-view .library-folder-edit{
+  right:9px;width:29px;height:29px;
+  border:1px solid var(--lib-line);
+  background:var(--lib-soft);
+  color:var(--lib-muted);opacity:1;
+  box-shadow:none;
+}
+.app-shell .folder-list-view .library-folder-edit:hover{
+  background:color-mix(in srgb,var(--folder-tone) 9%,var(--lib-panel));
+  border-color:color-mix(in srgb,var(--folder-tone) 30%,var(--lib-line));
+  color:var(--folder-tone);transform:translateY(-50%);
+}
+.app-shell .folder-list-view .library-folder-card.library-add-folder{
+  min-height:60px;padding:8px 12px;gap:12px;
+  border-style:dashed;background:color-mix(in srgb,var(--lib-soft) 55%,var(--lib-panel));
+  box-shadow:none;
+}
+.app-shell .folder-list-view .library-add-folder .library-add-folder-icon{
+  width:38px;height:38px;flex-basis:38px;border-radius:11px;
+  border-style:solid;background:var(--lib-panel);
+}
+.app-shell .folder-list-view .library-add-folder .library-folder-info{text-align:left;gap:2px}
+.app-shell .folder-list-view .library-add-folder .library-folder-info b{font-size:12px}
+.app-shell .folder-list-view .library-add-folder .library-folder-info small{font-size:10px}
+.app-shell .quiz-list-view .quiz-card{
+  border-radius:16px;
+  border-color:var(--lib-line);
+  box-shadow:0 3px 12px rgba(28,30,65,.035);
+  overflow:hidden;
+}
+.app-shell .quiz-list-view .quiz-card:hover{transform:translateY(-2px);box-shadow:0 9px 22px rgba(28,30,65,.075)}
+.app-shell .quiz-list-view .quiz-card-art{min-height:132px}
+.app-shell .quiz-list-view .quiz-card-art .card-art-icon{
+  width:52px;height:52px;border-radius:16px;
+  display:grid;place-items:center;
+  border:1px solid rgba(255,255,255,.55);
+  box-shadow:0 5px 14px rgba(35,30,70,.09);
+}
+.app-shell .quiz-list-view .quiz-card-art .card-art-icon svg{width:24px;height:24px}
+.app-shell .quiz-list-view .quiz-card-body{padding:17px 19px;gap:8px 18px}
+.app-shell .quiz-list-view .quiz-card-body h3{font-size:15px;line-height:1.35;letter-spacing:-.025em}
+.app-shell .quiz-list-view .quiz-source{font-size:11px;line-height:1.45;margin:3px 0 4px}
+.app-shell .quiz-list-view .quiz-meta{gap:8px 14px;font-size:10px}
+.app-shell .quiz-list-view .quiz-meta span{display:inline-flex;align-items:center;gap:6px}
+.app-shell .quiz-list-view .quiz-meta svg{width:14px;height:14px;opacity:.8}
+.app-shell .quiz-list-view .card-ai-prepare,
+.app-shell .quiz-list-view .card-start{min-width:148px;min-height:36px;border-radius:10px;font-size:11px}
+.app-shell .quiz-list-view .quiz-card-actions{gap:5px}
+.app-shell .quiz-list-view .quiz-card-actions .delete-btn{
+  width:29px;height:29px;border-radius:9px;
+  border:1px solid var(--lib-line);
+  background:color-mix(in srgb,var(--lib-panel) 90%,transparent);
+  box-shadow:0 2px 6px rgba(24,24,40,.05);
+}
+.app-shell .quiz-list-view .quiz-card-actions .delete-btn svg{width:14px;height:14px}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-folder-card{min-height:60px;padding:8px 42px 8px 9px}
+  .app-shell .folder-list-view .library-folder-open{grid-template-columns:34px 1px minmax(0,1fr);column-gap:10px}
+  .app-shell .folder-list-view .library-folder-art{width:34px;height:34px;min-width:34px;border-radius:10px}
+  .app-shell .folder-list-view .library-folder-art .folder-art-sheet{width:21px;height:20px;border-radius:6px}
+  .app-shell .folder-list-view .library-folder-art .sheet-front svg{width:16px;height:16px}
+  .app-shell .folder-list-view .library-folder-count{left:32px;bottom:calc(50% - 18px);min-width:18px;height:18px;font-size:8px}
+  .app-shell .folder-list-view .library-folder-edit{right:6px;width:27px;height:27px}
+  .app-shell .quiz-list-view .quiz-card{grid-template-columns:66px minmax(0,1fr)}
+  .app-shell .quiz-list-view .quiz-card-art{min-height:100%;height:auto}
+  .app-shell .quiz-list-view .quiz-card-art .card-art-icon{width:39px;height:39px;border-radius:12px}
+  .app-shell .quiz-list-view .quiz-card-art .card-art-icon svg{width:20px;height:20px}
+  .app-shell .quiz-list-view .quiz-card-body{padding:43px 11px 12px;gap:7px}
+  .app-shell .quiz-list-view .quiz-card-body h3{font-size:12px;line-height:1.4}
+  .app-shell .quiz-list-view .quiz-source{font-size:10px;margin:0}
+  .app-shell .quiz-list-view .quiz-meta{font-size:9px;gap:6px 10px;padding-top:3px}
+  .app-shell .quiz-list-view .card-ai-prepare,
+  .app-shell .quiz-list-view .card-start{width:100%;min-width:0;min-height:34px;padding:7px 8px;font-size:10px}
+}
+@media(max-width:360px){
+  .app-shell .folder-list-view .library-folder-card{padding-left:7px;padding-right:38px}
+  .app-shell .folder-list-view .library-folder-open{grid-template-columns:30px 1px minmax(0,1fr);column-gap:8px}
+  .app-shell .folder-list-view .library-folder-art{width:30px;height:30px;min-width:30px}
+  .app-shell .folder-list-view .library-folder-art .folder-art-sheet{width:19px;height:18px}
+  .app-shell .folder-list-view .library-folder-count{left:28px;bottom:calc(50% - 16px);min-width:17px;height:17px;padding:0 4px}
+  .app-shell .folder-list-view .library-folder-info b{font-size:11px}
+  .app-shell .folder-list-view .library-folder-info small{font-size:8px}
+  .app-shell .quiz-list-view .quiz-card{grid-template-columns:54px minmax(0,1fr)}
+  .app-shell .quiz-list-view .quiz-card-body{padding-left:8px;padding-right:8px}
+  .app-shell .quiz-list-view .quiz-card-actions{top:6px;right:6px}
+}
