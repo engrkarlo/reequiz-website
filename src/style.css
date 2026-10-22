@@ -3833,3 +3833,66 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
     column-gap: 11px;
   }
 }
+
+
+/* Final spacing and theme pass for the Library view toggles. */
+.app-shell .folder-list-view .library-all-card,
+.app-shell .folder-list-view .library-folder-open {
+  grid-template-columns: 42px 1px minmax(0, 1fr) auto;
+}
+
+@media (max-width: 760px) {
+  .app-shell .folder-list-view .library-all-card,
+  .app-shell .folder-list-view .library-folder-open {
+    grid-template-columns: 38px 1px minmax(0, 1fr) auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell .folder-list-view .library-all-card,
+  .app-shell .folder-list-view .library-folder-open {
+    grid-template-columns: 34px 1px minmax(0, 1fr);
+  }
+}
+
+.app-shell:not(.theme-dark) .view-toggle {
+  background: var(--panel, #ffffff);
+  border-color: var(--line, #e6e7f0);
+  box-shadow: 0 3px 12px rgba(20, 24, 40, 0.06);
+}
+
+.app-shell:not(.theme-dark) .view-toggle button {
+  color: var(--muted, #85899e);
+}
+
+.app-shell:not(.theme-dark) .view-toggle button:hover {
+  color: var(--ink, #20243a);
+  background: rgba(40, 44, 60, 0.08);
+}
+
+.app-shell:not(.theme-dark) .view-toggle button.active {
+  background: var(--gold-soft, #f7edce);
+  color: var(--gold-ink, #9a7010);
+  box-shadow: inset 0 0 0 1px rgba(214, 166, 46, 0.22);
+}
+
+.app-shell.theme-dark .view-toggle {
+  background: var(--panel-solid, #15171c);
+  border-color: var(--panel-border, rgba(255, 255, 255, 0.12));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app-shell.theme-dark .view-toggle button {
+  color: var(--muted, #969bb0);
+}
+
+.app-shell.theme-dark .view-toggle button:hover {
+  color: var(--text-main, #f0ead9);
+  background: rgba(255, 255, 255, 0.075);
+}
+
+.app-shell.theme-dark .view-toggle button.active {
+  background: rgba(232, 189, 75, 0.16);
+  color: var(--gold-bright, #ffe9a0);
+  box-shadow: inset 0 0 0 1px rgba(232, 189, 75, 0.34);
+}
