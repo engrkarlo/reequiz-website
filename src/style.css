@@ -4281,3 +4281,58 @@ html.theme-transitioning *::after {
   .app-shell .footer { flex-direction: column; align-items: flex-start; gap: 13px; }
   .app-shell .footer-meta { max-width: 100%; align-items: flex-start; text-align: left; }
 }
+
+
+/* Theme-aware footer surfaces, precise wordmark alignment, and blue-white developer credit. */
+.app-shell .footer {
+  --footer-bg: #ffffff;
+  --footer-ink: #20243a;
+  --footer-muted: #85899e;
+  background: var(--footer-bg);
+  color: var(--footer-muted);
+  border-top-color: color-mix(in srgb, var(--footer-ink) 10%, transparent);
+  transition: background-color 220ms ease, border-color 220ms ease, color 220ms ease;
+}
+.app-shell .footer-brand-copy {
+  align-items: flex-start;
+  text-align: left;
+}
+.app-shell .footer-brand-copy strong,
+.app-shell .footer-brand-copy span {
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+.app-shell .footer-brand-copy strong {
+  color: var(--footer-ink);
+}
+.app-shell .footer-brand-copy span,
+.app-shell .footer-copyright,
+.app-shell .footer-tagline {
+  color: var(--footer-muted);
+}
+.app-shell .footer-copyright .footer-developer {
+  display: inline;
+  width: auto;
+  color: #ffffff;
+  background: linear-gradient(100deg, #2675e8 0%, #66b8ff 42%, #ffffff 78%, #b9dcff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+.theme-dark .app-shell .footer {
+  --footer-bg: #121622;
+  --footer-ink: #f1f2fa;
+  --footer-muted: #9ba2b8;
+  border-top-color: rgba(255, 255, 255, .09);
+}
+.theme-dark .app-shell .footer::before {
+  background: linear-gradient(90deg, transparent, #d7b44d, #fff4c8, transparent);
+}
+.theme-dark .app-shell .footer-brand-copy strong {
+  color: var(--footer-ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .footer { transition: none; }
+}
