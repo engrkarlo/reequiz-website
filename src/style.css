@@ -4560,3 +4560,69 @@ html.theme-transitioning *::after {
 .ai-settings-toggle{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .ai-settings-toggle .toggle-state{min-width:22px}
 @media(max-width:420px){.ai-settings-heading{gap:8px}.ai-settings-heading h2{font-size:14px}.ai-settings-toggle{gap:6px}}
+
+
+/* AI validation console: theme-aware surfaces, readable event levels, and clear-log controls. */
+.app-shell .ai-terminal-card { background: var(--panel, #ffffff); color: var(--ink, #25283d); border-color: var(--line, #e5e7f0); transition: background-color .2s ease, border-color .2s ease, color .2s ease; }
+.app-shell .ai-terminal { background: var(--surface-soft, #f7f8fb); color: var(--ink, #25283d); border-color: var(--line, #dfe2eb); box-shadow: 0 8px 24px #10131d0a; }
+.app-shell .ai-terminal-head { background: var(--surface, #ffffff); color: var(--ink, #25283d); border-bottom-color: var(--line, #dfe2eb); }
+.app-shell .ai-terminal-head>b { color: var(--ink, #25283d); }
+.app-shell .terminal-status { color: #98700b; }
+.app-shell .terminal-clear-button { display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-left:2px;padding:5px 8px;border:1px solid var(--line,#dfe2eb);border-radius:8px;background:var(--surface-soft,#f7f8fb);color:var(--muted,#747b8f);font:inherit;font-size:10px;font-weight:700;line-height:1.2;cursor:pointer;flex:0 0 auto; }
+.app-shell .terminal-clear-button:hover:not(:disabled) { color:#b42332;border-color:#e5a2a8;background:#fff0f1; }
+.app-shell .terminal-clear-button:disabled { opacity:.42;cursor:not-allowed; }
+.app-shell .terminal-standalone .ai-terminal-lines { background:var(--surface-soft,#f7f8fb);scrollbar-color:var(--line,#cbd0dc) transparent; }
+.app-shell .ai-terminal-line { gap:11px;margin:0;padding:7px 8px;border-radius:7px; }
+.app-shell .ai-terminal-line + .ai-terminal-line { margin-top:3px; }
+.app-shell .ai-terminal-line time { color:var(--muted,#81899c);padding-top:1px; }
+.app-shell .ai-terminal-line span { color:var(--ink,#303449);line-height:1.55; }
+.app-shell .ai-terminal-line span::before { content:none; }
+.app-shell .ai-terminal-line.error { background:#fff0f1;border:1px solid #fecdd3; }
+.app-shell .ai-terminal-line.error span { color:#b42332;font-weight:700; }
+.app-shell .ai-terminal-line.error time { color:#be3948; }
+.app-shell .ai-terminal-line.correction { background:#fff8e4;border:1px solid #f1d98a; }
+.app-shell .ai-terminal-line.correction span { color:#785600; }
+.app-shell .ai-terminal-line.success span { color:#20764b; }
+.app-shell .ai-terminal-line.info span { color:var(--muted,#747b8f); }
+.app-shell .terminal-footer { background:var(--surface,#ffffff);border-top-color:var(--line,#dfe2eb);color:var(--muted,#747b8f); }
+.app-shell .terminal-idle-message { color:var(--muted,#747b8f); }
+.app-shell .terminal-idle-message span { color:#a77a0a; }
+.app-shell .validation-log-delete-backdrop { z-index:170 !important; }
+.app-shell .validation-log-delete-modal { background:var(--panel,#fffdf8) !important;color:var(--ink,#29271f) !important;border-color:color-mix(in srgb,#c83e4b 28%,var(--line,#e8dfc8)); }
+.app-shell .validation-log-delete-modal h2,.app-shell .validation-log-delete-modal > p b { color:var(--ink,#29271f); }
+.app-shell .validation-log-delete-modal > p { color:var(--muted,#716d61); }
+.app-shell .validation-log-delete-modal .delete-folder-note { display:flex;align-items:flex-start;gap:10px;border:1px solid color-mix(in srgb,#2c976f 20%,var(--line,#e5e5e5));color:var(--ink,#29271f); }
+.app-shell .validation-log-delete-modal .delete-folder-note > svg { flex:0 0 auto;margin-top:2px;color:#2c976f; }
+.app-shell .validation-log-delete-modal .delete-folder-note span { display:grid;gap:4px; }
+.app-shell .validation-log-delete-modal .delete-folder-note small { color:var(--muted,#716d61);line-height:1.55; }
+.app-shell .validation-log-delete-modal .library-modal-actions { border-color:var(--line,#e8dfc8); }
+.theme-dark .app-shell .ai-terminal-card { background:var(--panel,#151923);color:var(--ink,#f1f2fa);border-color:var(--line,#303646); }
+.theme-dark .app-shell .ai-terminal { background:#11141d;color:#d9e3d7;border-color:#343a4b; }
+.theme-dark .app-shell .ai-terminal-head { background:#1b1e29;color:#c7cbd7;border-bottom-color:#343a4b; }
+.theme-dark .app-shell .ai-terminal-head>b { color:#c7cbd7; }
+.theme-dark .app-shell .terminal-clear-button { background:#202432;border-color:#383e4e;color:#b4bbcb; }
+.theme-dark .app-shell .terminal-clear-button:hover:not(:disabled) { background:#3a2028;border-color:#9d4652;color:#ffb6be; }
+.theme-dark .app-shell .terminal-standalone .ai-terminal-lines { background:#11141d;scrollbar-color:#50596b #11141c; }
+.theme-dark .app-shell .ai-terminal-line span { color:#c8d9c8; }
+.theme-dark .app-shell .ai-terminal-line.error { background:#381820;border-color:#79303d; }
+.theme-dark .app-shell .ai-terminal-line.error span,.theme-dark .app-shell .ai-terminal-line.error time { color:#ff9aa6; }
+.theme-dark .app-shell .ai-terminal-line.correction { background:#302812;border-color:#796225; }
+.theme-dark .app-shell .ai-terminal-line.correction span { color:#ffe18a; }
+.theme-dark .app-shell .ai-terminal-line.success span { color:#8fe0ad; }
+.theme-dark .app-shell .ai-terminal-line.info span { color:#9ba4b7; }
+.theme-dark .app-shell .terminal-footer { background:#12151e;border-top-color:#343a4b;color:#8e98aa; }
+.theme-dark .app-shell .terminal-idle-message { color:#8f9aaf; }
+.theme-dark .app-shell .terminal-idle-message span { color:#e5b83e; }
+.theme-dark .app-shell .validation-log-delete-modal { background:var(--panel,#191d29) !important;color:var(--ink,#f1f2fa) !important;border-color:rgba(220,76,86,.34); }
+.theme-dark .app-shell .validation-log-delete-modal h2,.theme-dark .app-shell .validation-log-delete-modal > p b,.theme-dark .app-shell .validation-log-delete-modal .delete-folder-note { color:var(--ink,#f1f2fa); }
+.theme-dark .app-shell .validation-log-delete-modal .modal-close { background:var(--surface,#222737);color:var(--muted,#a4a9bc);border-color:var(--line,#303647); }
+@media(max-width:600px) {
+ .app-shell .ai-terminal-intro { align-items:flex-start; }
+ .app-shell .ai-terminal-head { flex-wrap:wrap; }
+ .app-shell .terminal-status { margin-left:auto; }
+ .app-shell .terminal-clear-button { margin-left:auto; }
+ .app-shell .terminal-standalone .ai-terminal-lines { padding:11px; }
+ .app-shell .ai-terminal-line { align-items:flex-start;gap:8px;padding:7px 5px; }
+ .app-shell .ai-terminal-line time { font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) { .app-shell .ai-terminal-card,.app-shell .terminal-clear-button { transition:none; } }
