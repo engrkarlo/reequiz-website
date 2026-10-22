@@ -4649,3 +4649,37 @@ html.theme-transitioning *::after {
 .app-shell.theme-dark .validation-log-delete-modal { background:var(--panel,#191d29) !important;color:var(--ink,#f1f2fa) !important;border-color:rgba(220,76,86,.34); }
 .app-shell.theme-dark .validation-log-delete-modal h2,.app-shell.theme-dark .validation-log-delete-modal > p b,.app-shell.theme-dark .validation-log-delete-modal .delete-folder-note { color:var(--ink,#f1f2fa); }
 .app-shell.theme-dark .validation-log-delete-modal .modal-close { background:var(--surface,#222737);color:var(--muted,#a4a9bc);border-color:var(--line,#303647); }
+
+/* Keep validation messages readable in narrow console layouts. */
+.app-shell .ai-terminal-line {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  min-width: 0;
+}
+.app-shell .ai-terminal-line time {
+  display: block;
+  white-space: nowrap;
+}
+.app-shell .ai-terminal-line span {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+@media (max-width: 600px) {
+  .app-shell .ai-terminal-line {
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 8px;
+    padding: 8px 6px;
+  }
+  .app-shell .ai-terminal-line time { font-size: 9px; }
+  .app-shell .ai-terminal-line span {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+}
