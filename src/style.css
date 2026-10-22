@@ -3768,3 +3768,47 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   box-shadow:inset 3px 0 0 var(--folder-tone,var(--gold)),0 6px 20px color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 13%,transparent);
 }
 @media(prefers-reduced-motion:reduce){.app-shell .folder-list-view .library-folder-card{transition:none}}
+
+
+/* Folder list-view interaction refinements: inset rail, roomier edit control, and a golden-white sweep. */
+.app-shell .folder-list-view .library-folder-card{
+  padding-left:16px;
+  padding-right:54px;
+  -webkit-tap-highlight-color:transparent;
+  isolation:isolate;
+}
+.app-shell .folder-list-view .library-folder-card::marker{content:""}
+.app-shell .folder-list-view .library-folder-card::before{
+  background:linear-gradient(108deg,transparent 0%,rgba(255,255,255,.025) 22%,transparent 38%,transparent 58%,color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 7%,transparent) 100%);
+}
+.app-shell .folder-list-view .library-folder-card::after{
+  left:5px;
+  right:auto;
+  width:3px;
+  border-radius:0 4px 4px 0;
+}
+.app-shell .folder-list-view .library-folder-edit{
+  right:12px;
+}
+.app-shell .folder-list-view .library-folder-card:active::before,
+.app-shell .folder-list-view .library-folder-card:focus-visible::before{
+  background:linear-gradient(105deg,transparent 0%,rgba(255,249,226,.08) 18%,rgba(255,255,255,.92) 31%,rgba(229,187,75,.72) 39%,rgba(255,255,255,.94) 47%,rgba(229,187,75,.24) 55%,transparent 69%,transparent 100%);
+  background-size:230% 100%;
+  animation:folder-golden-edge-sweep .82s ease-out both;
+}
+.app-shell .folder-list-view .library-folder-card:focus-visible{
+  outline:2px solid var(--gold,#d6a62e);
+  outline-offset:3px;
+}
+@keyframes folder-golden-edge-sweep{
+  from{background-position:100% 0}
+  to{background-position:-100% 0}
+}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-folder-card{padding-left:13px;padding-right:47px}
+  .app-shell .folder-list-view .library-folder-edit{right:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .folder-list-view .library-folder-card:active::before,
+  .app-shell .folder-list-view .library-folder-card:focus-visible::before{animation:none;background-position:center}
+}
