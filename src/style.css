@@ -1049,7 +1049,7 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 .library-all-card{--folder-tone:#7768e8;cursor:pointer}
 .folder-accent-0{--folder-tone:#7768e8}.folder-accent-1{--folder-tone:#419c86}.folder-accent-2{--folder-tone:#d69a55}.folder-accent-3{--folder-tone:#5b91cf}
 .library-folder-open{display:flex;flex:1;flex-direction:column;align-items:stretch;gap:9px;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;min-width:0}
-.library-folder-art{position:relative;display:grid;place-items:center;width:100%;height:95px;flex:0 0 95px;overflow:hidden;border-radius:13px;background:linear-gradient(145deg,color-mix(in srgb,var(--folder-tone) 9%,var(--lib-soft)),color-mix(in srgb,var(--folder-tone) 3%,var(--lib-panel)))
+.library-folder-art{position:relative;display:grid;place-items:center;width:100%;height:95px;flex:0 0 95px;overflow:hidden;border-radius:13px;background:linear-gradient(145deg,color-mix(in srgb,var(--folder-tone) 9%,var(--lib-soft)),color-mix(in srgb,var(--folder-tone) 3%,var(--lib-panel)))}
 .library-folder-art:after{content:"";position:absolute;inset:0;background-image:radial-gradient(color-mix(in srgb,var(--folder-tone) 24%,transparent) .8px,transparent .8px);background-size:12px 12px;opacity:.16;pointer-events:none}
 .folder-art-glow{position:absolute;width:94px;height:58px;border-radius:50%;background:var(--folder-tone);filter:blur(35px);opacity:.11;transition:opacity .25s,transform .3s}
 .library-folder-card:hover .folder-art-glow{opacity:.2;transform:scale(1.25)}
