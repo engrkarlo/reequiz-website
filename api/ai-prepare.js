@@ -49,7 +49,7 @@ async function callGemini({ apiKey, model, system, userPrompt }) {
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'Configure GROQ_API_KEY, GEMINI_API_KEY, or both in Vercel environment variables.' });
+  if (!process.env.GROQ_API_KEY && !process.env.GEMINI_API_KEY) return res.status(503).json({ error: 'AI is unavailable because no API key is configured for question generation and answer/explanation validation. Add a supported AI provider API key to enable these features.' });
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     if (!Array.isArray(body.questions) || !body.questions.length) return res.status(400).json({ error: 'No quiz questions supplied' });
