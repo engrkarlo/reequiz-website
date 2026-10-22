@@ -1701,3 +1701,128 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   html{scroll-behavior:auto}
   .app-shell .quiz-card::before,.app-shell .resume-card::before,.app-shell .settings-card::before{animation:none!important}
 }
+
+
+/* Follow-up polish: selection actions, folder modal, navigation motion and geometry. */
+.app-shell,
+.app-shell *,
+.app-shell *::before,
+.app-shell *::after{box-sizing:border-box}
+
+/* Keep bulk actions readable on narrow cards and prevent icon/text collisions. */
+.app-shell .library-selection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0}
+.app-shell .library-selection-actions>.button{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  min-width:0;max-width:100%;min-height:42px;padding:10px 14px;
+  line-height:1.25;text-align:center;white-space:normal;overflow-wrap:anywhere;
+}
+.app-shell .library-selection-actions>.button svg{flex:0 0 auto}
+.app-shell .library-selection-actions>.button:disabled{opacity:.48;cursor:not-allowed}
+.app-shell .library-selection-copy{min-width:0}
+.app-shell .library-selection-copy>div{min-width:0}
+@media(max-width:600px){
+  .app-shell .library-selection-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  .app-shell .library-selection-actions>.button{width:100%;min-height:44px;padding:9px 8px;font-size:12px;gap:6px}
+  .app-shell .library-selection-actions>.button:nth-child(2){grid-column:1}
+  .app-shell .library-selection-actions>.button:nth-child(3){grid-column:2}
+}
+@media(max-width:380px){
+  .app-shell .library-selection-actions{grid-template-columns:minmax(0,1fr)}
+  .app-shell .library-selection-actions>.button:nth-child(2),
+  .app-shell .library-selection-actions>.button:nth-child(3){grid-column:auto}
+}
+
+/* Move-to-folder: deliberate modal hierarchy, stable sizing, and clear destination rows. */
+.app-shell .move-folder-modal{
+  width:min(520px,calc(100vw - 28px));max-width:520px;max-height:min(82dvh,720px);
+  overflow:auto;overscroll-behavior:contain;padding:30px;
+  border:1px solid rgba(232,189,75,.52);border-radius:24px;
+  background:var(--panel,#fff);color:var(--text,var(--ink,#25283d));
+  box-shadow:0 28px 90px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.42);
+  animation:reequiz-modal-enter 210ms cubic-bezier(.2,.8,.2,1) both;
+  transform-origin:center;
+}
+.app-shell .move-folder-modal h2{margin:10px 0 8px;line-height:1.2;letter-spacing:-.025em}
+.app-shell .move-folder-modal>p{line-height:1.55;margin:0 0 20px;color:var(--muted,#85899e)}
+.app-shell .move-folder-modal .destination-list{display:grid;gap:9px;margin:18px 0 22px}
+.app-shell .move-folder-modal .destination-option{
+  display:grid;grid-template-columns:42px minmax(0,1fr) 20px;align-items:center;gap:12px;
+  width:100%;min-width:0;min-height:70px;padding:12px 14px;text-align:left;
+  border:1px solid var(--panel-border,#e4e6ee);border-radius:15px;
+  background:var(--surface-soft,#f8f9fc);color:var(--text,var(--ink,#25283d));
+  transition:background-color 150ms ease,border-color 150ms ease,transform 150ms ease;
+}
+.app-shell .move-folder-modal .destination-option:hover{border-color:rgba(200,155,44,.6);transform:translateY(-1px)}
+.app-shell .move-folder-modal .destination-option.chosen{border-color:#c89b2c;background:rgba(200,155,44,.1);box-shadow:inset 0 0 0 1px rgba(200,155,44,.13)}
+.app-shell .move-folder-modal .destination-option>span:nth-child(2){display:flex;flex-direction:column;gap:4px;min-width:0}
+.app-shell .move-folder-modal .destination-option b{line-height:1.3;overflow-wrap:anywhere}
+.app-shell .move-folder-modal .destination-option small{line-height:1.4;color:var(--muted,#85899e);overflow-wrap:anywhere}
+.app-shell .move-folder-modal .destination-icon{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:rgba(200,155,44,.12);color:#b4871e}
+.app-shell .move-folder-modal .destination-radio{width:18px;height:18px;border:1.5px solid var(--panel-border,#bfc2cd);border-radius:50%;display:grid;place-items:center}
+.app-shell .move-folder-modal .destination-option.chosen .destination-radio{border-color:#c89b2c}
+.app-shell .move-folder-modal .destination-radio i{display:block;width:8px;height:8px;border-radius:50%;background:#c89b2c}
+.app-shell .move-folder-modal .library-modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.app-shell .move-folder-modal .library-modal-actions .button{display:inline-flex;align-items:center;justify-content:center;min-height:42px;line-height:1.25;white-space:normal;text-align:center}
+.theme-dark .move-folder-modal{background:linear-gradient(155deg,#202126,#131418 88%);color:#f5f3ec;border-color:rgba(232,189,75,.55);box-shadow:0 28px 90px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.07)}
+.theme-dark .move-folder-modal h2{color:#f5f3ec}
+.theme-dark .move-folder-modal>p{color:#b8b7b0}
+.theme-dark .move-folder-modal .destination-option{background:#191a1f;color:#f4f1e8;border-color:rgba(255,255,255,.12)}
+.theme-dark .move-folder-modal .destination-option.chosen{background:rgba(232,189,75,.1);border-color:rgba(232,189,75,.72)}
+.theme-dark .move-folder-modal .destination-option small{color:#aaa99f}
+@keyframes reequiz-modal-enter{from{opacity:0;transform:translateY(9px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+/* Theme control: centered icon silhouette and a smoother track/knob transition. */
+.app-shell .theme-toggle{display:inline-flex;align-items:center;justify-content:flex-start;gap:8px;min-height:40px;padding:4px 11px 4px 4px;line-height:1;white-space:nowrap}
+.app-shell .theme-toggle-knob{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border-radius:50%;line-height:0;overflow:hidden;transition:transform 240ms cubic-bezier(.2,.8,.2,1),background-color 220ms ease,color 220ms ease,box-shadow 220ms ease}
+.app-shell .theme-toggle-knob svg{display:block;width:16px;height:16px;flex:0 0 16px;stroke-width:2.2;transform-origin:center}
+.app-shell .theme-toggle-label{display:inline-flex;align-items:center;min-height:20px;line-height:1.1}
+.app-shell .theme-toggle:active .theme-toggle-knob{transform:rotate(-12deg) scale(.94)}
+.app-shell .theme-toggle:focus-visible{outline:2px solid rgba(232,189,75,.7);outline-offset:3px}
+.app-shell .main,.app-shell .sidebar,.app-shell .topbar,.app-shell .footer,.app-shell .page,
+.app-shell .quiz-card,.app-shell .stat-card,.app-shell .settings-card,.app-shell .library-folder-card,
+.app-shell .library-action-card,.app-shell .search-box,.app-shell .library-search-field{
+  transition:background-color 240ms ease,color 200ms ease,border-color 220ms ease,box-shadow 220ms ease;
+}
+.app-shell .page{animation:reequiz-page-fade-in 230ms cubic-bezier(.2,.75,.25,1) both}
+@keyframes reequiz-page-fade-in{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* A restrained pop when switching the primary workspace destinations. */
+.app-shell .nav-item{position:relative;transition:background-color 160ms ease,color 160ms ease,box-shadow 160ms ease,transform 160ms ease}
+.app-shell .nav-item:active{transform:scale(.985)}
+.app-shell .nav-item.selected{animation:reequiz-nav-select 240ms cubic-bezier(.2,.8,.2,1) both}
+@keyframes reequiz-nav-select{0%{transform:scale(.975);filter:brightness(.96)}65%{transform:scale(1.012)}100%{transform:scale(1);filter:brightness(1)}}
+
+/* Remove decorative spinning/radial glows from folder artwork; keep the folder art crisp. */
+.app-shell .library-folder-art{isolation:isolate;overflow:hidden}
+.app-shell .library-folder-art::before,
+.app-shell .library-folder-art::after,
+.app-shell .folder-art-glow{display:none!important;content:none!important;animation:none!important;filter:none!important}
+.app-shell .library-custom-folder .library-folder-art{background:transparent!important}
+.app-shell .library-custom-folder .folder-art-sheet{filter:none!important;box-shadow:0 5px 12px rgba(0,0,0,.12)}
+.theme-dark .library-custom-folder .folder-art-sheet{box-shadow:0 5px 12px rgba(0,0,0,.24)}
+
+/* Keep card contents and borders on the same box model to avoid visual edge drift. */
+.app-shell .quiz-card,.app-shell .resume-card,.app-shell .settings-card,.app-shell .stat-card,
+.app-shell .library-action-card,.app-shell .library-folder-card,.app-shell .library-modal,
+.app-shell .folder-dialog,.app-shell .choice-modal,.app-shell .exit-modal{
+  min-width:0;max-width:100%;background-clip:padding-box;
+}
+.app-shell .quiz-card::before,.app-shell .resume-card::before,.app-shell .settings-card::before{inset:0;border-radius:inherit;pointer-events:none}
+.app-shell .quiz-card>*:not(::before),.app-shell .resume-card>*:not(::before),.app-shell .settings-card>*:not(::before){min-width:0}
+.app-shell .library-folder-card{overflow:hidden;border-radius:inherit}
+.app-shell .library-folder-open{min-width:0;max-width:100%}
+.app-shell .library-folder-info{min-width:0}
+.app-shell .library-folder-info b,.app-shell .library-folder-info small{overflow-wrap:anywhere}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .page,.app-shell .nav-item.selected,.app-shell .move-folder-modal{animation:none!important}
+  .app-shell .main,.app-shell .sidebar,.app-shell .topbar,.app-shell .footer,.app-shell .page,
+  .app-shell .quiz-card,.app-shell .stat-card,.app-shell .settings-card,.app-shell .library-folder-card,
+  .app-shell .library-action-card,.app-shell .theme-toggle-knob{transition:none!important}
+}
+@media(max-width:600px){
+  .app-shell .move-folder-modal{padding:24px 18px;width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:20px}
+  .app-shell .move-folder-modal .destination-option{grid-template-columns:36px minmax(0,1fr) 18px;gap:10px;padding:10px;min-height:64px}
+  .app-shell .move-folder-modal .destination-icon{width:36px;height:36px}
+  .app-shell .move-folder-modal .library-modal-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .app-shell .move-folder-modal .library-modal-actions .button{width:100%;padding:10px 8px}
+}
