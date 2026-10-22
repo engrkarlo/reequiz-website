@@ -1521,3 +1521,183 @@ body{background:#f5f2e9}
  .app-shell .quiz-card-body .card-ai-prepare{font-size:10px;padding:9px 7px}
  .app-shell .quiz-card-body .card-start{font-size:11px;padding:10px 7px}
 }
+
+
+/* Accessibility, theme consistency, and final liquid-glass refinement. */
+:root{
+  --gold:#e8bd4b;
+  --gold-bright:#ffe9a0;
+  --focus-ring:rgba(232,189,75,.2);
+  --motion-fast:140ms;
+  --motion-medium:180ms;
+}
+html{scroll-behavior:smooth}
+body{min-height:100%;background:var(--page-bg,#f6f7fb)}
+.app-shell,.app-shell .main{min-height:100dvh}
+.app-shell .main{min-width:0}
+.app-shell .page{flex:1 0 auto}
+.app-shell .footer{flex-shrink:0}
+
+/* Search stays legible in either theme; focus is a quiet border change, not a glow. */
+.app-shell .library-search-field,
+.app-shell .search-box{
+  color:var(--lib-muted,var(--muted,#85899e));
+  border:1px solid var(--panel-border,#e4e6ee);
+  background:var(--panel,var(--panel-solid,#fff));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+  transition:border-color var(--motion-fast) ease,background-color var(--motion-fast) ease;
+}
+.app-shell .library-search-field input,
+.app-shell .search-box input{
+  color:var(--text,var(--ink,#25283d));
+  caret-color:var(--gold);
+  background:transparent;
+}
+.app-shell .library-search-field input::placeholder,
+.app-shell .search-box input::placeholder{color:var(--muted,#85899e);opacity:.82}
+.app-shell .library-search-field:focus-within,
+.app-shell .search-box:focus-within{
+  outline:none;
+  border-color:rgba(232,189,75,.58);
+  box-shadow:inset 0 0 0 1px rgba(232,189,75,.08);
+}
+.app-shell .library-search-field input:focus,
+.app-shell .search-box input:focus{outline:none;box-shadow:none}
+.app-shell .library-search-field>button{background:var(--surface-soft,#f4f4f7);color:var(--text,var(--ink,#25283d));transition:background-color var(--motion-fast) ease,color var(--motion-fast) ease}
+.app-shell .library-search-field>button:hover{background:rgba(232,189,75,.16);color:var(--gold)}
+
+/* The light theme uses the same gold/white identity without inheriting dark surfaces. */
+.app-shell:not(.theme-dark) .library-search-field,
+.app-shell:not(.theme-dark) .search-box{
+  --panel:#fff;
+  --panel-border:#e6e1d3;
+  background:rgba(255,255,255,.94);
+  border-color:#e6e1d3;
+}
+.app-shell:not(.theme-dark) .library-search-field input,
+.app-shell:not(.theme-dark) .search-box input{color:#252525}
+.app-shell:not(.theme-dark) .library-search-field:focus-within,
+.app-shell:not(.theme-dark) .search-box:focus-within{border-color:#c89b2c;box-shadow:inset 0 0 0 1px rgba(200,155,44,.12)}
+.app-shell:not(.theme-dark) .quiz-card h3,
+.app-shell:not(.theme-dark) .quiz-card-body p,
+.app-shell:not(.theme-dark) .section-heading h2,
+.app-shell:not(.theme-dark) .page-title h1{color:var(--ink,#20243a)}
+
+/* Mode / Select Quiz Sets: center every icon-label stack and keep button copy aligned. */
+.app-shell .mode-choice{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 20px;
+  align-items:center;
+  gap:13px;
+  min-height:76px;
+  text-align:left;
+  padding:14px 16px;
+}
+.app-shell .mode-choice>span:nth-child(2){min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.app-shell .mode-choice b{line-height:1.35;text-align:left}
+.app-shell .mode-choice small,
+.app-shell .mode-choice p{margin:0;line-height:1.45;overflow-wrap:anywhere}
+.app-shell .mode-choice>svg:last-child{justify-self:center;align-self:center}
+.app-shell .mode-choice .button,
+.app-shell .card-start,
+.app-shell .card-ai-prepare{
+  display:inline-flex;align-items:center;justify-content:center;text-align:center;
+  line-height:1.25;white-space:normal;overflow-wrap:anywhere;
+}
+.app-shell .quiz-card-body .card-start,
+.app-shell .quiz-card-body .card-ai-prepare{align-self:stretch;margin-left:0;margin-right:0}
+.app-shell .quiz-card-body .card-start>*,
+.app-shell .quiz-card-body .card-ai-prepare>*{flex-shrink:0}
+.app-shell .mode-choice:focus-visible,
+.app-shell .button:focus-visible,
+.app-shell .icon-button:focus-visible,
+.app-shell .delete-btn:focus-visible,
+.app-shell .modal-close:focus-visible{
+  outline:2px solid rgba(232,189,75,.78);
+  outline-offset:2px;
+}
+
+/* Modal and Library folder pop-ups need a visible rim in both themes. */
+.app-shell .choice-modal,
+.app-shell .exit-modal,
+.app-shell .folder-dialog{
+  border:1px solid rgba(200,155,44,.42);
+  outline:1px solid rgba(255,255,255,.12);
+  outline-offset:-4px;
+  box-shadow:0 24px 72px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.7);
+}
+.app-shell .folder-dialog{color:var(--text,var(--ink,#25283d))}
+.app-shell .folder-dialog h2,
+.app-shell .folder-dialog label{color:var(--text,var(--ink,#25283d))}
+.app-shell .folder-dialog input,
+.app-shell .folder-dialog textarea,
+.app-shell .folder-dialog select{
+  color:var(--text,var(--ink,#25283d));
+  background:var(--surface-soft,#f8f9fc);
+  border-color:var(--panel-border,#e4e6ee);
+}
+.app-shell .folder-dialog input:focus,
+.app-shell .folder-dialog textarea:focus,
+.app-shell .folder-dialog select:focus{
+  outline:none;border-color:rgba(200,155,44,.72);box-shadow:inset 0 0 0 1px rgba(200,155,44,.12)
+}
+.theme-dark .choice-modal,
+.theme-dark .exit-modal,
+.theme-dark .folder-dialog{
+  color:#f5f3ec;
+  background:linear-gradient(150deg,#202126,#131418 82%);
+  border-color:rgba(232,189,75,.5);
+  outline-color:rgba(255,255,255,.07);
+  box-shadow:0 26px 80px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.07);
+}
+.theme-dark .choice-modal h2,
+.theme-dark .exit-modal h2,
+.theme-dark .folder-dialog h2,
+.theme-dark .folder-dialog label{color:#f5f3ec}
+.theme-dark .modal-description,
+.theme-dark .folder-dialog>p{color:#b6b5ad}
+.theme-dark .modal-close{color:#f1eee5;background:#24252a;border-color:rgba(255,255,255,.13)}
+.theme-dark .mode-choice{color:#f3f1e9;background:linear-gradient(145deg,#202126,#18191d);border-color:rgba(255,255,255,.12)}
+.theme-dark .mode-choice:hover{border-color:rgba(232,189,75,.6);background:linear-gradient(145deg,#29261c,#1b1b1c);box-shadow:0 5px 16px rgba(0,0,0,.22)}
+.theme-dark .folder-dialog input,
+.theme-dark .folder-dialog textarea,
+.theme-dark .folder-dialog select{color:#f4f1e8;background:#111216;border-color:rgba(255,255,255,.13)}
+.theme-dark .choice-modal .eyebrow,
+.theme-dark .exit-modal .eyebrow{color:#f0ce71}
+
+/* Slightly thicker gold/white animated edge, without a heavy glow or filter cost. */
+.app-shell .quiz-card::before,
+.app-shell .resume-card::before,
+.app-shell .settings-card::before{padding:2px!important}
+.app-shell .quiz-card:hover::before,
+.app-shell .quiz-card-selected::before,
+.app-shell .resume-card:hover::before,
+.app-shell .settings-card:hover::before{opacity:1}
+@keyframes reequiz-edge-turn{to{--edge-angle:360deg}}
+.app-shell .quiz-card,
+.app-shell .resume-card,
+.app-shell .settings-card{backface-visibility:hidden;transform:translateZ(0)}
+.app-shell .quiz-card:hover{transform:translateY(-2px) translateZ(0);transition:transform var(--motion-medium) ease,border-color var(--motion-medium) ease}
+.app-shell .button,
+.app-shell .mode-choice,
+.app-shell .modal-close,
+.app-shell .library-search-field>button{transition-duration:var(--motion-fast)}
+.app-shell .modal-backdrop{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,11,14,.62)}
+.app-shell .choice-modal,.app-shell .exit-modal,.app-shell .folder-dialog{animation-duration:160ms}
+
+/* Prevent mobile footer whitespace from being added by the content column. */
+@media(max-width:760px){
+  html,body,#root{min-height:100%;height:auto}
+  .app-shell{min-height:100dvh;height:auto;align-items:stretch}
+  .app-shell .main{min-height:100dvh;height:auto}
+  .app-shell .page{flex:0 0 auto;padding-bottom:18px}
+  .app-shell .footer{margin-top:auto;padding-bottom:calc(14px + env(safe-area-inset-bottom,0px));gap:7px}
+  .app-shell .footer>*{max-width:100%;overflow-wrap:anywhere}
+  .app-shell .mode-choice{grid-template-columns:36px minmax(0,1fr) 18px;gap:10px;padding:12px;min-height:70px}
+  .app-shell .choice-modal,.app-shell .exit-modal,.app-shell .folder-dialog{max-height:calc(100dvh - 24px);padding:23px 18px;border-radius:20px}
+  .app-shell .library-search-field{min-height:52px;height:52px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .app-shell .quiz-card::before,.app-shell .resume-card::before,.app-shell .settings-card::before{animation:none!important}
+}
