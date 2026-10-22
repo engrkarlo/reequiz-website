@@ -4018,3 +4018,11 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 @keyframes ai-scan-spin{to{transform:rotate(360deg)}}
 @media(max-width:620px){.app-shell .ai-scan-workspace{padding:12px}.app-shell .ai-scan-heading{align-items:flex-start;flex-wrap:wrap}.app-shell .ai-online-tag{margin-left:51px}.app-shell .ai-scan-actions{align-items:stretch;flex-direction:column}.app-shell .ai-scan-actions .button{width:100%;justify-content:center}}
 @media(prefers-reduced-motion:reduce){.app-shell .ai-upload-drop{transition:none}.app-shell .ai-scan-spinner{animation:none}}
+
+/* Keep the AI scan heading compact on narrow screens. */
+@media(max-width:620px){
+ .app-shell .ai-scan-heading{column-gap:9px;row-gap:8px}
+ .app-shell .ai-scan-heading>div:nth-child(2){flex:1 1 calc(100% - 52px);min-width:0}
+ .app-shell .ai-scan-heading p{font-size:12px;line-height:1.4;max-width:100%;overflow-wrap:normal}
+ .app-shell .ai-scan-heading .ai-online-tag{margin-left:49px;flex-basis:auto}
+}
