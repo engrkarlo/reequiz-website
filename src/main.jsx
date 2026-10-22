@@ -286,18 +286,43 @@ function App(){
  async function scanUploadsIntoBuilder(){
   if(!scanFiles.length){setError('Choose at least one image or PDF to scan.');return}
   if(!navigator.onLine){setError('Connect to the internet before scanning files with AI.');return}
-  const supported=scanFiles.filter(f=>f.type==='application/pdf'||f.type.startsWith('image/'));
-  if(supported.length!==scanFiles.length){setError('Only PDF and image files are supported.');return}
+  const supported=scanFiles.filter(f=>f.type==='application/pdf'||['image/jpeg','image/png','image/webp','image/gif'].includes(f.type));
+  if(supported.length!==scanFiles.length){setError('Use PDF, JPEG, PNG, WEBP, or GIF files.');return}
   const totalBytes=supported.reduce((n,f)=>n+f.size,0);
   if(totalBytes>3*1024*1024){setError('Please keep the combined upload size under 3 MB per scan.');return}
   setScanBusy(true);setError('');setNotice('');
   try{
-   const files=await Promise.all(supported.map(file=>new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onerror=()=>reject(new Error(`Could not read ${file.name}.`));
-    reader.onload=()=>{const result=String(reader.result||'');const comma=result.indexOf(',');if(comma<0){reject(new Error(`Could not encode ${file.name}.`));return}resolve({name:file.name,mimeType:file.type,data:result.slice(comma+1)})};
-    reader.readAsDataURL(file);
-   })));
+   const encoded=await Promise.all(supported.map(async file=>{
+    if(file.type!=='application/pdf')return await new Promise((resolve,reject)=>{
+     const reader=new FileReader();
+     reader.onerror=()=>reject(new Error(`Could not read ${file.name}.`));
+     reader.onload=()=>{const result=String(reader.result||'');const comma=result.indexOf(',');if(comma<0){reject(new Error(`Could not encode ${file.name}.`));return}resolve({name:file.name,mimeType:file.type,data:result.slice(comma+1)})};
+     reader.readAsDataURL(file);
+    });
+    // Groq's vision endpoint accepts images, so render PDF pages to JPEGs in the browser.
+    const pdfjs=await import(/* @vite-ignore */ 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
+    pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+    const buffer=await file.arrayBuffer();
+    const pdf=await pdfjs.getDocument({data:buffer}).promise;
+    if(pdf.numPages>10)throw new Error(`${file.name} has ${pdf.numPages} pages. Please split it into PDFs of 10 pages or fewer.`);
+    const pages=[];
+    for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
+     const page=await pdf.getPage(pageNo);
+     const viewport=page.getViewport({scale:1.35});
+     const canvas=document.createElement('canvas');
+     canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
+     const context=canvas.getContext('2d');
+     await page.render({canvasContext:context,viewport}).promise;
+     const result=canvas.toDataURL('image/jpeg',0.78);
+     pages.push({name:`${file.name} — page ${pageNo}`,mimeType:'image/jpeg',data:result.slice(result.indexOf(',')+1)});
+     canvas.width=0;canvas.height=0;
+    }
+    return pages;
+   }));
+   const files=encoded.flatMap(x=>Array.isArray(x)?x:[x]);
+   const encodedBytes=files.reduce((sum,f)=>sum+Math.floor(f.data.length*3/4),0);
+   if(encodedBytes>3*1024*1024)throw new Error('Rendered pages are larger than the 3 MB scan limit. Try a smaller PDF or fewer pages.');
+   if(files.length>25)throw new Error('This scan creates more than 25 page images. Please split the files into smaller batches.');
    const response=await fetch('/api/ai-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:builder?.title||'Imported test',files})});
    const data=await response.json().catch(()=>({}));
    if(!response.ok)throw new Error(data.error||'AI could not scan those files. Please try again.');
@@ -305,7 +330,7 @@ function App(){
    const parsed=data.questions.map(q=>({question:String(q.question||'').trim(),options:(Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8),answer:Number.isInteger(q.answer)&&q.answer>=0&&q.answer<(q.options||[]).length?q.answer:0,explanation:String(q.explanation||''),verified:q.answerProvided===true&&Number.isInteger(q.answer)&&q.answer>=0&&q.answer<(q.options||[]).length,sourceAnswer:q.answerProvided===true?'AI extracted answer key':''})).filter(q=>q.question&&q.options.length>=2);
    if(!parsed.length)throw new Error('The scan did not produce usable multiple-choice questions. Please use a clearer file or add questions manually.');
    setBuilder(b=>({...b,questions:parsed}));
-   setPasteOpen(false);setNotice(`AI extracted ${parsed.length} questions from ${supported.length} file(s). ${parsed.filter(q=>!q.verified).length? 'Questions without an explicit answer key are marked for your review.':''}`);
+   setPasteOpen(false);setNotice(`AI extracted ${parsed.length} questions from ${supported.length} file(s). ${parsed.some(q=>!q.verified)?'Questions without an explicit answer key are marked for your review.':''}`);
    setScanFiles([]);
   }catch(e){setError(e?.message||'File scan failed. Please try again.')}finally{setScanBusy(false)}
  }
