@@ -1778,7 +1778,7 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 .app-shell .theme-toggle-label{display:inline-flex;align-items:center;min-height:20px;line-height:1.1}
 .app-shell .theme-toggle:active .theme-toggle-knob{transform:rotate(-12deg) scale(.94)}
 .app-shell .theme-toggle:focus-visible{outline:2px solid rgba(232,189,75,.7);outline-offset:3px}
-.app-shell .main,.app-shell .sidebar,.app-shell .topbar,.app-shell .footer,.app-shell .page,
+.app-shell,.app-shell .main,.app-shell .sidebar,.app-shell .topbar,.app-shell .footer,.app-shell .page,
 .app-shell .quiz-card,.app-shell .stat-card,.app-shell .settings-card,.app-shell .library-folder-card,
 .app-shell .library-action-card,.app-shell .search-box,.app-shell .library-search-field{
   transition:background-color 240ms ease,color 200ms ease,border-color 220ms ease,box-shadow 220ms ease;
@@ -1808,7 +1808,6 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   min-width:0;max-width:100%;background-clip:padding-box;
 }
 .app-shell .quiz-card::before,.app-shell .resume-card::before,.app-shell .settings-card::before{inset:0;border-radius:inherit;pointer-events:none}
-.app-shell .quiz-card>*:not(::before),.app-shell .resume-card>*:not(::before),.app-shell .settings-card>*:not(::before){min-width:0}
 .app-shell .library-folder-card{overflow:hidden;border-radius:inherit}
 .app-shell .library-folder-open{min-width:0;max-width:100%}
 .app-shell .library-folder-info{min-width:0}
