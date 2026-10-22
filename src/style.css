@@ -4145,50 +4145,40 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 .theme-dark .review-row:has(.review-status.is-wrong) small { color: #fda4af !important; }
 
 
-/* Icon-origin theme reveal: light swallows the dark; dark releases outward from the toggle. */
+/* Lightweight icon-origin theme reveal, tuned to reduce mobile GPU work. */
 @supports (view-transition-name: root) {
-  :root {
-    view-transition-name: root;
-  }
+  :root { view-transition-name: root; }
+
   ::view-transition-group(root) {
-    animation-duration: 1080ms;
-    animation-timing-function: cubic-bezier(.22, .75, .18, 1);
+    animation-duration: 620ms;
+    animation-timing-function: cubic-bezier(.2, .7, .2, 1);
   }
-  ::view-transition-image-pair(root) {
-    isolation: isolate;
-  }
+
   ::view-transition-old(root) {
     z-index: 1;
-    animation: theme-old-dissolve 760ms cubic-bezier(.4, 0, .2, 1) both;
-    transform-origin: var(--theme-origin-x, 50%) var(--theme-origin-y, 50%);
-    will-change: opacity, transform;
+    animation: theme-old-fade 300ms ease-out both;
   }
+
   ::view-transition-new(root) {
     z-index: 2;
-    animation: theme-icon-reveal 1080ms cubic-bezier(.22, .75, .18, 1) both;
-    transform-origin: var(--theme-origin-x, 50%) var(--theme-origin-y, 50%);
-    will-change: clip-path;
+    animation: theme-icon-reveal 620ms cubic-bezier(.2, .7, .2, 1) both;
   }
+
   @keyframes theme-icon-reveal {
-    0% {
+    from {
       clip-path: circle(0 at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%));
     }
-    18% {
-      clip-path: circle(16vmax at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%));
-    }
-    68% {
-      clip-path: circle(92vmax at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%));
-    }
-    100% {
+    to {
       clip-path: circle(150vmax at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%));
     }
   }
-  @keyframes theme-old-dissolve {
-    0% { opacity: 1; transform: scale(1); }
-    58% { opacity: .92; transform: scale(1.008); }
-    100% { opacity: 0; transform: scale(1.012); }
+
+  @keyframes theme-old-fade {
+    from { opacity: 1; }
+    to { opacity: 0; }
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(root),
   ::view-transition-old(root),
