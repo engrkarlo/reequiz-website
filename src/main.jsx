@@ -247,7 +247,6 @@ function App(){
     for(let cursor=0;cursor<indices.length;cursor+=batchSize){
      const batchIndices=indices.slice(cursor,cursor+batchSize);
      const batch=batchIndices.map(i=>working.questions[i]);
-     setAiActivity(log=>[...log,{id:crypto.randomUUID(),time:new Date().toLocaleTimeString(),message:`CHECK — Question ${batchIndices[0]+1} of ${indices.length}: checking the answer key and explanations.`}].slice(-120));
      setAiProgress({quizId:item.id,completed:cursor,total:indices.length});
      const response=await fetch('/api/ai-prepare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:item.title,questions:batch.map(q=>({question:q.question,options:q.options,answer:q.answer,explanation:q.explanation||''}))})});
      let data={};try{data=await response.json()}catch{}
@@ -259,7 +258,6 @@ function App(){
      if(data.provider)providersUsed.add(data.provider);
      if(!Array.isArray(data.questions)||data.questions.length!==batch.length)throw new Error(`AI returned incomplete results for questions ${batchIndices[0]+1}–${batchIndices[batchIndices.length-1]+1}. Completed earlier questions are saved; press the AI button again to continue.`);
      const nextQuestions=[...working.questions];
-     const correctionMessages=[];
      for(let j=0;j<data.questions.length;j++){
       const questionIndex=batchIndices[j],q=nextQuestions[questionIndex],a=data.questions[j];
       const oldAnswer=q.answer,newAnswer=Number.isInteger(a.correctAnswer)&&a.correctAnswer>=0&&a.correctAnswer<q.options.length?a.correctAnswer:oldAnswer;
@@ -267,7 +265,6 @@ function App(){
       nextQuestions[questionIndex]={...q,answer:newAnswer,explanation:a.explanation||q.explanation||'',optionExplanations:Array.isArray(a.optionExplanations)?a.optionExplanations:q.options.map(()=>''),aiPrepared:true,aiReviewed:true,originalAnswer:oldAnswer!==newAnswer?oldAnswer:q.originalAnswer,answerCorrectionReason:newAnswer!==oldAnswer?(a.correctionReason||'AI identified a likely answer-key correction.'):q.answerCorrectionReason};
      }
      saveProgress({...working,questions:nextQuestions});
-     setAiActivity(log=>[...log,...correctionMessages,{id:crypto.randomUUID(),time:new Date().toLocaleTimeString(),message:`PASS — Question ${batchIndices[0]+1}: validation complete; explanation saved locally.`}].slice(-120));
      setAiProgress({quizId:item.id,completed:cursor+batch.length,total:indices.length});
      // Small spacing between requests helps avoid burst limits. If a limit still occurs,
      // the successful batch above is already committed locally.
