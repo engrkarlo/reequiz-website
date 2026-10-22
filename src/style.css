@@ -2012,3 +2012,17 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .theme-toggle,.app-shell .theme-toggle-knob,.app-shell .library-folder-card,
   .app-shell .library-folder-art,.app-shell .library-folder-count{transition:none!important}
 }
+
+
+/* Keep the folder count badge clear of the edit-pencil control. */
+.app-shell .library-custom-folder{position:relative}
+.app-shell .library-custom-folder .library-folder-open{padding-right:38px}
+.app-shell .library-custom-folder .library-folder-edit{
+  position:absolute;top:10px;right:10px;z-index:2;
+  margin:0;flex-basis:30px;
+}
+@media(max-width:760px){
+  .app-shell .library-custom-folder .library-folder-open{padding-right:0}
+  .app-shell .library-custom-folder .library-folder-count{right:10px;top:10px}
+  .app-shell .library-custom-folder .library-folder-edit{top:auto;right:8px;bottom:8px}
+}
