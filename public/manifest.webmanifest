@@ -1,0 +1,13 @@
+{
+  "name": "REEQUIZ — Master Terms to Top!",
+  "short_name": "REEQUIZ",
+  "description": "Import, practice, and master your quiz files.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#101322",
+  "theme_color": "#101322",
+  "icons": [
+    { "src": "/reequiz-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
