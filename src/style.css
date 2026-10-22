@@ -4146,5 +4146,27 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 
 
 /* GPU-friendly theme reveal: transform/opacity only, centered on the toggle. */
-.theme-reveal-overlay{position:fixed;z-index:2147483647;border-radius:50%;pointer-events:none;will-change:transform,opacity;contain:strict}
-@media(prefers-reduced-motion:reduce){.theme-reveal-overlay{display:none!important}}
+/* Reveal the incoming theme from the toggle using the browser's compositor-backed View Transition. */
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition: none !important;
+}
+::view-transition-group(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  animation: none;
+  z-index: 1;
+}
+::view-transition-new(root) {
+  z-index: 2;
+  animation: theme-reveal-in 560ms cubic-bezier(.22,.8,.2,1) both;
+}
+@keyframes theme-reveal-in {
+  from { clip-path: circle(0 at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 50%)); }
+  to { clip-path: circle(150vmax at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 50%)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) { animation: none !important; }
+}
