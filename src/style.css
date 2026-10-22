@@ -3149,3 +3149,89 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .quiz-list-view .quiz-card-body{padding-left:8px;padding-right:8px}
   .app-shell .quiz-list-view .quiz-card-actions{top:6px;right:6px}
 }
+
+
+/* Final alignment pass: keep folder counts in the row flow, never floating over the icon. */
+.app-shell .folder-list-view .library-all-card{
+  display:grid;
+  grid-template-columns:38px 1px minmax(0,1fr) auto;
+  align-items:center;
+  column-gap:12px;
+  text-align:left;
+}
+.app-shell .folder-list-view .library-all-card::after{
+  content:"";
+  grid-column:2;
+  grid-row:1;
+  display:block;
+  width:1px;
+  height:34px;
+  border-radius:1px;
+  background:var(--lib-line);
+}
+.app-shell .folder-list-view .library-all-card .library-folder-art{grid-column:1;grid-row:1}
+.app-shell .folder-list-view .library-all-card .library-folder-info{grid-column:3;grid-row:1;min-width:0}
+.app-shell .folder-list-view .library-all-card .library-folder-count,
+.app-shell .folder-list-view .library-folder-open .library-folder-count{
+  position:static;
+  grid-column:4;
+  grid-row:1;
+  justify-self:end;
+  align-self:center;
+  min-width:27px;
+  max-width:48px;
+  height:24px;
+  padding:0 7px;
+  margin:0;
+  border:1px solid color-mix(in srgb,var(--folder-tone) 24%,var(--lib-line));
+  border-radius:9px;
+  background:color-mix(in srgb,var(--folder-tone) 9%,var(--lib-panel));
+  color:var(--folder-tone);
+  box-shadow:none;
+  font-size:10px;
+  font-weight:800;
+}
+.app-shell .folder-list-view .library-folder-open{
+  grid-template-columns:38px 1px minmax(0,1fr) auto;
+}
+.app-shell .folder-list-view .library-folder-open .library-folder-count{grid-column:4}
+.app-shell .folder-list-view .library-folder-open::after{grid-column:2}
+.app-shell .folder-list-view .library-folder-open .library-folder-info{grid-column:3}
+.app-shell .folder-list-view .library-folder-open .library-folder-art{grid-column:1}
+.app-shell .folder-list-view .library-folder-card{padding-right:48px}
+.app-shell .folder-list-view .library-folder-edit{
+  right:9px;
+  border-radius:9px;
+}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-all-card{
+    grid-template-columns:34px 1px minmax(0,1fr) auto;
+    column-gap:10px;
+  }
+  .app-shell .folder-list-view .library-folder-open{
+    grid-template-columns:34px 1px minmax(0,1fr) auto;
+    column-gap:10px;
+  }
+  .app-shell .folder-list-view .library-all-card::after{height:32px}
+  .app-shell .folder-list-view .library-folder-count{
+    min-width:24px;
+    max-width:40px;
+    height:22px;
+    padding:0 6px;
+    font-size:9px;
+  }
+  .app-shell .folder-list-view .library-folder-card{padding-right:42px}
+  .app-shell .folder-list-view .library-folder-edit{right:6px}
+}
+@media(max-width:360px){
+  .app-shell .folder-list-view .library-all-card{
+    grid-template-columns:30px 1px minmax(0,1fr) auto;
+    column-gap:8px;
+  }
+  .app-shell .folder-list-view .library-folder-open{
+    grid-template-columns:30px 1px minmax(0,1fr) auto;
+    column-gap:8px;
+  }
+  .app-shell .folder-list-view .library-folder-card{padding-right:38px}
+  .app-shell .folder-list-view .library-folder-count{min-width:21px;height:20px;padding:0 5px;font-size:8px}
+}
