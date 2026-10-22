@@ -4398,3 +4398,96 @@ html.theme-transitioning *::after {
 .app-shell [role="button"]:focus:not(:focus-visible) {
   outline: none;
 }
+
+
+/* Answer-correction history: use the full settings-card width instead of the copy column. */
+.app-shell .ai-settings-card {
+  display: grid;
+  grid-template-columns: 43px minmax(0, 1fr) auto auto;
+  align-items: start;
+  gap: 14px;
+}
+.app-shell .ai-settings-card > .settings-card-icon { grid-column: 1; grid-row: 1; }
+.app-shell .ai-settings-card > .settings-card-copy { grid-column: 2; min-width: 0; }
+.app-shell .ai-settings-card > .toggle-switch { grid-column: 3; grid-row: 1; margin: 0; }
+.app-shell .ai-settings-card > .toggle-state { grid-column: 4; grid-row: 1; align-self: center; }
+.app-shell .ai-settings-card > .ai-change-log {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-width: 0;
+  max-height: min(560px, 70vh);
+  box-sizing: border-box;
+  overflow: auto;
+  margin-top: 2px;
+  padding: 14px;
+  border: 1px solid var(--line, #343b4b);
+  border-radius: 14px;
+  background: var(--panel, #fff);
+}
+.app-shell .corrections-log-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--muted, #85899d);
+  font-size: 12px;
+}
+.app-shell .corrections-clear { flex: 0 0 auto; }
+.app-shell .ai-change-log .correction-entry {
+  min-width: 0;
+  padding: 15px 2px;
+  border-top: 1px solid var(--line, #343b4b);
+}
+.app-shell .correction-entry-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.app-shell .correction-entry-top b,
+.app-shell .correction-question,
+.app-shell .correction-reason,
+.app-shell .correction-compare > div { min-width: 0; overflow-wrap: anywhere; }
+.app-shell .correction-entry-top span { flex-shrink: 0; }
+.app-shell .correction-compare {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
+  margin: 12px 0;
+}
+.app-shell .correction-compare > div {
+  padding: 12px;
+  border: 1px solid var(--line, #343b4b);
+  border-radius: 10px;
+  background: var(--surface, #f7f7f9);
+}
+.app-shell .correction-compare > div > small { display: block; margin-bottom: 5px; }
+.app-shell .correction-compare > div > span { display: block; line-height: 1.5; }
+.app-shell .correction-reason { line-height: 1.6; }
+.app-shell .correction-reason > b { display: block; margin-bottom: 3px; }
+.theme-dark .app-shell .ai-settings-card > .ai-change-log { background: rgba(10, 13, 21, .55); }
+.theme-dark .app-shell .correction-compare > div { background: rgba(255, 255, 255, .035); }
+
+@media (max-width: 760px) {
+  .app-shell .ai-settings-card {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 15px;
+  }
+  .app-shell .ai-settings-card > .settings-card-icon { grid-column: 1; grid-row: 1; }
+  .app-shell .ai-settings-card > .settings-card-copy { grid-column: 2 / 4; grid-row: 1; }
+  .app-shell .ai-settings-card > .toggle-switch { grid-column: 1; grid-row: 2; justify-self: start; }
+  .app-shell .ai-settings-card > .toggle-state { grid-column: 2; grid-row: 2; align-self: center; justify-self: start; }
+  .app-shell .ai-settings-card > .ai-change-log { grid-column: 1 / -1; padding: 11px; }
+}
+@media (max-width: 520px) {
+  .app-shell .corrections-log-toolbar { align-items: stretch; }
+  .app-shell .corrections-clear { justify-content: center; width: 100%; }
+  .app-shell .correction-compare { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .app-shell .correction-arrow { justify-self: center; transform: rotate(90deg); }
+  .app-shell .correction-entry-top { flex-direction: column; gap: 4px; }
+  .app-shell .correction-entry-top span { flex-shrink: 1; }
+}
