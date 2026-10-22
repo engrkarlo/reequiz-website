@@ -4626,3 +4626,26 @@ html.theme-transitioning *::after {
  .app-shell .ai-terminal-line time { font-size:9px; }
 }
 @media(prefers-reduced-motion:reduce) { .app-shell .ai-terminal-card,.app-shell .terminal-clear-button { transition:none; } }
+
+
+/* Dark mode is applied directly to .app-shell, so scope console overrides to that root. */
+.app-shell.theme-dark .ai-terminal-card { background:var(--panel,#151923);color:var(--ink,#f1f2fa);border-color:var(--line,#303646); }
+.app-shell.theme-dark .ai-terminal { background:#11141d;color:#d9e3d7;border-color:#343a4b; }
+.app-shell.theme-dark .ai-terminal-head { background:#1b1e29;color:#c7cbd7;border-bottom-color:#343a4b; }
+.app-shell.theme-dark .ai-terminal-head>b { color:#c7cbd7; }
+.app-shell.theme-dark .terminal-clear-button { background:#202432;border-color:#383e4e;color:#b4bbcb; }
+.app-shell.theme-dark .terminal-clear-button:hover:not(:disabled) { background:#3a2028;border-color:#9d4652;color:#ffb6be; }
+.app-shell.theme-dark .terminal-standalone .ai-terminal-lines { background:#11141d;scrollbar-color:#50596b #11141c; }
+.app-shell.theme-dark .ai-terminal-line span { color:#c8d9c8; }
+.app-shell.theme-dark .ai-terminal-line.error { background:#381820;border-color:#79303d; }
+.app-shell.theme-dark .ai-terminal-line.error span,.app-shell.theme-dark .ai-terminal-line.error time { color:#ff9aa6; }
+.app-shell.theme-dark .ai-terminal-line.correction { background:#302812;border-color:#796225; }
+.app-shell.theme-dark .ai-terminal-line.correction span { color:#ffe18a; }
+.app-shell.theme-dark .ai-terminal-line.success span { color:#8fe0ad; }
+.app-shell.theme-dark .ai-terminal-line.info span { color:#9ba4b7; }
+.app-shell.theme-dark .terminal-footer { background:#12151e;border-top-color:#343a4b;color:#8e98aa; }
+.app-shell.theme-dark .terminal-idle-message { color:#8f9aaf; }
+.app-shell.theme-dark .terminal-idle-message span { color:#e5b83e; }
+.app-shell.theme-dark .validation-log-delete-modal { background:var(--panel,#191d29) !important;color:var(--ink,#f1f2fa) !important;border-color:rgba(220,76,86,.34); }
+.app-shell.theme-dark .validation-log-delete-modal h2,.app-shell.theme-dark .validation-log-delete-modal > p b,.app-shell.theme-dark .validation-log-delete-modal .delete-folder-note { color:var(--ink,#f1f2fa); }
+.app-shell.theme-dark .validation-log-delete-modal .modal-close { background:var(--surface,#222737);color:var(--muted,#a4a9bc);border-color:var(--line,#303647); }
