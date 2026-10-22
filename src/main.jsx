@@ -255,7 +255,7 @@ function App(){
      if(!response.ok){
       const isRateLimit=response.status===429||/rate.?limit|tokens per minute|tpm|quota exceeded/i.test(data.error||'');
       if(isRateLimit)throw new Error(`AI provider rate limit reached at question ${batchIndices[0]+1}. ${cursor>0?'Completed questions are saved.':'No questions were completed in this attempt.'} If both providers are limited, wait for a quota to reset, then press “AI validate & explain” again. Previously validated questions are saved and will be skipped.`);
-      throw new Error(data.error||`AI preparation failed on questions ${batchIndices[0]+1}–${batchIndices[batchIndices.length-1]+1}`);
+      throw new Error(`Request failed with HTTP ${response.status}${response.statusText?` (${response.statusText})`:''} on question${batchIndices.length===1?'':'s'} ${batchIndices[0]+1}–${batchIndices[batchIndices.length-1]+1}. ${data.error||'The AI endpoint returned an unsuccessful response without a detailed error message.'}`);
      }
      if(data.provider)providersUsed.add(data.provider);
      if(!Array.isArray(data.questions)||data.questions.length!==batch.length)throw new Error(`AI returned incomplete results for questions ${batchIndices[0]+1}–${batchIndices[batchIndices.length-1]+1}. Completed earlier questions are saved; press the AI button again to continue.`);
