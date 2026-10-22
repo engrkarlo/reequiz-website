@@ -4336,3 +4336,38 @@ html.theme-transitioning *::after {
 @media (prefers-reduced-motion: reduce) {
   .app-shell .footer { transition: none; }
 }
+
+
+/* Final footer correction: scope dark mode to the element that owns the theme class,
+   and remove the mobile shell's reserved space below the footer. */
+.app-shell.theme-dark .footer {
+  --footer-bg: #10131b;
+  --footer-ink: #f1f2fa;
+  --footer-muted: #a4abc0;
+  background: var(--footer-bg) !important;
+  color: var(--footer-muted);
+  border-top-color: rgba(255, 255, 255, .1);
+}
+.app-shell.theme-dark .footer-brand-copy strong {
+  color: var(--footer-ink);
+}
+.app-shell.theme-dark .footer-brand-copy span,
+.app-shell.theme-dark .footer-copyright,
+.app-shell.theme-dark .footer-tagline {
+  color: var(--footer-muted);
+}
+.app-shell.theme-dark .footer::before {
+  background: linear-gradient(90deg, transparent, #d7b44d, #fff4c8, transparent);
+}
+@media (max-width: 760px) {
+  .app-shell {
+    padding-bottom: 0 !important;
+  }
+  .app-shell .main {
+    padding-bottom: 0 !important;
+  }
+  .app-shell .footer {
+    margin-bottom: 0 !important;
+    padding-bottom: 18px;
+  }
+}
