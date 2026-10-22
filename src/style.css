@@ -1447,3 +1447,8 @@ body{background:#f5f2e9}
   html{scroll-behavior:auto}
   .app-shell *,.app-shell *::before,.app-shell *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* Keep the animated edge ring clipped to its own highlighted surface. */
+.app-shell .resume-card{position:relative;isolation:isolate;overflow:hidden}
+.app-shell .resume-card>*{position:relative;z-index:1}
+.app-shell .resume-card::before{z-index:0}
