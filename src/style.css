@@ -1452,3 +1452,72 @@ body{background:#f5f2e9}
 .app-shell .resume-card{position:relative;isolation:isolate;overflow:hidden}
 .app-shell .resume-card>*{position:relative;z-index:1}
 .app-shell .resume-card::before{z-index:0}
+
+
+/* REEQUIZ refinement inspired by Solid Glass: dark, tactile, restrained. */
+:root{--gold:#e8bd4b;--gold-bright:#ffe9a0;--glass-face:#17191f;--glass-rim:rgba(255,255,255,.075)}
+.theme-dark{--page-bg:#08090c;--panel:rgba(21,23,28,.96);--panel-solid:#15171c;--panel-border:rgba(255,255,255,.09);--glass-shadow:0 12px 30px rgba(0,0,0,.22);background:#08090c}
+.theme-dark .main{background:#08090c}
+.theme-dark .sidebar,.theme-dark .topbar,.theme-dark .footer{background:rgba(12,13,16,.97);border-color:rgba(255,255,255,.075)}
+.theme-dark .hero,.theme-dark .results-banner{background:linear-gradient(145deg,#1a1b20,#111216 72%);border-color:rgba(232,189,75,.22);box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.075)}
+.theme-dark .hero h1 em{background:linear-gradient(100deg,#fff7d8,#f0cb62 70%,#fff);background-clip:text;-webkit-background-clip:text;color:transparent}
+.theme-dark .art-card,.theme-dark .stat-card,.theme-dark .quiz-card,.theme-dark .empty-state,.theme-dark .tip-row,.theme-dark .settings-panel,.theme-dark .settings-card,.theme-dark .question-card,.theme-dark .review-row,.theme-dark .search-box,.theme-dark .resume-card,.theme-dark .selection-toolbar{background:linear-gradient(155deg,rgba(27,29,34,.98),rgba(18,19,23,.98));border-color:rgba(255,255,255,.085);box-shadow:0 10px 26px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.045)}
+.theme-dark .quiz-card:hover,.theme-dark .stat-card:hover,.theme-dark .settings-card:hover{border-color:rgba(232,189,75,.24);box-shadow:0 14px 30px rgba(0,0,0,.27),inset 0 1px rgba(255,255,255,.07)}
+.theme-dark .side-card,.theme-dark .settings-preview,.theme-dark .theme-preview{background:#15161a;border-color:rgba(255,255,255,.085)}
+.theme-dark .nav-item.selected{background:linear-gradient(100deg,rgba(232,189,75,.15),rgba(232,189,75,.045));border-color:rgba(232,189,75,.19);color:#f4d77f;box-shadow:inset 3px 0 #e8bd4b}
+.theme-dark .quiz-card-art,.theme-dark .quiz-card-art.lavender,.theme-dark .quiz-card-art.mint,.theme-dark .quiz-card-art.peach,.theme-dark .quiz-card-art.blueish{background:linear-gradient(145deg,#22232a,#17181d)}
+.theme-dark .card-art-icon,.theme-dark .stat-icon,.theme-dark .settings-card-icon,.theme-dark .side-card-icon,.theme-dark .empty-icon,.theme-dark .tip-icon,.theme-dark .resume-icon{background:linear-gradient(145deg,rgba(232,189,75,.17),rgba(232,189,75,.055));border-color:rgba(232,189,75,.2);color:#f5d77a}
+.theme-dark .button.primary,.theme-dark .card-start,.theme-dark .hero-actions .button.primary{background:linear-gradient(135deg,#ffe8a0,#d9a82d);border:1px solid #f2ce69;color:#201805;box-shadow:0 5px 15px rgba(202,153,31,.18),inset 0 1px rgba(255,255,255,.7);font-weight:800}
+.theme-dark .button.primary:hover,.theme-dark .card-start:hover,.theme-dark .hero-actions .button.primary:hover{background:linear-gradient(135deg,#fff0ba,#edc34d);box-shadow:0 8px 22px rgba(202,153,31,.24);transform:translateY(-1px)}
+.theme-dark .button.ghost,.theme-dark .button.subtle{background:linear-gradient(155deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border-color:rgba(255,255,255,.12);color:#f2eee3;box-shadow:inset 0 1px rgba(255,255,255,.06)}
+.theme-dark .button.ghost:hover,.theme-dark .button.subtle:hover{background:rgba(232,189,75,.1);border-color:rgba(232,189,75,.35)}
+.theme-dark .theme-toggle{background:#17191f;border-color:rgba(232,189,75,.24)}
+.theme-dark .theme-toggle-knob{background:linear-gradient(145deg,#fff4c9,#e4b63f);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+/* Gold and white only: no purple in the travelling rim. */
+.app-shell .quiz-card::before,.app-shell .resume-card::before,.app-shell .settings-card::before{
+  background:conic-gradient(from var(--edge-angle,0deg),transparent 0 43%,rgba(255,255,255,.82) 49%,rgba(255,233,160,.98) 55%,rgba(232,189,75,.96) 62%,rgba(255,255,255,.48) 68%,transparent 76% 100%);
+  padding:1.35px;opacity:0;will-change:opacity
+}
+.app-shell .quiz-card:hover::before,.app-shell .quiz-card-selected::before,.app-shell .resume-card:hover::before,.app-shell .settings-card:hover::before{opacity:1;animation:reequiz-edge-turn 8s linear infinite}
+.app-shell .quiz-card,.app-shell .stat-card,.app-shell .settings-card,.app-shell .resume-card{backface-visibility:hidden}
+.app-shell .quiz-card:hover{transform:translateY(-2px)}
+/* Solid Glass uses the edge for detail; keep the face quiet and the content readable. */
+.app-shell .quiz-card,.app-shell .settings-card,.app-shell .resume-card,.app-shell .question-card,.app-shell .stat-card,.app-shell .search-box,.app-shell .library-search-field{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.app-shell .library-search-row{align-items:stretch;gap:14px}
+.app-shell .library-search-field{height:54px;max-width:none;width:100%;padding:0 17px;border-radius:15px;background:linear-gradient(155deg,rgba(30,31,36,.98),rgba(20,21,25,.98));border-color:rgba(255,255,255,.11);box-shadow:inset 0 1px rgba(255,255,255,.055),0 5px 14px rgba(0,0,0,.12)}
+.app-shell .library-search-field input{font-size:14px;line-height:1.4;padding:8px 0}
+.app-shell .library-search-field>svg{width:19px;height:19px;color:#e8bd4b}
+.app-shell .library-search-field>button{width:32px;height:32px;flex:0 0 32px}
+.app-shell .search-box{min-height:54px;height:auto;padding:0 17px}
+.app-shell .search-box input{font-size:14px;min-height:52px}
+.app-shell .quiz-card-body,.app-shell .quiz-card-art,.app-shell .settings-card-copy,.app-shell .section-heading,.app-shell .page-title,.app-shell .library-search-field{min-width:0}
+.app-shell .quiz-card-body{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.app-shell .quiz-card-body h3,.app-shell .quiz-card-body p{overflow-wrap:anywhere}
+.app-shell .quiz-card-body .card-start{width:100%;justify-content:center;min-height:43px}
+.app-shell .quiz-card-body .card-ai-prepare{width:100%;justify-content:center;min-height:40px}
+.app-shell .quiz-card-art{min-width:0}
+.app-shell .card-art-icon{display:grid;place-items:center;flex:0 0 auto}
+.app-shell .button,.app-shell .nav-item,.app-shell .theme-toggle,.app-shell .icon-button,.app-shell .delete-btn{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,transform .16s ease}
+.app-shell .button:active,.app-shell .icon-button:active,.app-shell .delete-btn:active{transform:translateY(1px) scale(.985)}
+.app-shell .page{animation:reequiz-page-in .18s ease-out both}
+.app-shell .hero,.app-shell .results-banner{animation:reequiz-rise-in .22s ease-out both}
+.app-shell .quiz-card,.app-shell .stat-card,.app-shell .settings-card{animation:none}
+.app-shell .footer{backdrop-filter:none;-webkit-backdrop-filter:none}
+@media(max-width:760px){
+ .app-shell .library-search-row{display:flex;flex-direction:column;align-items:stretch}
+ .app-shell .library-search-field{max-width:none;width:100%;min-height:54px}
+ .app-shell .library-search-hint{justify-content:flex-start}
+ .app-shell .quiz-card{grid-template-columns:88px minmax(0,1fr)}
+ .app-shell .quiz-card-body{padding:14px;gap:9px}
+ .app-shell .quiz-card-body h3{font-size:14px;line-height:1.35}
+ .app-shell .quiz-card-body .button{min-height:40px}
+ .app-shell .settings-card-icon,.app-shell .side-card-icon,.app-shell .stat-icon,.app-shell .card-art-icon{flex-shrink:0}
+}
+@media(max-width:430px){
+ .app-shell .library-search-field{height:52px;padding:0 13px;gap:9px}
+ .app-shell .library-search-field input{font-size:13px}
+ .app-shell .quiz-card{grid-template-columns:74px minmax(0,1fr)}
+ .app-shell .quiz-card-body{padding:11px;gap:8px}
+ .app-shell .quiz-card-body .card-ai-prepare{font-size:10px;padding:9px 7px}
+ .app-shell .quiz-card-body .card-start{font-size:11px;padding:10px 7px}
+}
