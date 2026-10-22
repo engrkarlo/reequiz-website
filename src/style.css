@@ -4719,3 +4719,46 @@ html.theme-transitioning *::after {
     max-height: calc(100dvh - 24px);
   }
 }
+
+/* Final mobile console layout: reserve a stable timestamp column and let the message fill the row. */
+.app-shell .ai-terminal-line {
+  display: flex !important;
+  align-items: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  gap: 10px;
+}
+.app-shell .ai-terminal-line time {
+  flex: 0 0 5.5em;
+  width: 5.5em;
+  white-space: nowrap;
+}
+.app-shell .ai-terminal-line span {
+  flex: 1 1 0%;
+  width: auto;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+@media (max-width: 600px) {
+  .app-shell .ai-terminal-line { gap: 8px; }
+  .app-shell .ai-terminal-line time { flex-basis: 4.5em; width: 4.5em; }
+}
+/* A portaled dialog sits directly under body, so theme styles must not depend on .app-shell ancestry. */
+.validation-log-delete-backdrop.theme-dark .validation-log-delete-modal {
+  background: var(--panel, #191d29) !important;
+  color: var(--ink, #f1f2fa) !important;
+  border-color: rgba(220,76,86,.34);
+}
+.validation-log-delete-backdrop.theme-dark .validation-log-delete-modal h2,
+.validation-log-delete-backdrop.theme-dark .validation-log-delete-modal > p b,
+.validation-log-delete-backdrop.theme-dark .validation-log-delete-modal .delete-folder-note {
+  color: var(--ink, #f1f2fa);
+}
+.validation-log-delete-backdrop.theme-dark .validation-log-delete-modal .modal-close {
+  background: var(--surface, #222737);
+  color: var(--muted, #a4a9bc);
+  border-color: var(--line, #303647);
+}
