@@ -10,13 +10,14 @@ function parseJson(output) {
 export default async function handler(req,res){
  res.setHeader('Cache-Control','no-store');
  if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
- if(!process.env.GEMINI_API_KEY)return res.status(503).json({error:'AI file scanning needs GEMINI_API_KEY configured in the Vercel environment variables.'});
+ // Use the same provider and secret as AI Validate; do not require a separate Gemini key.
+ if(!process.env.GROQ_API_KEY)return res.status(503).json({error:'AI file scanning needs the same GROQ_API_KEY configured for AI Validate in Vercel.'});
  try{
   const body=typeof req.body==='string'?JSON.parse(req.body):req.body||{};
   if(!Array.isArray(body.files)||!body.files.length)return res.status(400).json({error:'Choose at least one image or PDF.'});
   if(body.files.length>5)return res.status(413).json({error:'Upload up to 5 files per scan.'});
   let total=0;
-  const parts=[];
+  const inputs=[];
   for(const file of body.files){
    const mimeType=String(file.mimeType||'');
    const name=String(file.name||'upload').slice(0,180);
@@ -24,18 +25,27 @@ export default async function handler(req,res){
    if(!['application/pdf','image/jpeg','image/png','image/webp','image/gif'].includes(mimeType))return res.status(400).json({error:`${name}: only PDF, JPEG, PNG, WEBP, and GIF files are supported.`});
    if(!data||!/^[A-Za-z0-9+/=]+$/.test(data))return res.status(400).json({error:`${name}: file data is invalid.`});
    total+=Math.floor(data.length*3/4);
-   parts.push({text:`Uploaded document: ${name} (MIME: ${mimeType})`},{inlineData:{mimeType,data}});
+   if(mimeType==='application/pdf'){
+    inputs.push({type:'input_file',filename:name,file_data:`data:application/pdf;base64,${data}`});
+   }else{
+    inputs.push({type:'input_image',detail:'high',image_url:`data:${mimeType};base64,${data}`});
+   }
   }
   if(total>3*1024*1024)return res.status(413).json({error:'The combined upload size must be under 3 MB.'});
-  parts.unshift({text:`Extract multiple-choice quiz questions from the attached document(s). Quiz title: ${String(body.title||'Imported test').slice(0,160)}. Carefully inspect all pages/images, including any answer key pages. If a key appears separately, match its answers by question number. Keep answers unconfirmed when no explicit answer is visible. Return only the required JSON schema.`});
-  const model=process.env.GEMINI_IMPORT_MODEL||process.env.GEMINI_MODEL||'gemini-2.5-flash';
-  const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{
-   method:'POST',headers:{'x-goog-api-key':process.env.GEMINI_API_KEY,'Content-Type':'application/json'},
-   body:JSON.stringify({systemInstruction:{parts:[{text:SYSTEM}]},contents:[{role:'user',parts}],generationConfig:{responseMimeType:'application/json',temperature:0.1,maxOutputTokens:8192}})
+  const prompt=`Extract multiple-choice quiz questions from the attached document(s). Quiz title: ${String(body.title||'Imported test').slice(0,160)}. Carefully inspect all pages/images, including any answer key pages. If a key appears separately, match its answers by question number. Keep answers unconfirmed when no explicit answer is visible. Return only this JSON schema: {"questions":[{"question":"...","options":["..."],"answer":null,"answerProvided":false,"explanation":""}]}.`;
+  // Qwen vision model is independent of the text-only model configured for AI Validate.
+  const model=process.env.GROQ_IMPORT_MODEL||'qwen/qwen3.8-27b';
+  const response=await fetch('https://api.groq.com/openai/v1/responses',{
+   method:'POST',headers:{Authorization:`Bearer ${process.env.GROQ_API_KEY}`,'Content-Type':'application/json'},
+   body:JSON.stringify({model,instructions:SYSTEM,input:[{role:'user',content:[{type:'input_text',text:prompt},...inputs]}],max_output_tokens:8192,temperature:0.1})
   });
   const payload=await response.json().catch(()=>({}));
-  if(!response.ok)return res.status(response.status===429?429:502).json({error:payload.error?.message||'The AI service could not scan these files. Please try again.',retryable:response.status===429});
-  const output=payload.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
+  if(!response.ok){
+   const detail=payload.error?.message||'The Groq AI service could not scan these files.';
+   const pdfUnsupported=inputs.some(x=>x.type==='input_file')&&/file|input_file|unsupported|not supported/i.test(detail);
+   return res.status(response.status===429?429:502).json({error:pdfUnsupported?`The configured Groq API/model rejected PDF file input. Try exporting the PDF pages as images, or configure a Groq vision model that supports file input. Details: ${detail}`:detail,retryable:response.status===429});
+  }
+  const output=payload.output?.flatMap(item=>item.content||[]).filter(item=>item.type==='output_text').map(item=>item.text||'').join('')||payload.output_text||'';
   const parsed=parseJson(output);
   if(!Array.isArray(parsed.questions)||!parsed.questions.length)return res.status(422).json({error:'No questions were detected in those files.'});
   const questions=parsed.questions.slice(0,200).map(q=>{
@@ -45,6 +55,6 @@ export default async function handler(req,res){
    return {question:String(q.question||'').trim().slice(0,5000),options,answer:answerProvided?rawAnswer:null,answerProvided,explanation:String(q.explanation||'').slice(0,2000)};
   }).filter(q=>q.question&&q.options.length>=2);
   if(!questions.length)return res.status(422).json({error:'The scan did not produce usable multiple-choice questions. Try a clearer file.'});
-  return res.status(200).json({questions,provider:'Gemini'});
+  return res.status(200).json({questions,provider:'Groq'});
  }catch(error){return res.status(500).json({error:error?.message||'Could not scan uploaded files.'})}
 }
