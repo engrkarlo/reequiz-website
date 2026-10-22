@@ -4379,3 +4379,22 @@ html.theme-transitioning *::after {
     margin-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+
+/* Remove the browser's default blue tap flash on buttons and other interactive controls.
+   Keep the app's gold keyboard-focus indicators for accessibility. */
+.app-shell button,
+.app-shell a,
+.app-shell input,
+.app-shell select,
+.app-shell textarea,
+.app-shell [role="button"],
+.app-shell .nav-item,
+.app-shell .view-toggle button {
+  -webkit-tap-highlight-color: transparent;
+}
+.app-shell button:focus:not(:focus-visible),
+.app-shell a:focus:not(:focus-visible),
+.app-shell [role="button"]:focus:not(:focus-visible) {
+  outline: none;
+}
