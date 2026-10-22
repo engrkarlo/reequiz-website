@@ -6,7 +6,9 @@ REEQUIZ lets you import quizzes, practice at your own pace, review explanations,
 
 ![REEQUIZ preview](docs/reequiz-preview.svg)
 
-[Open the live app](https://reequiz-website.vercel.app) · [Browse the source](https://github.com/engrkarlo/reequiz-website)
+## App showcase
+
+The preview above introduces REEQUIZ. Its key areas include quiz importing, study sessions, answer explanations, personal statistics, and a responsive library for desktop and mobile.
 
 ## What you can do
 
@@ -21,7 +23,7 @@ REEQUIZ lets you import quizzes, practice at your own pace, review explanations,
 
 ### Use REEQUIZ
 
-Open the [live app](https://reequiz-website.vercel.app), import a quiz from **My Library**, and start a session. You don't need an account.
+Run REEQUIZ locally using the steps below, import a quiz from **My Library**, and start a session. You don't need an account.
 
 ### Run it on your computer
 
@@ -54,9 +56,9 @@ AI preparation is optional. Turn on **AI quiz tutor** in Settings, then choose *
 
 AI responses can be wrong, so review answer-key changes before studying from them. AI preparation itself requires an internet connection.
 
-### Configure AI on Vercel
+### Configure the AI endpoint
 
-The AI endpoint uses server-side environment variables. In your Vercel project settings, add:
+The AI endpoint uses server-side environment variables. Configure these in the environment used to host the server endpoint:
 
 - `GROQ_API_KEY` — primary provider key.
 - `GEMINI_API_KEY` — optional fallback key used when Groq is rate-limited.
@@ -71,7 +73,7 @@ Imported quizzes, preferences, sessions, statistics, and prepared explanations a
 
 ## Built with
 
-React · Vite · JavaScript · Vercel
+React · Vite · JavaScript
 
 ---
 
