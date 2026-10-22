@@ -2238,3 +2238,72 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .theme-toggle{width:36px;height:36px;min-width:36px;min-height:36px;padding:2px}
   .app-shell .theme-toggle-knob{flex-basis:30px;width:30px;height:30px}
 }
+
+
+/* Solid liquid-glass styling for the folder deletion confirmation. */
+.app-shell .delete-folder-modal{
+  background:linear-gradient(145deg,rgba(255,255,255,.98) 0%,rgba(250,248,239,.98) 100%);
+  border:1px solid rgba(214,166,46,.34);
+  border-radius:24px;
+  box-shadow:0 24px 70px rgba(16,19,35,.24),inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.42);
+  -webkit-backdrop-filter:blur(20px) saturate(125%);
+  backdrop-filter:blur(20px) saturate(125%);
+}
+.app-shell .delete-folder-modal .delete-modal-icon{
+  background:linear-gradient(145deg,#fff8e7,#f7edcf);
+  border:1px solid rgba(214,166,46,.3);
+  color:#a77912;
+  box-shadow:inset 0 1px rgba(255,255,255,.9);
+}
+.app-shell .delete-folder-modal .library-section-kicker{color:#a77912}
+.app-shell .delete-folder-modal .delete-folder-note{
+  background:linear-gradient(145deg,#f5fbf7,#eaf5ee);
+  border:1px solid #d8e9de;
+  color:#378667;
+  box-shadow:inset 0 1px rgba(255,255,255,.9);
+}
+.app-shell .delete-folder-modal .delete-folder-note b{color:#2e7559}
+.app-shell .delete-folder-modal .delete-folder-note small{color:#668b7c}
+.app-shell .delete-folder-modal .modal-close{
+  background:rgba(255,255,255,.86);
+  border-color:rgba(214,166,46,.2);
+  box-shadow:inset 0 1px rgba(255,255,255,.9);
+}
+.app-shell .delete-folder-modal .modal-close:hover{background:#fff7df}
+.app-shell .delete-folder-modal .danger-button{
+  background:linear-gradient(135deg,#d65b61,#bd3946)!important;
+  border:1px solid rgba(158,34,47,.22)!important;
+  color:#fff!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.2),0 4px 10px rgba(173,41,54,.12);
+}
+.app-shell .delete-folder-modal .danger-button:hover{
+  background:linear-gradient(135deg,#c84c55,#a92d3a)!important;
+}
+.theme-dark .app-shell .delete-folder-modal{
+  background:linear-gradient(145deg,rgba(31,34,43,.99) 0%,rgba(22,24,31,.99) 100%);
+  border-color:rgba(214,166,46,.34);
+  box-shadow:0 28px 76px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.07),inset 0 0 0 1px rgba(214,166,46,.035);
+}
+.theme-dark .app-shell .delete-folder-modal .delete-modal-icon{
+  background:linear-gradient(145deg,rgba(214,166,46,.17),rgba(214,166,46,.08));
+  border-color:rgba(214,166,46,.28);
+  color:#f0c94f;
+}
+.theme-dark .app-shell .delete-folder-modal .library-section-kicker{color:#f0c94f}
+.theme-dark .app-shell .delete-folder-modal .delete-folder-note{
+  background:linear-gradient(145deg,rgba(53,112,85,.2),rgba(34,72,56,.16));
+  border-color:rgba(99,177,137,.2);
+  color:#8dd5ae;
+}
+.theme-dark .app-shell .delete-folder-modal .delete-folder-note b{color:#b0e6c7}
+.theme-dark .app-shell .delete-folder-modal .delete-folder-note small{color:#a1c7b1}
+.theme-dark .app-shell .delete-folder-modal .modal-close{
+  background:rgba(36,39,48,.94);
+  border-color:rgba(214,166,46,.22);
+  color:#d9dce5;
+  box-shadow:inset 0 1px rgba(255,255,255,.06);
+}
+.theme-dark .app-shell .delete-folder-modal .modal-close:hover{background:#34313a}
+@media(max-width:600px){
+  .app-shell .delete-folder-modal{border-radius:21px}
+}
