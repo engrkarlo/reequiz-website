@@ -3715,3 +3715,17 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .folder-list-view .library-folder-card,
   .app-shell .folder-list-view .folder-art-sheet{transition:none}
 }
+
+/* CSS.gg-inspired folder marks and a unified list-mode create row. */
+.app-shell .folder-list-view .folder-list-cssgg{position:relative;z-index:1;display:grid;place-items:center;width:100%;height:100%;color:var(--folder-tone,var(--lib-accent));filter:drop-shadow(0 2px 2px color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 18%,transparent))}
+.app-shell .folder-list-view .folder-list-cssgg svg{display:block;overflow:visible}
+.app-shell .folder-list-view .library-add-folder{min-height:72px;padding:9px 52px 9px 12px;gap:12px;border-style:solid;border-color:color-mix(in srgb,var(--lib-line) 86%,var(--lib-accent));border-radius:15px;background:linear-gradient(110deg,color-mix(in srgb,var(--lib-panel) 97%,var(--lib-accent)),var(--lib-panel) 58%,color-mix(in srgb,var(--lib-panel) 96%,var(--lib-accent)));box-shadow:0 2px 8px #171b3607,inset 0 1px 0 #ffffff40}
+.app-shell .folder-list-view .library-add-folder::before{content:"";display:block;inset:0;padding:0;border-radius:inherit;background:linear-gradient(105deg,transparent 0%,color-mix(in srgb,var(--lib-accent) 13%,transparent) 48%,transparent 72%);opacity:.5;mask:none;animation:none}
+.app-shell .folder-list-view .library-add-folder::after{inset:1px;border-radius:inherit;background:linear-gradient(115deg,#ffffff12,transparent 45%);opacity:.65}
+.app-shell .folder-list-view .library-add-folder .library-folder-art{position:relative;z-index:1;display:grid;place-items:center;flex:0 0 48px;width:48px;min-width:48px;height:48px;min-height:48px;border:1px solid color-mix(in srgb,var(--lib-accent) 22%,var(--lib-line));border-radius:13px;background:linear-gradient(145deg,color-mix(in srgb,var(--lib-accent) 16%,var(--lib-panel)),color-mix(in srgb,var(--lib-accent) 5%,var(--lib-soft)));box-shadow:inset 0 1px 0 #ffffff75,0 2px 5px #15182b08;color:var(--lib-accent)}
+.app-shell .folder-list-view .library-add-folder .library-folder-info{text-align:left;gap:4px;padding:0;position:relative;z-index:1}
+.app-shell .folder-list-view .library-add-folder .library-folder-info b{font-size:12px;line-height:1.35;letter-spacing:-.015em}
+.app-shell .folder-list-view .library-add-folder .library-folder-info small{font-size:10px;line-height:1.4;opacity:.88}
+.app-shell .folder-list-view .library-add-folder:hover,.app-shell .folder-list-view .library-add-folder:focus-visible{transform:translateY(-1px);border-color:color-mix(in srgb,var(--lib-accent) 38%,var(--lib-line));box-shadow:0 7px 18px color-mix(in srgb,var(--lib-accent) 10%,transparent),inset 0 1px 0 #ffffff50}
+.app-shell.theme-dark .folder-list-view .library-add-folder{border-color:color-mix(in srgb,var(--lib-accent) 17%,rgba(255,255,255,.08));background:linear-gradient(105deg,color-mix(in srgb,var(--lib-accent) 7%,var(--lib-panel)),var(--lib-panel) 50%);box-shadow:0 4px 12px rgba(0,0,0,.16)}
+@media(max-width:760px){.app-shell .folder-list-view .library-add-folder{min-height:64px;padding:7px 43px 7px 8px;gap:8px;border-radius:12px}.app-shell .folder-list-view .library-add-folder .library-folder-art{flex-basis:40px;width:40px;min-width:40px;height:40px;min-height:40px;border-radius:11px}}
