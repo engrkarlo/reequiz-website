@@ -433,7 +433,7 @@ Answer: B`} rows={12}/><div className="paste-actions"><span><Check size={14}/> T
      <div className="footer-brand-copy"><strong>REEQUIZ</strong><span>LEARN · PRACTICE · EXCEL</span></div>
     </div>
     <div className="footer-meta">
-     <span className="footer-copyright">© 2026 <strong>Orion Hub Development.</strong></span>
+     <span className="footer-copyright">© 2026 <strong className="footer-developer">Orion Hub Development.</strong></span>
      <span className="footer-tagline">Built for focused learning.</span>
     </div>
    </footer>
