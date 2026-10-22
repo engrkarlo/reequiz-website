@@ -3948,3 +3948,13 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 /* Keep percentage readouts legible against dark glass surfaces. */
 .theme-dark .score-ring b{color:#fff4c9;text-shadow:0 1px 8px rgba(232,189,75,.16)}
 .theme-dark .timer-volume-control strong{color:#f5d77a}
+
+
+/* Keep the timer range thumb fully visible at both endpoints inside the clipped timer card. */
+.app-shell .timer-preference .timer-range{
+  width:calc(100% - 16px);
+  max-width:calc(100% - 16px);
+  margin-left:8px;
+  margin-right:8px;
+  box-sizing:border-box;
+}
