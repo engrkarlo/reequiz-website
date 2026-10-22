@@ -3435,3 +3435,128 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .folder-list-view .library-folder-info small{font-size:9px}
   .app-shell .folder-list-view .library-folder-count{min-width:23px;height:22px;padding:0 5px;font-size:9px}
 }
+
+
+/* Folder list polish: restrained edge light that responds to hover, press, and keyboard focus. */
+.app-shell .folder-list-view .library-folder-card{
+  --folder-edge-strength:0;
+  position:relative;
+  isolation:isolate;
+  min-height:72px;
+  padding:10px 48px 10px 13px;
+  border:1px solid color-mix(in srgb,var(--lib-line,#e9e5d9) 80%,var(--folder-tone,#d6a62e));
+  border-radius:16px;
+  background:linear-gradient(105deg,color-mix(in srgb,var(--folder-tone,#d6a62e) 4%,var(--lib-panel,#fff)),var(--lib-panel,#fff) 48%);
+  box-shadow:0 3px 10px rgba(30,27,18,.035);
+  transition:transform .2s ease,background .25s ease,border-color .25s ease,box-shadow .25s ease;
+}
+.app-shell .folder-list-view .library-folder-card::before{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  padding:1px;
+  border-radius:inherit;
+  background:conic-gradient(from var(--folder-edge-angle,0deg),transparent 0deg,color-mix(in srgb,var(--folder-tone,#d6a62e) 15%,transparent) 50deg,color-mix(in srgb,var(--gold,#e0b744) 86%,white) 95deg,color-mix(in srgb,var(--folder-tone,#d6a62e) 55%,transparent) 140deg,transparent 205deg,transparent 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  opacity:var(--folder-edge-strength);
+  pointer-events:none;
+  z-index:3;
+  transition:opacity .22s ease;
+}
+.app-shell .folder-list-view .library-folder-card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:radial-gradient(ellipse at 0% 50%,color-mix(in srgb,var(--folder-tone,#d6a62e) 10%,transparent),transparent 58%);
+  opacity:.35;
+  pointer-events:none;
+  z-index:-1;
+}
+.app-shell .folder-list-view .library-folder-card:hover,
+.app-shell .folder-list-view .library-folder-card:focus-visible{
+  --folder-edge-strength:.85;
+  border-color:color-mix(in srgb,var(--folder-tone,#d6a62e) 48%,var(--gold,#d6a62e));
+  box-shadow:0 7px 20px rgba(30,27,18,.075),0 0 0 1px color-mix(in srgb,var(--folder-tone,#d6a62e) 9%,transparent);
+  transform:translateY(-1px);
+}
+.app-shell .folder-list-view .library-folder-card:active{
+  --folder-edge-strength:1;
+  transform:scale(.992);
+  box-shadow:0 2px 9px rgba(30,27,18,.06),0 0 18px color-mix(in srgb,var(--folder-tone,#d6a62e) 13%,transparent);
+}
+.app-shell .folder-list-view .library-folder-card.is-active{
+  --folder-edge-strength:.8;
+  border-color:color-mix(in srgb,var(--gold,#d6a62e) 72%,var(--folder-tone,#d6a62e));
+  background:linear-gradient(105deg,color-mix(in srgb,var(--gold,#d6a62e) 8%,var(--lib-panel,#fff)),var(--lib-panel,#fff) 55%);
+  box-shadow:inset 3px 0 0 var(--gold,#d6a62e),0 4px 15px rgba(30,27,18,.045);
+}
+.app-shell .folder-list-view .library-folder-card.is-active::before{
+  animation:folder-edge-sweep 3.8s linear infinite;
+}
+.app-shell .folder-list-view .library-folder-card:focus-visible{outline:2px solid var(--gold,#d6a62e);outline-offset:3px}
+.app-shell .folder-list-view .library-folder-art{
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.56),0 1px 3px rgba(25,22,12,.035);
+}
+.app-shell .folder-list-view .library-folder-info b{font-size:13px;line-height:1.4;letter-spacing:-.02em}
+.app-shell .folder-list-view .library-folder-info small{font-size:10px;line-height:1.4;margin-top:2px}
+.app-shell .folder-list-view .library-folder-count{
+  min-width:30px;
+  text-align:center;
+  padding:5px 8px;
+  border:1px solid color-mix(in srgb,var(--folder-tone,#d6a62e) 15%,var(--lib-line,#e9e5d9));
+  border-radius:9px;
+  background:color-mix(in srgb,var(--folder-tone,#d6a62e) 6%,var(--lib-panel,#fff));
+  font-size:11px;
+  font-weight:700;
+}
+.app-shell .folder-list-view .library-folder-edit{
+  border:1px solid transparent;
+  border-radius:9px;
+  transition:background .18s ease,border-color .18s ease,color .18s ease;
+}
+.app-shell .folder-list-view .library-folder-edit:hover,
+.app-shell .folder-list-view .library-folder-edit:focus-visible{
+  background:color-mix(in srgb,var(--gold,#d6a62e) 12%,var(--lib-panel,#fff));
+  border-color:color-mix(in srgb,var(--gold,#d6a62e) 32%,transparent);
+  color:var(--gold-ink,#8c6b17);
+}
+.app-shell .folder-list-view .library-add-folder{
+  border:1px dashed color-mix(in srgb,var(--gold,#d6a62e) 40%,var(--lib-line,#e9e5d9));
+  background:color-mix(in srgb,var(--gold,#d6a62e) 2.5%,var(--lib-panel,#fff));
+}
+.app-shell .folder-list-view .library-add-folder:hover,
+.app-shell .folder-list-view .library-add-folder:focus-visible{
+  --folder-edge-strength:.7;
+  border-style:solid;
+  background:color-mix(in srgb,var(--gold,#d6a62e) 6%,var(--lib-panel,#fff));
+}
+@keyframes folder-edge-sweep{to{--folder-edge-angle:360deg}}
+@property --folder-edge-angle{syntax:"<angle>";initial-value:0deg;inherits:false}
+.app-shell.theme-dark .folder-list-view .library-folder-card{
+  border-color:color-mix(in srgb,var(--folder-tone,#d6a62e) 17%,rgba(255,255,255,.08));
+  background:linear-gradient(105deg,color-mix(in srgb,var(--folder-tone,#d6a62e) 7%,var(--lib-panel,#15171c)),var(--lib-panel,#15171c) 50%);
+  box-shadow:0 4px 12px rgba(0,0,0,.16);
+}
+.app-shell.theme-dark .folder-list-view .library-folder-card.is-active{
+  background:linear-gradient(105deg,rgba(232,189,75,.11),var(--lib-panel,#15171c) 58%);
+  border-color:rgba(232,189,75,.58);
+  box-shadow:inset 3px 0 0 var(--gold,#e8bd4b),0 5px 18px rgba(0,0,0,.2);
+}
+.app-shell.theme-dark .folder-list-view .library-folder-count{
+  background:rgba(232,189,75,.08);
+  border-color:rgba(232,189,75,.17);
+  color:#e9d59a;
+}
+.app-shell.theme-dark .folder-list-view .library-folder-open::after{background:rgba(255,255,255,.11)}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-folder-card{min-height:66px;padding:8px 42px 8px 10px;border-radius:13px}
+  .app-shell .folder-list-view .library-folder-info b{font-size:12px}
+  .app-shell .folder-list-view .library-folder-info small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .app-shell .folder-list-view .library-folder-card,
+  .app-shell .folder-list-view .library-folder-card::before{transition:none;animation:none!important}
+}
