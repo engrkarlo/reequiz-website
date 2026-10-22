@@ -1,4 +1,4 @@
-const CACHE_NAME = "reequiz-offline-v15";
+const CACHE_NAME = "reequiz-offline-v16";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/reequiz-icon.svg"];
 
 self.addEventListener("install", (event) => {
