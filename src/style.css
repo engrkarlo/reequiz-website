@@ -1028,7 +1028,7 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 .library-section-kicker{display:block;margin-bottom:7px;color:var(--lib-accent);font-size:9px;font-weight:850;letter-spacing:.15em}
 .library-section-heading h2{margin:0;color:var(--lib-ink);font-size:22px;font-weight:800;letter-spacing:-.045em;line-height:1.2}
 .library-section-heading p{margin:6px 0 0;color:var(--lib-muted);font-size:12px;line-height:1.5}
-.library-redesign .library-folder-count{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:8px 11px;border:1px solid var(--lib-line);border-radius:999px;background:var(--lib-panel);color:var(--lib-muted);font-size:10px;font-weight:750}
+.library-redesign .library-folder-total{display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;padding:8px 11px;border:1px solid var(--lib-line);border-radius:999px;background:var(--lib-panel);color:var(--lib-muted);font-size:10px;font-weight:750}
 .library-folder-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:34px}
 .library-folder-card{
   --folder-tone:var(--purple,#7768e8);
@@ -1124,12 +1124,12 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 .delete-folder-note span{display:flex;flex-direction:column;gap:4px}
 .delete-folder-note b{font-size:11px;color:#2e7559}
 .delete-folder-note small{font-size:10px;color:#668b7c;line-height:1.45}
-.library-redesign .folder-dialog{width:min(100% - 30px,430px);padding:29px;border:1px solid var(--lib-line);border-radius:24px;background:var(--lib-panel);color:var(--lib-ink);box-shadow:0 28px 90px rgba(18,18,42,.28);animation:library-modal-in .28s cubic-bezier(.2,.8,.2,1) both}
-.library-redesign .folder-dialog>h2{color:var(--lib-ink);letter-spacing:-.04em}
-.library-redesign .folder-dialog>p{color:var(--lib-muted);line-height:1.65}
-.library-redesign .folder-dialog input{border-radius:12px}
-.library-redesign .folder-dialog-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.library-redesign .folder-dialog-actions .folder-delete-action{margin-right:auto}
+.app-shell .folder-dialog{width:min(100% - 30px,430px);padding:29px;border:1px solid var(--lib-line);border-radius:24px;background:var(--lib-panel);color:var(--lib-ink);box-shadow:0 28px 90px rgba(18,18,42,.28);animation:library-modal-in .28s cubic-bezier(.2,.8,.2,1) both}
+.app-shell .folder-dialog>h2{color:var(--lib-ink);letter-spacing:-.04em}
+.app-shell .folder-dialog>p{color:var(--lib-muted);line-height:1.65}
+.app-shell .folder-dialog input{border-radius:12px}
+.app-shell .folder-dialog-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.app-shell .folder-dialog-actions .folder-delete-action{margin-right:auto}
 .theme-dark .library-redesign{--lib-ink:#f1f2fa;--lib-muted:#a4a9bc;--lib-line:#303647;--lib-panel:#191d29;--lib-soft:#222737;--lib-accent:#a49aff}
 .theme-dark .library-redesign .library-hero{background:linear-gradient(115deg,#29243e,#191d29 70%);border-color:#343047}
 .theme-dark .library-redesign .library-folder-card{box-shadow:0 4px 12px rgba(0,0,0,.12)}
