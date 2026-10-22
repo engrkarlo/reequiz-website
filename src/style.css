@@ -3812,3 +3812,24 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .folder-list-view .library-folder-card:active::before,
   .app-shell .folder-list-view .library-folder-card:focus-visible::before{animation:none;background-position:center}
 }
+
+
+/* Give the folder icon a little more breathing room before the list divider. */
+.app-shell .folder-list-view .library-folder-open,
+.app-shell .folder-list-view .library-all-card {
+  column-gap: 17px;
+}
+
+@media (max-width: 760px) {
+  .app-shell .folder-list-view .library-folder-open,
+  .app-shell .folder-list-view .library-all-card {
+    column-gap: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell .folder-list-view .library-folder-open,
+  .app-shell .folder-list-view .library-all-card {
+    column-gap: 11px;
+  }
+}
