@@ -52,8 +52,7 @@ function blankQuestion(){return {question:'',options:['','','',''],answer:0,expl
 function parsePastedQuestions(text){
  const source=text.replace(/\r/g,'').replace(/[\u00a0\t]+/g,' ').trim();
  if(!source) throw new Error('Paste the test text first.');
- const lines=source.split('
-');
+ const lines=source.split('\n');
  const answerKey={};
  for(const line of lines){
    const m=line.match(/^\s*(?:answer\s*key|answers|key)\s*[:\-]\s*(.*)$/i);
