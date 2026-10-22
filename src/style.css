@@ -4170,3 +4170,114 @@ html.theme-transitioning *::after {
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-new(root) { animation: none !important; }
 }
+
+
+/* Redesigned REEQUIZ footer: compact brand lockup with a clear developer credit. */
+.app-shell .footer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px clamp(20px, 4vw, 42px);
+  border-top: 1px solid rgba(197, 160, 65, .22);
+  background: var(--surface, #fff);
+  color: var(--muted, #85899e);
+  letter-spacing: normal;
+  font-size: 12px;
+}
+.app-shell .footer::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: min(180px, 34%);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #f4d578, #fff7d6, transparent);
+  opacity: .9;
+}
+.app-shell .footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.app-shell .footer-brand img {
+  display: block;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .12);
+}
+.app-shell .footer-brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.app-shell .footer-brand-copy strong {
+  color: var(--ink, #20243a);
+  font: 800 14px/1.1 Manrope, sans-serif;
+  letter-spacing: .8px;
+}
+.app-shell .footer-brand-copy span {
+  color: var(--muted, #85899e);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1.35px;
+}
+.app-shell .footer-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  text-align: right;
+}
+.app-shell .footer-copyright {
+  color: var(--muted, #85899e);
+  font-size: 11px;
+  letter-spacing: .1px;
+}
+.app-shell .footer-copyright strong {
+  color: var(--ink, #20243a);
+  font-weight: 750;
+}
+.app-shell .footer-tagline {
+  color: var(--muted, #85899e);
+  font-size: 10px;
+  letter-spacing: .1px;
+}
+.theme-dark .app-shell .footer {
+  background: rgba(12, 13, 16, .97);
+  border-top-color: rgba(255, 255, 255, .09);
+  color: #9ba2b8;
+}
+.theme-dark .app-shell .footer::before {
+  background: linear-gradient(90deg, transparent, #d7b44d, #fff4c8, transparent);
+}
+.theme-dark .app-shell .footer-brand-copy strong,
+.theme-dark .app-shell .footer-copyright strong {
+  color: #f3d477;
+}
+.theme-dark .app-shell .footer-brand-copy span,
+.theme-dark .app-shell .footer-copyright,
+.theme-dark .app-shell .footer-tagline {
+  color: #9ba2b8;
+}
+@media (max-width: 620px) {
+  .app-shell .footer {
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-shell .footer-brand img { width: 32px; height: 32px; border-radius: 9px; }
+  .app-shell .footer-brand-copy strong { font-size: 13px; }
+  .app-shell .footer-brand-copy span { font-size: 7px; letter-spacing: 1px; }
+  .app-shell .footer-meta { max-width: 58%; align-items: flex-end; gap: 6px; }
+  .app-shell .footer-copyright { font-size: 10px; line-height: 1.5; }
+  .app-shell .footer-tagline { font-size: 9px; line-height: 1.4; }
+}
+@media (max-width: 380px) {
+  .app-shell .footer { flex-direction: column; align-items: flex-start; gap: 13px; }
+  .app-shell .footer-meta { max-width: 100%; align-items: flex-start; text-align: left; }
+}
