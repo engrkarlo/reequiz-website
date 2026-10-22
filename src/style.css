@@ -4491,3 +4491,65 @@ html.theme-transitioning *::after {
   .app-shell .correction-entry-top { flex-direction: column; gap: 4px; }
   .app-shell .correction-entry-top span { flex-shrink: 1; }
 }
+
+
+/* Final answer-correction history polish: add a comfortable text inset and honor the active theme. */
+.app-shell .ai-settings-card > .ai-change-log {
+  padding: 16px;
+  background: var(--panel, #fff);
+  color: var(--ink, #25283d);
+  border-color: var(--line, #e5e7f0);
+}
+.app-shell .ai-change-log .correction-entry { padding: 16px 10px; }
+.app-shell .ai-change-log .correction-question,
+.app-shell .ai-change-log .correction-reason,
+.app-shell .ai-change-log .correction-entry-top b,
+.app-shell .ai-change-log .correction-compare > div > span,
+.app-shell .ai-change-log .correction-reason > b { color: var(--ink, #25283d); }
+.app-shell .ai-change-log .correction-entry-top > span,
+.app-shell .ai-change-log .correction-compare > div > small,
+.app-shell .ai-change-log .corrections-empty > span { color: var(--muted, #85899d); }
+.theme-dark .app-shell .ai-settings-card > .ai-change-log {
+  background: var(--panel, #121622); color: var(--ink, #ececf4); border-color: var(--line, #292d3b);
+}
+.theme-dark .app-shell .ai-change-log .correction-question,
+.theme-dark .app-shell .ai-change-log .correction-reason,
+.theme-dark .app-shell .ai-change-log .correction-entry-top b,
+.theme-dark .app-shell .ai-change-log .correction-compare > div > span,
+.theme-dark .app-shell .ai-change-log .correction-reason > b { color: var(--ink, #ececf4); }
+.theme-dark .app-shell .ai-change-log .correction-entry-top > span,
+.theme-dark .app-shell .ai-change-log .correction-compare > div > small,
+.theme-dark .app-shell .ai-change-log .corrections-empty > span { color: var(--muted, #969bb0); }
+.app-shell .corrections-delete-backdrop { z-index: 160 !important; }
+.app-shell .corrections-delete-modal {
+  background: var(--panel, #fffdf8) !important;
+  color: var(--ink, #29271f) !important;
+  border-color: color-mix(in srgb, #c83e4b 28%, var(--line, #e8dfc8));
+}
+.app-shell .corrections-delete-modal h2,
+.app-shell .corrections-delete-modal > p b { color: var(--ink, #29271f); }
+.app-shell .corrections-delete-modal > p { color: var(--muted, #716d61); }
+.app-shell .corrections-delete-modal .delete-folder-note {
+  display: flex; align-items: flex-start; gap: 10px;
+  border: 1px solid color-mix(in srgb, #2c976f 20%, var(--line, #e5e5e5));
+  color: var(--ink, #29271f);
+}
+.app-shell .corrections-delete-modal .delete-folder-note > svg { flex: 0 0 auto; margin-top: 2px; color: #2c976f; }
+.app-shell .corrections-delete-modal .delete-folder-note span { display: grid; gap: 4px; }
+.app-shell .corrections-delete-modal .delete-folder-note small { color: var(--muted, #716d61); line-height: 1.55; }
+.app-shell .corrections-delete-modal .library-modal-actions { border-color: var(--line, #e8dfc8); }
+.theme-dark .app-shell .corrections-delete-modal {
+  background: var(--panel, #191d29) !important;
+  color: var(--ink, #f1f2fa) !important;
+  border-color: rgba(220, 76, 86, .34);
+}
+.theme-dark .app-shell .corrections-delete-modal h2,
+.theme-dark .app-shell .corrections-delete-modal > p b,
+.theme-dark .app-shell .corrections-delete-modal .delete-folder-note { color: var(--ink, #f1f2fa); }
+.theme-dark .app-shell .corrections-delete-modal .modal-close {
+  background: var(--surface, #222737); color: var(--muted, #a4a9bc); border-color: var(--line, #303647);
+}
+@media (max-width: 520px) {
+  .app-shell .ai-settings-card > .ai-change-log { padding: 12px; }
+  .app-shell .ai-change-log .correction-entry { padding: 14px 7px; }
+}
