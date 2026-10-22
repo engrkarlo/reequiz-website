@@ -4683,3 +4683,39 @@ html.theme-transitioning *::after {
     word-break: normal;
   }
 }
+
+/* Validation log confirmation is viewport-centered, never anchored to its trigger. */
+.app-shell .validation-log-delete-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 12000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100vh;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)) !important;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+.app-shell .validation-log-delete-backdrop > .validation-log-delete-modal {
+  position: relative;
+  flex: 0 0 auto;
+  width: min(100%, 460px);
+  max-width: 460px;
+  max-height: calc(100dvh - 32px);
+  margin: auto !important;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-width: 600px) {
+  .app-shell .validation-log-delete-backdrop {
+    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)) !important;
+  }
+  .app-shell .validation-log-delete-backdrop > .validation-log-delete-modal {
+    width: 100%;
+    max-width: 460px;
+    max-height: calc(100dvh - 24px);
+  }
+}
