@@ -15,21 +15,17 @@ export default async function handler(req,res){
  try{
   const body=typeof req.body==='string'?JSON.parse(req.body):req.body||{};
   if(!Array.isArray(body.files)||!body.files.length)return res.status(400).json({error:'Choose at least one image or PDF.'});
-  if(body.files.length>5)return res.status(413).json({error:'Upload up to 5 files per scan.'});
+  if(body.files.length>25)return res.status(413).json({error:'Upload up to 25 image pages per scan.'});
   let total=0;
   const inputs=[];
   for(const file of body.files){
    const mimeType=String(file.mimeType||'');
    const name=String(file.name||'upload').slice(0,180);
    const data=String(file.data||'');
-   if(!['application/pdf','image/jpeg','image/png','image/webp','image/gif'].includes(mimeType))return res.status(400).json({error:`${name}: only PDF, JPEG, PNG, WEBP, and GIF files are supported.`});
+   if(!['image/jpeg','image/png','image/webp','image/gif'].includes(mimeType))return res.status(400).json({error:`${name}: only rendered PDF pages or JPEG, PNG, WEBP, and GIF images are supported.`});
    if(!data||!/^[A-Za-z0-9+/=]+$/.test(data))return res.status(400).json({error:`${name}: file data is invalid.`});
    total+=Math.floor(data.length*3/4);
-   if(mimeType==='application/pdf'){
-    inputs.push({type:'input_file',filename:name,file_data:`data:application/pdf;base64,${data}`});
-   }else{
-    inputs.push({type:'input_image',detail:'high',image_url:`data:${mimeType};base64,${data}`});
-   }
+   inputs.push({type:'input_image',detail:'high',image_url:`data:${mimeType};base64,${data}`});
   }
   if(total>3*1024*1024)return res.status(413).json({error:'The combined upload size must be under 3 MB.'});
   const prompt=`Extract multiple-choice quiz questions from the attached document(s). Quiz title: ${String(body.title||'Imported test').slice(0,160)}. Carefully inspect all pages/images, including any answer key pages. If a key appears separately, match its answers by question number. Keep answers unconfirmed when no explicit answer is visible. Return only this JSON schema: {"questions":[{"question":"...","options":["..."],"answer":null,"answerProvided":false,"explanation":""}]}.`;
@@ -42,8 +38,7 @@ export default async function handler(req,res){
   const payload=await response.json().catch(()=>({}));
   if(!response.ok){
    const detail=payload.error?.message||'The Groq AI service could not scan these files.';
-   const pdfUnsupported=inputs.some(x=>x.type==='input_file')&&/file|input_file|unsupported|not supported/i.test(detail);
-   return res.status(response.status===429?429:502).json({error:pdfUnsupported?`The configured Groq API/model rejected PDF file input. Try exporting the PDF pages as images, or configure a Groq vision model that supports file input. Details: ${detail}`:detail,retryable:response.status===429});
+   return res.status(response.status===429?429:502).json({error:detail,retryable:response.status===429});
   }
   const output=payload.output?.flatMap(item=>item.content||[]).filter(item=>item.type==='output_text').map(item=>item.text||'').join('')||payload.output_text||'';
   const parsed=parseJson(output);
