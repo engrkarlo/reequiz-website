@@ -2026,3 +2026,64 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .library-custom-folder .library-folder-count{right:10px;top:10px}
   .app-shell .library-custom-folder .library-folder-edit{top:auto;right:8px;bottom:8px}
 }
+
+
+/* Folder deletion is a true confirmation step, never stacked under the edit dialog. */
+.app-shell .delete-folder-backdrop{
+  z-index:140!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  isolation:isolate;
+}
+.app-shell .delete-folder-modal{
+  position:relative;
+  z-index:141;
+  width:min(100%,440px);
+  max-height:calc(100dvh - 32px);
+  overflow:auto;
+  padding:30px;
+  border:1px solid rgba(220,76,86,.28);
+  border-radius:22px;
+  background:var(--lib-panel,#fff);
+  color:var(--lib-ink,#262316);
+  box-shadow:0 30px 100px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.08);
+  animation:library-modal-in .22s cubic-bezier(.2,.8,.2,1) both;
+}
+.app-shell .delete-folder-modal .delete-modal-icon{
+  width:48px;height:48px;margin-bottom:18px;border-radius:15px;
+  background:rgba(220,76,86,.09);border-color:rgba(220,76,86,.22);color:#c83e4b;
+}
+.app-shell .delete-folder-modal .library-section-kicker{color:#bd4550;letter-spacing:.12em;font-weight:800}
+.app-shell .delete-folder-modal h2{margin:0 36px 10px 0;font-size:clamp(21px,4vw,25px);line-height:1.2;letter-spacing:-.04em}
+.app-shell .delete-folder-modal>p{font-size:13px;line-height:1.7;margin:0 0 18px}
+.app-shell .delete-folder-modal>p b{overflow-wrap:anywhere}
+.app-shell .delete-folder-modal .delete-folder-note{
+  margin:0 0 22px;padding:14px;border-radius:14px;
+  background:rgba(44,151,111,.07);border-color:rgba(44,151,111,.2);
+}
+.app-shell .delete-folder-modal .library-modal-actions{
+  display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;
+  padding-top:18px;border-top:1px solid var(--lib-line,#e5e5e5);
+}
+.app-shell .delete-folder-modal .library-modal-actions .button{
+  min-height:42px;padding:10px 15px;border-radius:12px;
+}
+.app-shell .delete-folder-modal .danger-button{
+  background:#c83e4b!important;border-color:#c83e4b!important;color:#fff!important;
+}
+.app-shell .delete-folder-modal .danger-button:hover{background:#ad2936!important;border-color:#ad2936!important}
+.theme-dark .app-shell .delete-folder-modal{
+  background:linear-gradient(155deg,#202126,#141519 88%);
+  color:#f5f3ec;border-color:rgba(220,76,86,.4);
+  box-shadow:0 30px 100px rgba(0,0,0,.65),inset 0 1px rgba(255,255,255,.045);
+}
+.theme-dark .app-shell .delete-folder-modal .library-section-kicker{color:#ff9ca3}
+.theme-dark .app-shell .delete-folder-modal .delete-modal-icon{background:rgba(220,76,86,.13);border-color:rgba(255,140,150,.24);color:#ff9ca3}
+@media(max-width:600px){
+  .app-shell .delete-folder-backdrop{padding:12px}
+  .app-shell .delete-folder-modal{width:100%;max-height:calc(100dvh - 24px);padding:24px 19px;border-radius:19px}
+  .app-shell .delete-folder-modal .library-modal-actions{display:grid;grid-template-columns:1fr 1fr}
+  .app-shell .delete-folder-modal .library-modal-actions .button{width:100%;padding:10px 8px;font-size:12px}
+}
