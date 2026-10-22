@@ -4143,3 +4143,39 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 .theme-dark .review-row:has(.review-status.is-correct) p { color: #6ee7b7 !important; }
 .theme-dark .review-row:has(.review-status.is-wrong) p,
 .theme-dark .review-row:has(.review-status.is-wrong) small { color: #fda4af !important; }
+
+
+/* Icon-origin theme reveal: light swallows the dark; dark blooms out from the toggle. */
+@supports (view-transition-name: root) {
+  :root {
+    view-transition-name: root;
+  }
+  ::view-transition-group(root) {
+    animation-duration: 820ms;
+    animation-timing-function: cubic-bezier(.16, 1, .3, 1);
+  }
+  ::view-transition-old(root) {
+    animation: theme-old-soften 620ms cubic-bezier(.2, .75, .25, 1) both;
+    transform-origin: var(--theme-origin-x, 50%) var(--theme-origin-y, 50%);
+  }
+  ::view-transition-new(root) {
+    z-index: 2;
+    animation: theme-icon-reveal 820ms cubic-bezier(.16, 1, .3, 1) both;
+    transform-origin: var(--theme-origin-x, 50%) var(--theme-origin-y, 50%);
+  }
+  @keyframes theme-icon-reveal {
+    from { clip-path: circle(0 at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%)); }
+    to { clip-path: circle(150vmax at var(--theme-origin-x, 50%) var(--theme-origin-y, 50%)); }
+  }
+  @keyframes theme-old-soften {
+    from { opacity: 1; }
+    to { opacity: .96; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 1ms !important;
+  }
+}
