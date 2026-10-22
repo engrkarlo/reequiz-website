@@ -96,4 +96,8 @@ React · Vite · JavaScript
 
 ---
 
-Made for more focused practice and less time fighting with quiz files.
+<p align="center">
+  <img src="assets/orion-hub-development.svg" alt="Orion Hub Development" width="360" />
+  <br />
+  <sub>Copyright © 2026 Orion Hub Development. All rights reserved.</sub>
+</p>
