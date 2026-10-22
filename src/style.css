@@ -2809,3 +2809,201 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .quiz-list-view .quiz-card-actions .delete-btn{width:24px;height:24px}
   .app-shell .quiz-list-view .quiz-card-actions{gap:3px}
 }
+
+
+/* Folder list rows: search-field silhouette, icon badge, divider, details, edit action. */
+.app-shell .folder-list-view .library-folder-card{
+  position:relative;
+  box-sizing:border-box;
+  width:100%;
+  min-height:62px;
+  display:flex;
+  align-items:center;
+  padding:8px 46px 8px 12px;
+  gap:0;
+  border-radius:14px;
+  overflow:visible;
+  text-align:left;
+}
+.app-shell .folder-list-view .library-folder-open{
+  position:static;
+  display:grid;
+  grid-template-columns:38px 1px minmax(0,1fr);
+  align-items:center;
+  column-gap:13px;
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:0;
+  margin:0;
+  flex:1 1 auto;
+  overflow:visible;
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  text-align:left;
+}
+.app-shell .folder-list-view .library-folder-open::after{
+  content:"";
+  grid-column:2;
+  grid-row:1;
+  display:block;
+  width:1px;
+  height:36px;
+  border-radius:1px;
+  background:var(--lib-line,#e8e2d5);
+  pointer-events:none;
+}
+.app-shell .folder-list-view .library-folder-art{
+  position:relative;
+  grid-column:1;
+  grid-row:1;
+  display:grid;
+  place-items:center;
+  width:38px;
+  min-width:38px;
+  height:38px;
+  margin:0;
+  overflow:visible;
+  border-radius:10px;
+  flex:none;
+}
+.app-shell .folder-list-view .library-folder-art .folder-art-sheet{
+  max-width:100%;
+}
+.app-shell .folder-list-view .library-folder-art .folder-art-glow{pointer-events:none}
+.app-shell .folder-list-view .library-folder-info{
+  grid-column:3;
+  grid-row:1;
+  display:block;
+  min-width:0;
+  width:100%;
+  max-width:100%;
+  overflow:hidden;
+  padding:0;
+  margin:0;
+}
+.app-shell .folder-list-view .library-folder-info b{
+  display:block;
+  max-width:100%;
+  margin:0;
+  font-size:12px;
+  font-weight:750;
+  line-height:1.35;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.app-shell .folder-list-view .library-folder-info small{
+  display:block;
+  max-width:100%;
+  margin:3px 0 0;
+  font-size:10px;
+  line-height:1.3;
+  opacity:.78;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.app-shell .folder-list-view .library-folder-count{
+  position:absolute;
+  z-index:3;
+  right:-5px;
+  bottom:-5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:19px;
+  max-width:42px;
+  height:19px;
+  box-sizing:border-box;
+  padding:0 5px;
+  margin:0;
+  border:2px solid var(--lib-panel,#fff);
+  border-radius:999px;
+  background:var(--gold,#d8ad46);
+  color:var(--gold-ink,#3e2d0b);
+  font-size:9px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+  box-shadow:0 1px 3px #17171712;
+}
+.app-shell .folder-list-view .library-folder-edit{
+  position:absolute;
+  z-index:4;
+  top:50%;
+  right:9px;
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  padding:0;
+  margin:0;
+  transform:translateY(-50%);
+  border-radius:9px;
+}
+.app-shell .folder-list-view .library-folder-edit:hover{
+  transform:translateY(-50%);
+}
+.app-shell .folder-list-view .library-folder-card.is-active{
+  border-color:var(--gold,#d8ad46);
+}
+.app-shell .folder-list-view .library-folder-card:hover{
+  transform:translateY(-1px);
+}
+.app-shell .folder-list-view .library-folder-card.library-add-folder{
+  min-height:58px;
+  padding:8px 12px;
+  gap:12px;
+}
+.app-shell .folder-list-view .library-add-folder .library-add-folder-icon{
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+}
+.app-shell .folder-list-view .library-add-folder .library-folder-info{
+  min-width:0;
+}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-folder-card{
+    min-height:58px;
+    padding:7px 41px 7px 9px;
+    border-radius:12px;
+  }
+  .app-shell .folder-list-view .library-folder-open{
+    grid-template-columns:34px 1px minmax(0,1fr);
+    column-gap:10px;
+    min-height:40px;
+  }
+  .app-shell .folder-list-view .library-folder-open::after{height:32px}
+  .app-shell .folder-list-view .library-folder-art{
+    width:34px;
+    min-width:34px;
+    height:34px;
+    border-radius:9px;
+  }
+  .app-shell .folder-list-view .library-folder-info b{font-size:11px}
+  .app-shell .folder-list-view .library-folder-info small{font-size:9px;margin-top:2px}
+  .app-shell .folder-list-view .library-folder-count{
+    right:-4px;
+    bottom:-4px;
+    min-width:17px;
+    height:17px;
+    padding:0 4px;
+    font-size:8px;
+  }
+  .app-shell .folder-list-view .library-folder-edit{
+    right:6px;
+    width:27px;
+    height:27px;
+  }
+}
+@media(max-width:360px){
+  .app-shell .folder-list-view .library-folder-card{padding-left:7px;padding-right:38px}
+  .app-shell .folder-list-view .library-folder-open{grid-template-columns:30px 1px minmax(0,1fr);column-gap:8px}
+  .app-shell .folder-list-view .library-folder-art{width:30px;min-width:30px;height:30px}
+  .app-shell .folder-list-view .library-folder-open::after{height:29px}
+  .app-shell .folder-list-view .library-folder-info small{font-size:8px}
+}
