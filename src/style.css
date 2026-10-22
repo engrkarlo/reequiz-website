@@ -2633,3 +2633,179 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   }
   .app-shell .quiz-list-view .card-start{margin-top:0}
 }
+
+
+/* List mode refinement: reserve dedicated lanes for content and every action. */
+.app-shell .folder-list-view .library-folder-card{
+  min-height:64px;
+  display:flex;
+  align-items:center;
+  padding:8px 50px 8px 10px;
+  overflow:hidden;
+}
+.app-shell .folder-list-view .library-folder-open{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) auto;
+  align-items:center;
+  gap:11px;
+  width:100%;
+  min-width:0;
+  flex:1 1 auto;
+}
+.app-shell .folder-list-view .library-folder-art{
+  width:42px;
+  min-width:42px;
+  height:42px;
+  margin:0;
+  flex:none;
+}
+.app-shell .folder-list-view .library-folder-info{min-width:0;max-width:100%}
+.app-shell .folder-list-view .library-folder-count{
+  position:static;
+  justify-self:end;
+  margin:0;
+  max-width:70px;
+}
+.app-shell .folder-list-view .library-folder-edit{
+  right:8px;
+  top:50%;
+  width:30px;
+  height:30px;
+  transform:translateY(-50%);
+}
+.app-shell .folder-list-view .library-folder-edit:hover{transform:translateY(-50%) rotate(-4deg)}
+.app-shell .quiz-list-view .quiz-card{
+  position:relative;
+  grid-template-columns:72px minmax(0,1fr);
+  min-height:0;
+  overflow:hidden;
+}
+.app-shell .quiz-list-view .quiz-card-art{
+  position:static;
+  height:auto;
+  min-height:0;
+  align-self:stretch;
+}
+.app-shell .quiz-list-view .quiz-card-art .file-tag{display:none}
+.app-shell .quiz-list-view .quiz-card-art .card-art-icon{margin:auto}
+.app-shell .quiz-list-view .quiz-card-actions{
+  position:absolute;
+  z-index:5;
+  top:8px;
+  right:8px;
+  display:flex;
+  gap:5px;
+  max-width:calc(100% - 16px);
+}
+.app-shell .quiz-list-view .quiz-card-actions .delete-btn{
+  width:29px;
+  height:29px;
+  border:1px solid var(--lib-line,#e9dfc0);
+  background:var(--lib-panel,#fff);
+  color:var(--lib-muted,#85899e);
+  border-radius:8px;
+  box-shadow:0 2px 7px #1717170a;
+}
+.app-shell .quiz-list-view .quiz-card-actions .delete-btn:hover{color:var(--gold-ink,#9a7010);border-color:var(--gold,#d6a62e)}
+.app-shell .quiz-list-view .quiz-card-body{
+  position:relative;
+  min-width:0;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(124px,148px);
+  column-gap:14px;
+  row-gap:4px;
+  align-content:center;
+  align-items:center;
+  padding:44px 12px 11px;
+}
+.app-shell .quiz-list-view .quiz-card-body h3,
+.app-shell .quiz-list-view .quiz-card-body .quiz-source,
+.app-shell .quiz-list-view .quiz-card-body .quiz-meta{
+  grid-column:1;
+  min-width:0;
+}
+.app-shell .quiz-list-view .quiz-card-body h3{
+  min-height:0;
+  font-size:12px;
+  line-height:1.4;
+  overflow-wrap:anywhere;
+}
+.app-shell .quiz-list-view .quiz-card-body .quiz-source{
+  margin:2px 0 4px;
+  font-size:9px;
+  line-height:1.4;
+}
+.app-shell .quiz-list-view .quiz-card-body .quiz-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 10px;
+  padding-top:7px;
+  font-size:9px;
+  line-height:1.35;
+}
+.app-shell .quiz-list-view .quiz-card-body .quiz-meta span{min-width:0}
+.app-shell .quiz-list-view .quiz-card-body .card-ai-prepare,
+.app-shell .quiz-list-view .quiz-card-body .card-start{
+  grid-column:2;
+  justify-self:stretch;
+  align-self:center;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  margin:0;
+  padding:8px 9px;
+  font-size:10px;
+  line-height:1.25;
+  white-space:normal;
+  text-align:center;
+}
+.app-shell .quiz-list-view .quiz-card-body .card-ai-prepare{grid-row:1}
+.app-shell .quiz-list-view .quiz-card-body .card-start{grid-row:2;margin-top:5px}
+.app-shell .quiz-list-view .quiz-card-body .card-ai-prepare .ai-button-content{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  overflow-wrap:anywhere;
+}
+.app-shell .quiz-list-view .quiz-card-body .card-ai-prepare .ai-button-content svg{flex:0 0 auto}
+.app-shell .quiz-list-view .quiz-card-body .card-start svg{flex:0 0 auto}
+@media(max-width:760px){
+  .app-shell .folder-list-view .library-folder-card{min-height:56px;padding:6px 42px 6px 7px}
+  .app-shell .folder-list-view .library-folder-open{grid-template-columns:34px minmax(0,1fr) auto;gap:8px}
+  .app-shell .folder-list-view .library-folder-art{width:34px;min-width:34px;height:34px}
+  .app-shell .folder-list-view .library-folder-count{font-size:9px;max-width:45px;padding:4px 5px}
+  .app-shell .folder-list-view .library-folder-edit{right:5px;width:28px;height:28px}
+  .app-shell .quiz-list-view .quiz-card{grid-template-columns:54px minmax(0,1fr)}
+  .app-shell .quiz-list-view .quiz-card-actions{top:7px;right:7px;gap:4px}
+  .app-shell .quiz-list-view .quiz-card-actions .delete-btn{width:26px;height:26px}
+  .app-shell .quiz-list-view .quiz-card-actions .delete-btn svg{width:13px;height:13px}
+  .app-shell .quiz-list-view .quiz-card-body{
+    grid-template-columns:minmax(0,1fr);
+    gap:5px;
+    padding:42px 9px 9px;
+  }
+  .app-shell .quiz-list-view .quiz-card-body h3,
+  .app-shell .quiz-list-view .quiz-card-body .quiz-source,
+  .app-shell .quiz-list-view .quiz-card-body .quiz-meta,
+  .app-shell .quiz-list-view .quiz-card-body .card-ai-prepare,
+  .app-shell .quiz-list-view .quiz-card-body .card-start{grid-column:1;grid-row:auto}
+  .app-shell .quiz-list-view .quiz-card-body h3{font-size:11px;line-height:1.35}
+  .app-shell .quiz-list-view .quiz-card-body .quiz-source{font-size:9px;margin:0}
+  .app-shell .quiz-list-view .quiz-card-body .quiz-meta{padding-top:5px;gap:6px 9px;font-size:8px}
+  .app-shell .quiz-list-view .quiz-card-body .card-ai-prepare,
+  .app-shell .quiz-list-view .quiz-card-body .card-start{
+    width:100%;
+    min-width:0;
+    padding:7px 8px;
+    font-size:9px;
+    margin:0;
+  }
+  .app-shell .quiz-list-view .quiz-card-body .card-start{margin-top:0}
+}
+@media(max-width:360px){
+  .app-shell .quiz-list-view .quiz-card{grid-template-columns:46px minmax(0,1fr)}
+  .app-shell .quiz-list-view .quiz-card-body{padding-left:7px;padding-right:7px}
+  .app-shell .quiz-list-view .quiz-card-actions .delete-btn{width:24px;height:24px}
+  .app-shell .quiz-list-view .quiz-card-actions{gap:3px}
+}
