@@ -2199,3 +2199,42 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .library-modal-backdrop,.app-shell .compact-backdrop{padding:12px}
   .app-shell .delete-folder-modal{width:100%;padding:24px 19px}
 }
+
+
+/* Center the sun/moon glyph precisely inside the theme toggle's circular control. */
+.app-shell .theme-toggle{
+  box-sizing:border-box;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px;
+  line-height:0;
+}
+.app-shell .theme-toggle-knob{
+  box-sizing:border-box;
+  display:flex;
+  flex:0 0 30px;
+  width:30px;
+  height:30px;
+  align-items:center;
+  justify-content:center;
+  padding:0;
+  line-height:0;
+}
+.app-shell .theme-toggle-knob svg{
+  display:block;
+  flex:0 0 18px;
+  width:18px;
+  height:18px;
+  margin:0;
+  padding:0;
+  transform:none;
+}
+@media(max-width:760px){
+  .app-shell .theme-toggle{width:38px;height:38px;min-width:38px;min-height:38px;padding:3px;justify-content:center}
+  .app-shell .theme-toggle-knob{flex-basis:30px;width:30px;height:30px}
+}
+@media(max-width:430px){
+  .app-shell .theme-toggle{width:36px;height:36px;min-width:36px;min-height:36px;padding:2px}
+  .app-shell .theme-toggle-knob{flex-basis:30px;width:30px;height:30px}
+}
