@@ -4553,3 +4553,10 @@ html.theme-transitioning *::after {
   .app-shell .ai-settings-card > .ai-change-log { padding: 12px; }
   .app-shell .ai-change-log .correction-entry { padding: 14px 7px; }
 }
+
+/* Keep the AI Quiz Tutor toggle beside its heading, matching the settings toggle styling. */
+.ai-settings-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px;min-width:0}
+.ai-settings-heading h2{margin:0;flex-shrink:0}
+.ai-settings-toggle{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ai-settings-toggle .toggle-state{min-width:22px}
+@media(max-width:420px){.ai-settings-heading{gap:8px}.ai-settings-heading h2{font-size:14px}.ai-settings-toggle{gap:6px}}
