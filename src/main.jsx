@@ -118,7 +118,6 @@ function App(){
  const [aiBusy,setAiBusy]=useState(false),[aiProgress,setAiProgress]=useState(null),[aiLog,setAiLog]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-ai-change-log-v1')||'[]')}catch{return []}});
  const [showCorrections,setShowCorrections]=useState(false);
  const [showClearCorrections,setShowClearCorrections]=useState(false);
- const [showClearAiActivity,setShowClearAiActivity]=useState(false);
  useEffect(()=>localStorage.setItem('reequiz-ai-change-log-v1',JSON.stringify(aiLog.slice(0,500))),[aiLog]);
  const audioContextRef=useRef(null); const timeoutHandledRef=useRef(null); const lastCountdownBeepRef=useRef(''); const timeoutAdvanceRef=useRef(null); const resolvedQuestionRef=useRef(null);
  function handleInterfaceClick(event){
