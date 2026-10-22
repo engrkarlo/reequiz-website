@@ -1,2 +1,0 @@
-# reequiz-website
-reequiz website
