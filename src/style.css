@@ -1055,7 +1055,7 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 .library-folder-card:hover .folder-art-glow{opacity:.2;transform:scale(1.25)}
 .folder-art-sheet{position:absolute;display:grid;place-items:center;width:73px;height:51px;border:1px solid color-mix(in srgb,var(--folder-tone) 18%,var(--lib-line));border-radius:11px;background:var(--lib-panel);color:var(--folder-tone);box-shadow:0 5px 12px rgba(30,30,70,.055);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
 .sheet-back{transform:translate(-12px,-2px) rotate(-12deg);opacity:.66}.sheet-mid{transform:translate(11px,-1px) rotate(11deg);opacity:.8}
-.sheet-front{transform:translateY(7px);background:linear-gradient(145deg,var(--lib-panel),color-mix(in srgb,var(--folder-tone) 7%,var(--lib-panel))}
+.sheet-front{transform:translateY(7px);background:linear-gradient(145deg,var(--lib-panel),color-mix(in srgb,var(--folder-tone) 7%,var(--lib-panel)))}
 .library-folder-card:hover .sheet-back{transform:translate(-19px,-5px) rotate(-17deg)}
 .library-folder-card:hover .sheet-mid{transform:translate(18px,-5px) rotate(16deg)}
 .library-folder-card:hover .sheet-front{transform:translateY(2px) scale(1.035)}
