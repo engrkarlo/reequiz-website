@@ -8,7 +8,26 @@ REEQUIZ lets you import quizzes, practice at your own pace, review explanations,
 
 ## App showcase
 
-The preview above introduces REEQUIZ. Its key areas include quiz importing, study sessions, answer explanations, personal statistics, and a responsive library for desktop and mobile.
+The SVG previews below illustrate the three main workspace tabs, based on the current app UI. They are lightweight, scalable images that render directly on GitHub.
+
+### Overview
+
+Your starting point for importing quizzes, jumping into study, and getting a quick snapshot of your workspace.
+
+![REEQUIZ Overview tab](docs/overview-showcase.svg)
+
+### Statistics
+
+Review completed sessions, average accuracy, total study time, recent results, and answer reviews.
+
+![REEQUIZ Statistics tab](docs/statistics-showcase.svg)
+
+### My Library
+
+Keep quiz sets organized into collections, search your library, and launch practice sessions.
+
+![REEQUIZ My Library tab](docs/library-showcase.svg)
+
 
 ## What you can do
 
