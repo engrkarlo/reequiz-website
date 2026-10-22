@@ -2087,3 +2087,115 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
   .app-shell .delete-folder-modal .library-modal-actions{display:grid;grid-template-columns:1fr 1fr}
   .app-shell .delete-folder-modal .library-modal-actions .button{width:100%;padding:10px 8px;font-size:12px}
 }
+
+
+/* Modal surface fixes: opaque light surfaces and consistent theme-aware library dialogs. */
+.app-shell .library-modal-backdrop,
+.app-shell .compact-backdrop{
+  position:fixed;
+  inset:0;
+  z-index:120;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  background:rgba(25,23,17,.48);
+  -webkit-backdrop-filter:blur(8px);
+  backdrop-filter:blur(8px);
+}
+.app-shell .library-modal,
+.app-shell .folder-dialog,
+.app-shell .editor-modal,
+.app-shell .confirm-modal,
+.app-shell .choice-modal,
+.app-shell .exit-modal,
+.app-shell .delete-folder-modal{
+  background-color:#fffdf8;
+  color:#29271f;
+  border:1px solid rgba(150,119,42,.22);
+  opacity:1;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+.app-shell .library-modal{
+  background:#fffdf8;
+  color:#29271f;
+  border-color:#e8dfc8;
+}
+.app-shell .library-modal p,
+.app-shell .folder-dialog p,
+.app-shell .editor-modal p,
+.app-shell .confirm-modal p,
+.app-shell .choice-modal p,
+.app-shell .exit-modal p{color:#716d61}
+.app-shell .library-modal .modal-close,
+.app-shell .folder-dialog .modal-close,
+.app-shell .editor-modal .modal-close,
+.app-shell .confirm-modal .modal-close,
+.app-shell .choice-modal .modal-close,
+.app-shell .exit-modal .modal-close{background:#f5f0e4;color:#6c6554;border:1px solid #e8dfc8}
+.app-shell .library-modal .library-modal-actions,
+.app-shell .folder-dialog .folder-dialog-actions,
+.app-shell .editor-modal .editor-actions,
+.app-shell .confirm-modal .confirm-actions,
+.app-shell .exit-modal .exit-actions{border-color:#e8dfc8}
+.app-shell .delete-folder-modal{
+  width:min(100%,440px);
+  background:#fffdf8!important;
+  color:#29271f!important;
+  border:1px solid rgba(200,62,75,.28);
+  box-shadow:0 28px 90px rgba(0,0,0,.28);
+}
+.app-shell .delete-folder-modal>p{color:#716d61}
+.app-shell .delete-folder-modal .delete-folder-note{
+  display:flex;align-items:flex-start;gap:11px;
+  border:1px solid rgba(44,151,111,.2);
+  background:#eff8f1;
+  color:#285f48;
+}
+.app-shell .delete-folder-modal .delete-folder-note span{display:flex;flex-direction:column;gap:4px;min-width:0}
+.app-shell .delete-folder-modal .delete-folder-note small{font-size:11px;line-height:1.55;color:#557363}
+.app-shell .delete-folder-modal .library-modal-actions{border-top:1px solid #e8dfc8}
+.app-shell .delete-folder-modal .library-modal-actions .button.subtle{background:#f5f0e4;border:1px solid #e8dfc8;color:#514b3d}
+.app-shell.theme-dark .library-modal-backdrop,
+.app-shell.theme-dark .compact-backdrop{background:rgba(0,0,0,.68)}
+.app-shell.theme-dark .library-modal,
+.app-shell.theme-dark .folder-dialog,
+.app-shell.theme-dark .editor-modal,
+.app-shell.theme-dark .confirm-modal,
+.app-shell.theme-dark .choice-modal,
+.app-shell.theme-dark .exit-modal,
+.app-shell.theme-dark .delete-folder-modal{
+  background:#191a1f!important;
+  color:#f4f0e4!important;
+  border-color:rgba(232,189,75,.2);
+  box-shadow:0 28px 90px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.025);
+}
+.app-shell.theme-dark .library-modal p,
+.app-shell.theme-dark .folder-dialog p,
+.app-shell.theme-dark .editor-modal p,
+.app-shell.theme-dark .confirm-modal p,
+.app-shell.theme-dark .choice-modal p,
+.app-shell.theme-dark .exit-modal p,
+.app-shell.theme-dark .delete-folder-modal>p{color:#b7b2a4}
+.app-shell.theme-dark .library-modal .modal-close,
+.app-shell.theme-dark .folder-dialog .modal-close,
+.app-shell.theme-dark .editor-modal .modal-close,
+.app-shell.theme-dark .confirm-modal .modal-close,
+.app-shell.theme-dark .choice-modal .modal-close,
+.app-shell.theme-dark .exit-modal .modal-close{background:#27282e;color:#e9dfc4;border-color:#3b3b40}
+.app-shell.theme-dark .library-modal .library-modal-actions,
+.app-shell.theme-dark .folder-dialog .folder-dialog-actions,
+.app-shell.theme-dark .editor-modal .editor-actions,
+.app-shell.theme-dark .confirm-modal .confirm-actions,
+.app-shell.theme-dark .exit-modal .exit-actions,
+.app-shell.theme-dark .delete-folder-modal .library-modal-actions{border-color:#38383c}
+.app-shell.theme-dark .delete-folder-modal .delete-folder-note{
+  background:rgba(44,151,111,.12);border-color:rgba(90,190,145,.22);color:#b9f0d1;
+}
+.app-shell.theme-dark .delete-folder-modal .delete-folder-note small{color:#a9c9b5}
+.app-shell.theme-dark .delete-folder-modal .library-modal-actions .button.subtle{background:#292a30;border-color:#414147;color:#f0ead9}
+@media(max-width:600px){
+  .app-shell .library-modal-backdrop,.app-shell .compact-backdrop{padding:12px}
+  .app-shell .delete-folder-modal{width:100%;padding:24px 19px}
+}
