@@ -3944,3 +3944,7 @@ body{min-height:100%;background:var(--page-bg,#f6f7fb)}
 .app-shell.theme-dark .cover-crop-control label{color:#f0d985}
 .app-shell.theme-dark .cover-crop-control output,.app-shell.theme-dark .cover-crop-panel>small{color:#c2b58a}
 @media(max-width:760px){.app-shell .cover-crop-control{grid-template-columns:65px minmax(0,1fr) 39px;gap:6px}}
+
+/* Keep percentage readouts legible against dark glass surfaces. */
+.theme-dark .score-ring b{color:#fff4c9;text-shadow:0 1px 8px rgba(232,189,75,.16)}
+.theme-dark .timer-volume-control strong{color:#f5d77a}
