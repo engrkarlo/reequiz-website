@@ -844,108 +844,97 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 @media(prefers-reduced-motion:reduce){.folder-tile{transition:none}}
 
 
-/* REEQUIZ Library — polished folder gallery refresh */
+/* REEQUIZ Library — calm, animated folder gallery */
 .folder-shelf{
-  position:relative; isolation:isolate; overflow:visible;
-  margin:24px 0 22px; padding:clamp(18px,2.5vw,30px);
-  border:1px solid var(--line,#e5e7ef); border-radius:24px;
-  background:var(--panel,#fff);
-  box-shadow:0 12px 36px rgba(28,32,61,.045);
-  animation:library-shelf-in .55s cubic-bezier(.2,.75,.25,1) both;
+  --folder-ink:#20243a; --folder-muted:#85899e;
+  position:relative; margin:24px 0; padding:26px;
+  border:1px solid #e9ebf3; border-radius:22px;
+  background:#fff; box-shadow:0 10px 30px rgba(31,39,80,.035);
+  animation:lib-enter .42s ease-out both;
 }
-.folder-shelf-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:23px}
-.folder-shelf-heading h2{margin:5px 0 7px;font-size:clamp(1.25rem,2vw,1.6rem);letter-spacing:-.045em;line-height:1.15}
-.folder-shelf-heading .eyebrow{color:#7b70d8;font-size:.68rem;font-weight:800;letter-spacing:.15em}
-.folder-howto{margin:0;max-width:48ch;color:var(--muted,#7b8092);font-size:.86rem;line-height:1.55}
-.folder-total{flex-shrink:0;padding:7px 11px;border:1px solid var(--line,#e5e7ef);border-radius:999px;background:var(--surface-soft,#f7f8fb);color:var(--muted,#777d8f);font-size:.76rem;font-weight:700}
-.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:16px}
+.folder-shelf-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.folder-shelf-heading h2{margin:5px 0 6px;font-size:1.35rem;letter-spacing:-.04em;line-height:1.2}
+.folder-shelf-heading .eyebrow{color:#7770cf;font-size:.68rem;font-weight:800;letter-spacing:.13em}
+.folder-howto{margin:0;max-width:46ch;color:#85899e;font-size:.84rem;line-height:1.5}
+.folder-total{flex-shrink:0;padding:7px 11px;border:1px solid #e8eaf2;border-radius:999px;background:#f7f8fc;color:#74798e;font-size:.75rem;font-weight:700}
+.folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,205px),1fr));gap:13px}
 .folder-tile{
-  position:relative;min-width:0;min-height:204px;padding:17px;
-  display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:14px;
-  overflow:hidden;border:1px solid var(--folder-edge,#e4e3f1);border-radius:18px;
-  background:var(--folder-fill,#f7f6ff);color:var(--text,#242638);
-  box-shadow:0 3px 8px rgba(29,34,67,.025);
-  transition:transform .28s cubic-bezier(.2,.8,.2,1),box-shadow .28s,border-color .25s,background .25s;
-  animation:folder-card-in .55s cubic-bezier(.2,.75,.25,1) both;
-  animation-delay:calc(var(--folder-index,0) * 65ms);
+  --folder-fill:#f3f0ff;--folder-edge:#e5defe;--folder-icon:#6e61c9;--folder-active:#eae5ff;
+  position:relative;min-width:0;min-height:176px;padding:14px;
+  display:flex;flex-direction:column;justify-content:space-between;gap:10px;
+  border:1px solid var(--folder-edge);border-radius:16px;
+  background:var(--folder-fill);color:#25283b;overflow:hidden;
+  box-shadow:0 2px 5px rgba(30,34,67,.025);
+  transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease,background .22s ease;
+  animation:folder-rise .38s cubic-bezier(.2,.7,.2,1) both;
+  animation-delay:calc(var(--folder-index,0) * 45ms);
 }
 .folder-tile:nth-child(1){--folder-index:0}.folder-tile:nth-child(2){--folder-index:1}.folder-tile:nth-child(3){--folder-index:2}.folder-tile:nth-child(4){--folder-index:3}.folder-tile:nth-child(5){--folder-index:4}.folder-tile:nth-child(6){--folder-index:5}.folder-tile:nth-child(7){--folder-index:6}.folder-tile:nth-child(8){--folder-index:7}
-.folder-tile:hover{transform:translateY(-5px);box-shadow:0 16px 32px rgba(36,32,76,.10);border-color:var(--folder-icon,#9588e8)}
-.folder-tile.active{border-color:var(--folder-icon,#7766dc);box-shadow:0 0 0 2px color-mix(in srgb,var(--folder-icon,#7766dc) 18%,transparent),0 12px 28px rgba(45,36,94,.08);background:var(--folder-active,#eeebff)}
-.folder-tile:focus-within{outline:2px solid #8979e6;outline-offset:3px}
+.folder-tile:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(34,33,76,.09);border-color:color-mix(in srgb,var(--folder-icon) 48%,white)}
+.folder-tile.active{border-color:var(--folder-icon);background:var(--folder-active);box-shadow:0 0 0 2px color-mix(in srgb,var(--folder-icon) 13%,transparent),0 7px 18px rgba(33,33,70,.06)}
+.folder-tile:focus-visible,.folder-tile button:focus-visible{outline:2px solid #7669df;outline-offset:3px}
 .folder-tile-main{
-  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:106px auto;
-  align-items:center;gap:13px 8px;width:100%;min-width:0;min-height:0;padding:0;
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:85px auto;
+  align-items:center;gap:9px 8px;width:100%;min-width:0;min-height:0;padding:0;
   border:0;background:transparent;color:inherit;text-align:left;font:inherit;cursor:pointer;
 }
-.folder-custom{margin:0;border-radius:18px}
-.folder-custom::before{content:none}
+.folder-custom{margin:0}
 .folder-custom .folder-tile-main{min-height:0;padding:0}
-.folder-preview-stack,.folder-preview-all{position:relative;display:block;grid-column:1/-1;width:100%;height:106px;min-height:106px;isolation:isolate;overflow:visible}
+.folder-preview-stack,.folder-preview-all{position:relative;display:block;grid-column:1/-1;width:100%;height:85px;min-height:85px;isolation:isolate}
 .folder-preview-paper,.folder-preview-empty,.folder-preview-all>span{
-  position:absolute;left:calc(50% - 76px);width:152px;height:75px;display:flex;align-items:center;gap:9px;
-  padding:12px;border:1px solid var(--folder-edge,#dcd8f4);border-radius:11px;
-  background:var(--paper,#fff);color:var(--folder-icon,#6c5bd2);
-  box-shadow:0 6px 14px rgba(29,29,55,.07);overflow:hidden;
-  transition:transform .32s cubic-bezier(.2,.8,.2,1),box-shadow .32s;
+  position:absolute;left:calc(50% - 67px);width:134px;height:62px;
+  display:flex;align-items:center;gap:8px;padding:10px;
+  border:1px solid var(--folder-edge);border-radius:10px;background:#fff;
+  color:var(--folder-icon);box-shadow:0 4px 10px rgba(29,29,55,.06);overflow:hidden;
+  transition:transform .28s cubic-bezier(.2,.75,.25,1),box-shadow .25s;
 }
 .folder-preview-paper svg,.folder-preview-all svg{flex:0 0 auto}
-.folder-preview-paper i,.folder-preview-all i{display:block;width:54%;height:5px;border-radius:5px;background:currentColor;opacity:.22;font-size:0}
-.folder-preview-paper.paper-0{top:7px;transform:translateX(-17px) rotate(-10deg);z-index:1;opacity:.65}
-.folder-preview-paper.paper-1{top:5px;transform:translateX(13px) rotate(8deg);z-index:2;opacity:.84}
-.folder-preview-paper.paper-2{top:20px;z-index:3;transform:translateX(-50%)}
-.folder-preview-paper.paper-2{left:50%}
-.folder-preview-paper.paper-2 i{width:44%}
-.folder-preview-empty{top:17px;left:50%;transform:translateX(-50%);justify-content:center;border-style:dashed;background:rgba(255,255,255,.42);box-shadow:none}
-.folder-preview-all>span{left:calc(50% - 76px);top:6px}
-.folder-preview-all>span:nth-child(1){transform:translateX(-15px) rotate(-9deg);z-index:1;opacity:.65}
-.folder-preview-all>span:nth-child(2){transform:translateX(12px) rotate(8deg);z-index:2;opacity:.85}
-.folder-preview-all>span:nth-child(3){top:20px;left:50%;transform:translateX(-50%);z-index:3;justify-content:center;background:#fff}
-.folder-tile:hover .folder-preview-paper.paper-0,.folder-tile:hover .folder-preview-all>span:nth-child(1){transform:translate(-25px,-4px) rotate(-14deg)}
-.folder-tile:hover .folder-preview-paper.paper-1,.folder-tile:hover .folder-preview-all>span:nth-child(2){transform:translate(21px,-4px) rotate(12deg)}
-.folder-tile:hover .folder-preview-paper.paper-2,.folder-tile:hover .folder-preview-all>span:nth-child(3){transform:translate(-50%,-5px)}
-.folder-tile:hover .folder-preview-empty{transform:translate(-50%,-4px)}
-.folder-tile-copy{display:flex;flex-direction:column;align-self:end;gap:5px;min-width:0;padding:0}
-.folder-tile-copy b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.94rem;font-weight:750;letter-spacing:-.025em;line-height:1.3}
-.folder-tile-copy small{color:var(--muted,#777d8f);font-size:.76rem;line-height:1.35}
-.folder-tile>strong,.folder-tile-main>strong{
-  display:grid;place-items:center;align-self:end;min-width:32px;height:32px;padding:0 8px;
-  border:1px solid rgba(0,0,0,.045);border-radius:10px;background:rgba(255,255,255,.72);
-  color:var(--folder-icon,#6c5bd2);font-size:.78rem;font-weight:800;font-variant-numeric:tabular-nums;
-}
-.folder-rename{
-  position:absolute;top:12px;right:12px;z-index:5;display:grid;place-items:center;
-  width:34px;height:34px;margin:0;border:1px solid rgba(30,30,55,.08);border-radius:11px;
-  background:rgba(255,255,255,.88);color:#55566a;cursor:pointer;opacity:.92;
-  box-shadow:0 2px 7px rgba(29,29,55,.04);
-  transition:transform .2s,background .2s,color .2s,box-shadow .2s;
-}
-.folder-rename:hover{transform:rotate(-5deg) scale(1.06);background:#fff;color:var(--folder-icon,#6c5bd2);box-shadow:0 5px 12px rgba(29,29,55,.1)}
-.folder-all{--folder-fill:#f2f5ff;--folder-edge:#dce4ff;--folder-icon:#4966bd;--folder-active:#e9eeff}
-.folder-tone-0{--folder-fill:#f4f1ff;--folder-edge:#e0d9ff;--folder-icon:#705bd0;--folder-active:#ebe5ff}
-.folder-tone-1{--folder-fill:#edf8f2;--folder-edge:#d0ebda;--folder-icon:#33845e;--folder-active:#e1f3e8}
-.folder-tone-2{--folder-fill:#fff4e9;--folder-edge:#f3dfc9;--folder-icon:#b96e39;--folder-active:#ffead6}
-.folder-tone-3{--folder-fill:#edf7fb;--folder-edge:#cfe7f0;--folder-icon:#397d9b;--folder-active:#def0f7}
-.folder-tone-4{--folder-fill:#fff0f6;--folder-edge:#f2d6e4;--folder-icon:#ad5483;--folder-active:#ffe3ef}
-.folder-all .folder-tile-copy b{font-size:1rem}
-.folder-dialog{
-  animation:folder-dialog-in .28s cubic-bezier(.2,.8,.2,1) both;
-  box-shadow:0 28px 90px rgba(20,20,45,.22);
-}
-.folder-dialog-icon{box-shadow:inset 0 1px 0 rgba(255,255,255,.75);transition:transform .25s}
-.folder-dialog:focus-within .folder-dialog-icon{transform:translateY(-2px) rotate(-3deg)}
-.folder-dialog input{transition:border-color .2s,box-shadow .2s}
-.folder-dialog-actions .button{transition:transform .18s,box-shadow .18s,background .18s}
+.folder-preview-paper i,.folder-preview-all i{display:block;width:55%;height:4px;border-radius:4px;background:currentColor;opacity:.22;font-size:0}
+.folder-preview-paper.paper-0{top:6px;transform:translateX(-13px) rotate(-7deg);z-index:1;opacity:.65}
+.folder-preview-paper.paper-1{top:5px;transform:translateX(11px) rotate(6deg);z-index:2;opacity:.82}
+.folder-preview-paper.paper-2{top:16px;left:50%;transform:translateX(-50%);z-index:3}
+.folder-preview-paper.paper-2 i{width:43%}
+.folder-preview-empty{top:12px;left:50%;transform:translateX(-50%);justify-content:center;border-style:dashed;background:rgba(255,255,255,.55);box-shadow:none}
+.folder-preview-all>span{left:calc(50% - 67px);top:5px}
+.folder-preview-all>span:nth-child(1){transform:translateX(-13px) rotate(-7deg);z-index:1;opacity:.65}
+.folder-preview-all>span:nth-child(2){transform:translateX(11px) rotate(6deg);z-index:2;opacity:.82}
+.folder-preview-all>span:nth-child(3){top:16px;left:50%;transform:translateX(-50%);z-index:3;justify-content:center;background:#fff}
+.folder-tile:hover .folder-preview-paper.paper-0,.folder-tile:hover .folder-preview-all>span:nth-child(1){transform:translate(-20px,-3px) rotate(-10deg)}
+.folder-tile:hover .folder-preview-paper.paper-1,.folder-tile:hover .folder-preview-all>span:nth-child(2){transform:translate(17px,-3px) rotate(9deg)}
+.folder-tile:hover .folder-preview-paper.paper-2,.folder-tile:hover .folder-preview-all>span:nth-child(3){transform:translate(-50%,-3px)}
+.folder-tile:hover .folder-preview-empty{transform:translate(-50%,-3px)}
+.folder-tile-copy{display:flex;flex-direction:column;align-self:end;gap:4px;min-width:0;padding:0}
+.folder-tile-copy b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.9rem;font-weight:750;letter-spacing:-.02em;line-height:1.3}
+.folder-tile-copy small{color:#85899e;font-size:.74rem;line-height:1.35}
+.folder-tile>strong,.folder-tile-main>strong{display:grid;place-items:center;align-self:end;min-width:29px;height:29px;padding:0 7px;border:1px solid rgba(0,0,0,.045);border-radius:9px;background:rgba(255,255,255,.78);color:var(--folder-icon);font-size:.74rem;font-weight:800;font-variant-numeric:tabular-nums}
+.folder-rename{position:absolute;top:9px;right:9px;z-index:5;display:grid;place-items:center;width:30px;height:30px;margin:0;border:1px solid rgba(30,30,55,.08);border-radius:9px;background:rgba(255,255,255,.92);color:#686b80;cursor:pointer;opacity:.9;transition:transform .18s ease,background .18s,color .18s}
+.folder-rename:hover{transform:rotate(-4deg) scale(1.04);background:#fff;color:var(--folder-icon)}
+.folder-all{--folder-fill:#f0f4ff;--folder-edge:#dce5ff;--folder-icon:#4f68b8;--folder-active:#e6edff}
+.folder-tone-0{--folder-fill:#f3f0ff;--folder-edge:#e1d9ff;--folder-icon:#6e61c9;--folder-active:#eae5ff}
+.folder-tone-1{--folder-fill:#edf8f1;--folder-edge:#d1eadb;--folder-icon:#347b58;--folder-active:#dff2e6}
+.folder-tone-2{--folder-fill:#fff4e9;--folder-edge:#f1dfcb;--folder-icon:#ad6a38;--folder-active:#ffead7}
+.folder-tone-3{--folder-fill:#edf7fb;--folder-edge:#cfe6ef;--folder-icon:#397b97;--folder-active:#def0f7}
+.folder-tone-4{--folder-fill:#fff0f6;--folder-edge:#f1d6e4;--folder-icon:#a9507e;--folder-active:#ffe3ef}
+.folder-all .folder-tile-copy b{font-size:.94rem}
+.folder-dialog{animation:dialog-pop .22s ease-out both;box-shadow:0 24px 70px rgba(20,20,45,.2)}
+.folder-dialog-icon{transition:transform .2s ease}
+.folder-dialog:focus-within .folder-dialog-icon{transform:translateY(-2px)}
+.folder-dialog input{transition:border-color .18s,box-shadow .18s}
+.folder-dialog-actions .button{transition:transform .16s ease,box-shadow .16s}
 .folder-dialog-actions .button:hover{transform:translateY(-1px)}
 .folder-delete-action{order:0}
-@keyframes library-shelf-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-@keyframes folder-card-in{from{opacity:0;transform:translateY(13px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes folder-dialog-in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.theme-dark .folder-shelf{background:#171a25;border-color:#303646;box-shadow:0 12px 36px rgba(0,0,0,.14)}
+@keyframes lib-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes folder-rise{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes dialog-pop{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.theme-dark .folder-shelf{background:#171a25;border-color:#303646;box-shadow:0 10px 30px rgba(0,0,0,.14)}
+.theme-dark .folder-shelf-heading h2{color:#f0f1f8}
+.theme-dark .folder-howto{color:#a4a9bc}
+.theme-dark .folder-total{border-color:#343a4b;background:#202431;color:#aeb3c5}
 .theme-dark .folder-tile{color:#f3f4f7}
-.theme-dark .folder-preview-paper,.theme-dark .folder-preview-empty,.theme-dark .folder-preview-all>span{--paper:#262a39;background:#262a39;border-color:var(--folder-edge,#51468a);color:var(--folder-icon,#a79aff);box-shadow:0 7px 16px rgba(0,0,0,.2)}
+.theme-dark .folder-preview-paper,.theme-dark .folder-preview-empty,.theme-dark .folder-preview-all>span{background:#262a39;border-color:var(--folder-edge);color:var(--folder-icon);box-shadow:0 6px 14px rgba(0,0,0,.18)}
 .theme-dark .folder-preview-empty{background:#202432}
-.theme-dark .folder-tile>strong,.theme-dark .folder-tile-main>strong{background:rgba(18,20,30,.35);border-color:rgba(255,255,255,.06)}
+.theme-dark .folder-tile-copy small{color:#a4a9bc}
+.theme-dark .folder-tile>strong,.theme-dark .folder-tile-main>strong{background:rgba(18,20,30,.35);border-color:rgba(255,255,255,.07)}
 .theme-dark .folder-rename{background:rgba(27,31,43,.94);border-color:rgba(255,255,255,.09);color:#d7d9e4}
 .theme-dark .folder-rename:hover{background:#303548;color:#fff}
 .theme-dark .folder-all{--folder-fill:#20263a;--folder-edge:#343e59;--folder-icon:#9badff;--folder-active:#2a3048}
@@ -955,33 +944,31 @@ button:not(:disabled):active,.button:not(:disabled):active,.nav-item:active,.ico
 .theme-dark .folder-tone-3{--folder-fill:#1b2d36;--folder-edge:#31596a;--folder-icon:#82cbe5;--folder-active:#24404d}
 .theme-dark .folder-tone-4{--folder-fill:#34202d;--folder-edge:#70405a;--folder-icon:#e7a0c1;--folder-active:#46293a}
 @media(max-width:760px){
- .folder-shelf{padding:17px;border-radius:20px;margin:18px 0}
- .folder-shelf-heading{align-items:flex-start;margin-bottom:18px}
- .folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
- .folder-tile{min-height:175px;padding:13px;border-radius:15px;gap:10px}
- .folder-tile-main{grid-template-rows:83px auto;gap:9px 6px}
- .folder-preview-stack,.folder-preview-all{height:83px;min-height:83px}
- .folder-preview-paper,.folder-preview-empty,.folder-preview-all>span{left:calc(50% - 61px);width:122px;height:62px;padding:9px}
- .folder-preview-paper.paper-2,.folder-preview-all>span:nth-child(3){top:16px;left:50%}
- .folder-preview-empty{left:50%;top:13px}
- .folder-preview-all>span:nth-child(1){transform:translateX(-12px) rotate(-9deg)}
- .folder-preview-all>span:nth-child(2){transform:translateX(10px) rotate(8deg)}
- .folder-tile-copy b{font-size:.84rem}
- .folder-tile-copy small{font-size:.7rem}
- .folder-tile>strong,.folder-tile-main>strong{min-width:27px;height:27px;font-size:.72rem}
- .folder-rename{top:8px;right:8px;width:30px;height:30px;border-radius:9px}
+  .folder-shelf{padding:16px;border-radius:18px;margin:18px 0}
+  .folder-shelf-heading{align-items:flex-start;margin-bottom:16px}
+  .folder-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .folder-tile{min-height:156px;padding:11px;border-radius:14px;gap:8px}
+  .folder-tile-main{grid-template-rows:73px auto;gap:7px 5px}
+  .folder-preview-stack,.folder-preview-all{height:73px;min-height:73px}
+  .folder-preview-paper,.folder-preview-empty,.folder-preview-all>span{left:calc(50% - 53px);width:106px;height:52px;padding:8px}
+  .folder-preview-paper.paper-2,.folder-preview-all>span:nth-child(3){top:14px;left:50%}
+  .folder-preview-empty{left:50%;top:11px}
+  .folder-tile-copy b{font-size:.82rem}
+  .folder-tile-copy small{font-size:.69rem}
+  .folder-tile>strong,.folder-tile-main>strong{min-width:25px;height:25px;font-size:.68rem}
+  .folder-rename{top:6px;right:6px;width:27px;height:27px;border-radius:8px}
 }
-@media(max-width:380px){
- .folder-grid{grid-template-columns:1fr}
- .folder-tile{min-height:145px}
- .folder-tile-main{grid-template-columns:100px minmax(0,1fr) auto;grid-template-rows:auto;gap:12px;align-items:center}
- .folder-preview-stack,.folder-preview-all{grid-column:auto;height:78px;min-height:78px}
- .folder-preview-paper,.folder-preview-empty,.folder-preview-all>span{left:calc(50% - 47px);width:94px;height:54px}
- .folder-preview-paper.paper-2,.folder-preview-all>span:nth-child(3){left:50%;top:14px}
- .folder-tile-copy{align-self:center}
- .folder-tile>strong,.folder-tile-main>strong{align-self:center}
+@media(max-width:390px){
+  .folder-grid{grid-template-columns:1fr}
+  .folder-tile{min-height:120px}
+  .folder-tile-main{grid-template-columns:86px minmax(0,1fr) auto;grid-template-rows:auto;gap:10px;align-items:center}
+  .folder-preview-stack,.folder-preview-all{grid-column:auto;height:68px;min-height:68px}
+  .folder-preview-paper,.folder-preview-empty,.folder-preview-all>span{left:calc(50% - 39px);width:78px;height:48px}
+  .folder-preview-paper.paper-2,.folder-preview-all>span:nth-child(3){left:50%;top:12px}
+  .folder-tile-copy{align-self:center}
+  .folder-tile>strong,.folder-tile-main>strong{align-self:center}
 }
 @media(prefers-reduced-motion:reduce){
  .folder-shelf,.folder-tile,.folder-dialog{animation:none!important;transition:none!important}
- .folder-tile:hover,.folder-tile:hover .folder-preview-paper,.folder-tile:hover .folder-preview-all>span,.folder-rename:hover{transform:none!important}
+ .folder-tile:hover,.folder-tile:hover .folder-preview-paper,.folder-tile:hover .folder-preview-all>span,.folder-rename:hover,.folder-dialog-actions .button:hover{transform:none!important}
 }
