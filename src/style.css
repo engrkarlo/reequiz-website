@@ -5026,3 +5026,14 @@ html.theme-transitioning *::after {
   .app-shell .sidebar > .nav-item,
   .app-shell .sidebar > .nav-item svg { transition: none !important; }
 }
+
+/* Keep the selected bottom-navigation icon comfortably inside its highlight. */
+@media (max-width: 760px) {
+  .app-shell .sidebar > .nav-item.selected svg {
+    transform: translateY(2px) scale(1.04) !important;
+  }
+  .app-shell .sidebar > .nav-item.selected {
+    padding-top: 8px !important;
+    padding-bottom: 4px !important;
+  }
+}
