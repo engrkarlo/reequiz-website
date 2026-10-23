@@ -5785,13 +5785,13 @@ html.theme-transitioning *::after {
 }
 
 
-/* Give folder titles and descriptions a little breathing room from the icon divider. */
+/* Increase spacing between the folder divider and its title/description. */
 .app-shell .library-folders-section .folder-list-view .library-folder-info{
-  padding-left:4px!important;
+  padding-left:10px!important;
   box-sizing:border-box!important;
 }
 @media(max-width:480px){
   .app-shell .library-folders-section .folder-list-view .library-folder-info{
-    padding-left:3px!important;
+    padding-left:8px!important;
   }
 }
