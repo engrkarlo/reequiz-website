@@ -4966,3 +4966,63 @@ html.theme-transitioning *::after {
     backdrop-filter: blur(22px) saturate(1.2);
   }
 }
+
+/* Compact inactive mobile navigation; reveal labels only for the active destination. */
+@media (max-width: 760px) {
+  .app-shell .sidebar > .nav-item,
+  .app-shell .sidebar > .nav-item:not(.selected) {
+    flex: 0 1 66px !important;
+    width: 66px !important;
+    max-width: 66px !important;
+    height: 48px !important;
+    padding: 5px 3px !important;
+    gap: 0 !important;
+    border-radius: 14px !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+    transform: translateY(0) scale(.94) !important;
+    box-shadow: 0 2px 0 rgba(0,0,0,.12) !important;
+  }
+  .app-shell .sidebar > .nav-item svg {
+    width: 21px !important;
+    height: 21px !important;
+    transition: transform .22s ease, filter .22s ease;
+  }
+  .app-shell .sidebar > .nav-item.selected {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    max-width: 180px !important;
+    height: 56px !important;
+    gap: 5px !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    line-height: 1.15 !important;
+    transform: translateY(-3px) scale(1) !important;
+    border-radius: 17px !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 5px 0 color-mix(in srgb, var(--gold,#e8bd4b) 30%, transparent), 0 9px 18px #0003 !important;
+  }
+  .app-shell .sidebar > .nav-item.selected svg {
+    transform: translateY(-1px) scale(1.06);
+    filter: drop-shadow(0 2px 3px color-mix(in srgb, var(--gold,#e8bd4b) 32%, transparent));
+  }
+  .app-shell .sidebar > .nav-item:not(.selected):active {
+    transform: translateY(1px) scale(.9) !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,.12) !important;
+  }
+  .app-shell .sidebar > .nav-item.selected:active {
+    transform: translateY(-1px) scale(.98) !important;
+  }
+}
+@media (max-width: 390px) {
+  .app-shell .sidebar > .nav-item,
+  .app-shell .sidebar > .nav-item:not(.selected) {
+    flex-basis: 58px !important;
+    width: 58px !important;
+    max-width: 58px !important;
+  }
+  .app-shell .sidebar > .nav-item.selected { padding-inline: 7px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .sidebar > .nav-item,
+  .app-shell .sidebar > .nav-item svg { transition: none !important; }
+}
