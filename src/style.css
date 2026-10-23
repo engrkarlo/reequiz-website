@@ -4872,3 +4872,51 @@ html.theme-transitioning *::after {
   .app-shell .sidebar > .nav-item::before,
   .app-shell .sidebar > .nav-item svg { transition: none !important; animation: none !important; }
 }
+
+/* Mobile bottom navigation: give the selected gold pill room for its label and theme-aware surfaces. */
+@media (max-width: 760px) {
+  .app-shell .sidebar > .nav-item {
+    min-width: 0 !important;
+    height: 62px !important;
+    padding: 7px 6px !important;
+    gap: 5px !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+  }
+  .app-shell .sidebar > .nav-item.selected {
+    height: 68px !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 8px 8px !important;
+    border-radius: 18px !important;
+    background: color-mix(in srgb, var(--gold, #e8bd4b) 13%, var(--panel, #fff)) !important;
+    border-color: color-mix(in srgb, var(--gold, #e8bd4b) 42%, var(--line, #d8d8df)) !important;
+    color: var(--gold-strong, var(--gold, #a77a0a)) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold, #e8bd4b) 13%, transparent), 0 5px 18px color-mix(in srgb, var(--gold, #e8bd4b) 12%, transparent) !important;
+  }
+  .app-shell .sidebar > .nav-item.selected::before {
+    inset: 2px !important;
+    border-radius: 15px !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--gold, #e8bd4b) 18%, transparent), color-mix(in srgb, var(--gold, #e8bd4b) 7%, transparent)) !important;
+  }
+  .app-shell .sidebar > .nav-item.selected svg {
+    flex-shrink: 0 !important;
+    width: 21px !important;
+    height: 21px !important;
+  }
+  .app-shell .sidebar > .nav-item.selected:not(.mobile-hide-nav) {
+    flex: 1.12 1 0 !important;
+  }
+  .app-shell.theme-dark .sidebar > .nav-item.selected {
+    background: color-mix(in srgb, var(--gold, #e8bd4b) 13%, var(--panel, #15171c)) !important;
+    color: #f5d77a !important;
+    border-color: color-mix(in srgb, var(--gold, #e8bd4b) 42%, #49412c) !important;
+  }
+  .app-shell:not(.theme-dark) .sidebar > .nav-item.selected {
+    background: color-mix(in srgb, var(--gold, #e8bd4b) 12%, var(--panel, #fff)) !important;
+    color: #8a6500 !important;
+    border-color: color-mix(in srgb, var(--gold, #e8bd4b) 42%, #e2d7ad) !important;
+  }
+}
