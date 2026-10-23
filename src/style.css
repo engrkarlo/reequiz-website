@@ -5912,54 +5912,57 @@ html.theme-transitioning *::after {
 }
 
 
-/* Structural placement fix: Explanation is a direct child of the question card,
-   so it anchors to the card itself instead of the header/footer flow. */
-.app-shell .question-card{
-  position:relative!important;
-}
+/* Keep Explanation in the same flex row as the question number. */
 .app-shell .question-card > .question-card-head{
   display:flex!important;
   align-items:center!important;
-  justify-content:flex-start!important;
-  min-height:24px!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  min-height:25px!important;
   margin:0 0 8px!important;
-  padding-right:112px!important;
+  padding:0!important;
 }
-.app-shell .question-card > .explanation-trigger{
-  position:absolute!important;
-  top:16px!important;
-  right:24px!important;
-  z-index:3!important;
+.app-shell .question-card > .question-card-head > .question-label{
+  margin:0!important;
+  padding:0!important;
+  flex:1 1 auto!important;
+  min-width:0!important;
+}
+.app-shell .question-card > .question-card-head > .explanation-trigger{
+  position:static!important;
   display:inline-flex!important;
+  flex:0 0 auto!important;
   align-items:center!important;
   justify-content:center!important;
   width:auto!important;
   min-width:0!important;
-  min-height:32px!important;
-  height:32px!important;
+  min-height:25px!important;
+  height:25px!important;
   margin:0!important;
-  padding:6px 10px!important;
-  gap:6px!important;
-  font-size:12px!important;
-  line-height:1.2!important;
-  border-radius:8px!important;
+  padding:4px 7px!important;
+  gap:4px!important;
+  font-size:10px!important;
+  line-height:1!important;
+  border-radius:7px!important;
   white-space:nowrap!important;
 }
-.app-shell .question-card > .explanation-trigger svg{
-  width:14px!important;
-  height:14px!important;
+.app-shell .question-card > .question-card-head > .explanation-trigger svg{
+  width:12px!important;
+  height:12px!important;
   flex:none!important;
 }
 @media(max-width:600px){
   .app-shell .question-card > .question-card-head{
-    padding-right:104px!important;
+    gap:7px!important;
   }
-  .app-shell .question-card > .explanation-trigger{
-    top:12px!important;
-    right:15px!important;
-    min-height:30px!important;
-    height:30px!important;
-    padding:5px 8px!important;
-    font-size:11px!important;
+  .app-shell .question-card > .question-card-head > .explanation-trigger{
+    min-height:24px!important;
+    height:24px!important;
+    padding:4px 6px!important;
+    font-size:9px!important;
+  }
+  .app-shell .question-card > .question-card-head > .explanation-trigger svg{
+    width:11px!important;
+    height:11px!important;
   }
 }
