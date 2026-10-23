@@ -5805,3 +5805,14 @@ html.theme-transitioning *::after {
   margin-left:0!important;
   box-sizing:border-box!important;
 }
+
+
+/* Mobile footer should end flush with the top edge of the fixed bottom navigation. */
+@media (max-width: 760px) {
+  .app-shell .main {
+    padding-bottom: 0 !important;
+  }
+  .app-shell .footer {
+    margin-bottom: 0 !important;
+  }
+}
