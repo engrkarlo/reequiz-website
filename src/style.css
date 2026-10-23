@@ -5273,3 +5273,96 @@ html.theme-transitioning *::after {
     pointer-events:auto!important;
   }
 }
+
+
+/* Mobile folder edit control: deliberately separated from the artwork/count. */
+@media (max-width: 760px) {
+  /* Grid cards: keep the count at top-right and pencil at top-left,
+     so the edit control never crowds the centered folder illustration. */
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder{
+    padding-top:42px!important;
+    padding-bottom:14px!important;
+  }
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-edit{
+    top:10px!important;
+    left:10px!important;
+    right:auto!important;
+    bottom:auto!important;
+    width:27px!important;
+    height:27px!important;
+    min-width:27px!important;
+    padding:0!important;
+    margin:0!important;
+    display:grid!important;
+    place-items:center!important;
+    transform:none!important;
+    border-radius:8px!important;
+    z-index:5!important;
+  }
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-art{
+    margin-top:0!important;
+  }
+  /* List cards: reserve a dedicated right-hand control column. The count
+     sits vertically centered before the pencil, never beneath it. */
+  .app-shell .folder-list-view .library-custom-folder{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto 32px!important;
+    align-items:center!important;
+    column-gap:9px!important;
+    padding:8px 9px 8px 10px!important;
+    min-width:0!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-open{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-width:0!important;
+    width:100%!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-count{
+    grid-column:2!important;
+    grid-row:1!important;
+    position:static!important;
+    justify-self:end!important;
+    align-self:center!important;
+    margin:0!important;
+    max-width:52px!important;
+    white-space:nowrap!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-edit{
+    grid-column:3!important;
+    grid-row:1!important;
+    position:static!important;
+    justify-self:center!important;
+    align-self:center!important;
+    width:28px!important;
+    height:28px!important;
+    min-width:28px!important;
+    margin:0!important;
+    padding:0!important;
+    transform:none!important;
+    border-radius:8px!important;
+  }
+}
+@media (max-width: 390px) {
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder{
+    padding-top:39px!important;
+  }
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-edit{
+    top:8px!important;
+    left:8px!important;
+    width:25px!important;
+    height:25px!important;
+    min-width:25px!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder{
+    grid-template-columns:minmax(0,1fr) auto 29px!important;
+    column-gap:6px!important;
+    padding-left:7px!important;
+    padding-right:6px!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-edit{
+    width:26px!important;
+    height:26px!important;
+    min-width:26px!important;
+  }
+}
