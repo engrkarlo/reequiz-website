@@ -5038,24 +5038,6 @@ html.theme-transitioning *::after {
   }
 }
 
-/* Keep folder cards and session navigation flat: no stacked/3D layers or raised buttons. */
-.app-shell .folder-list-view .library-folder-card,
-.app-shell .folder-list-view .library-folder-card:hover,
-.app-shell .folder-list-view .library-folder-card:focus-visible,
-.app-shell .folder-list-view .library-folder-card.is-active {
-  transform: none !important;
-  box-shadow: none !important;
-}
-.app-shell .folder-list-view .library-folder-card::before,
-.app-shell .folder-list-view .library-folder-card::after,
-.app-shell .folder-list-view .library-folder-card .sheet-back,
-.app-shell .folder-list-view .library-folder-card .sheet-mid,
-.app-shell .folder-list-view .library-folder-card .sheet-front {
-  display: none !important;
-  content: none !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
 .app-shell .builder-back,
 .app-shell .back-link,
 .app-shell .session-bottom > button,
@@ -5081,14 +5063,7 @@ html.theme-transitioning *::after {
   filter: none !important;
 }
 
-/* Flat folder presentation in both grid and list views. */
-.app-shell .library-folder-card,
-.app-shell .library-folder-card:hover,
-.app-shell .library-folder-card:focus-visible,
-.app-shell .library-folder-card.is-active {
-  transform: none !important;
-  box-shadow: none !important;
-}
+
 .app-shell .library-folder-card::before,
 .app-shell .library-folder-card::after,
 .app-shell .library-folder-card .sheet-back,
