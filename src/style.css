@@ -5079,3 +5079,63 @@ html.theme-transitioning *::after {
 .app-shell .folder-list-view .library-custom-folder .library-folder-edit:hover{transform:translateY(-50%)}
 .app-shell.theme-dark .library-folder-grid:not(.folder-list-view) .library-custom-folder{border-color:color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 17%,rgba(255,255,255,.08));background:var(--lib-panel);box-shadow:0 4px 12px rgba(0,0,0,.16)}
 @media(max-width:600px){.app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder{min-height:136px;padding:13px 10px;border-radius:16px}.app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-art{flex-basis:54px;width:54px;min-width:54px;height:54px;min-height:54px;border-radius:14px}}
+
+
+/* Flat created-folder cards: match the calm, non-raised All quizzes card. */
+.app-shell .library-custom-folder,
+.app-shell.theme-dark .library-custom-folder{
+  transform:none!important;
+  box-shadow:none!important;
+  transition:border-color .2s ease,background-color .2s ease!important;
+}
+.app-shell .library-custom-folder:hover,
+.app-shell .library-custom-folder:focus-within{
+  transform:none!important;
+  box-shadow:none!important;
+}
+.app-shell .library-custom-folder .library-folder-art{
+  box-shadow:none!important;
+  filter:none!important;
+  background:color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 10%,var(--lib-panel))!important;
+}
+.app-shell .library-custom-folder .folder-art-sheet,
+.app-shell .library-custom-folder .sheet-back,
+.app-shell .library-custom-folder .sheet-mid,
+.app-shell .library-custom-folder .folder-art-glow{
+  display:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+.app-shell .library-custom-folder .sheet-front{
+  position:static!important;
+  display:grid!important;
+  place-items:center!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:var(--folder-tone,var(--lib-accent))!important;
+  transform:none!important;
+}
+.app-shell .library-custom-folder .sheet-front svg{
+  width:30px!important;
+  height:30px!important;
+  filter:none!important;
+  stroke-width:1.9!important;
+}
+.app-shell .library-custom-folder .library-folder-edit,
+.app-shell .library-custom-folder .library-folder-edit:hover,
+.app-shell .library-custom-folder .library-folder-edit:active{
+  transform:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+.app-shell.theme-dark .library-custom-folder .library-folder-art{
+  background:color-mix(in srgb,var(--folder-tone,var(--lib-accent)) 10%,var(--lib-panel))!important;
+}
+.app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder.is-active{
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--gold,var(--lib-accent)) 65%,transparent)!important;
+}
