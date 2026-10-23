@@ -5912,45 +5912,54 @@ html.theme-transitioning *::after {
 }
 
 
-/* Final placement override: pin the compact Explanation control beside the question number. */
+/* Structural placement fix: Explanation is a direct child of the question card,
+   so it anchors to the card itself instead of the header/footer flow. */
 .app-shell .question-card{
   position:relative!important;
 }
 .app-shell .question-card > .question-card-head{
   display:flex!important;
-  position:relative!important;
   align-items:center!important;
   justify-content:flex-start!important;
-  min-height:22px!important;
-  padding-right:0!important;
+  min-height:24px!important;
   margin:0 0 8px!important;
-  gap:8px!important;
+  padding-right:112px!important;
 }
-.app-shell .question-card > .question-card-head > .explanation-trigger{
+.app-shell .question-card > .explanation-trigger{
   position:absolute!important;
-  top:0!important;
-  right:0!important;
+  top:16px!important;
+  right:24px!important;
+  z-index:3!important;
   display:inline-flex!important;
   align-items:center!important;
   justify-content:center!important;
   width:auto!important;
   min-width:0!important;
-  min-height:20px!important;
-  height:20px!important;
+  min-height:32px!important;
+  height:32px!important;
   margin:0!important;
-  padding:2px 5px!important;
-  gap:3px!important;
-  font-size:9px!important;
-  line-height:1!important;
-  border-radius:5px!important;
-  box-shadow:none!important;
+  padding:6px 10px!important;
+  gap:6px!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  border-radius:8px!important;
+  white-space:nowrap!important;
 }
-.app-shell .question-card > .question-card-head > .explanation-trigger svg{
-  width:10px!important;
-  height:10px!important;
+.app-shell .question-card > .explanation-trigger svg{
+  width:14px!important;
+  height:14px!important;
   flex:none!important;
 }
-.app-shell .question-card > .question-card-head > .question-label{
-  margin:0!important;
-  padding-right:78px!important;
+@media(max-width:600px){
+  .app-shell .question-card > .question-card-head{
+    padding-right:104px!important;
+  }
+  .app-shell .question-card > .explanation-trigger{
+    top:12px!important;
+    right:15px!important;
+    min-height:30px!important;
+    height:30px!important;
+    padding:5px 8px!important;
+    font-size:11px!important;
+  }
 }
