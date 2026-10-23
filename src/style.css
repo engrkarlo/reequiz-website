@@ -5792,6 +5792,6 @@ html.theme-transitioning *::after {
 }
 @media(max-width:480px){
   .app-shell .library-folders-section .folder-list-view .library-folder-info{
-    padding-left:16px!important;
+    padding-left:10px!important;
   }
 }
