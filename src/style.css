@@ -5063,14 +5063,3 @@ html.theme-transitioning *::after {
   filter: none !important;
 }
 
-
-.app-shell .library-folder-card::before,
-.app-shell .library-folder-card::after,
-.app-shell .library-folder-card .sheet-back,
-.app-shell .library-folder-card .sheet-mid,
-.app-shell .library-folder-card .sheet-front {
-  display: none !important;
-  content: none !important;
-  transform: none !important;
-  box-shadow: none !important;
-}
