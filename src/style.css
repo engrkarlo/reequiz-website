@@ -5910,3 +5910,47 @@ html.theme-transitioning *::after {
   .app-shell .question-footer>div{width:100%;justify-content:flex-end;}
   .app-shell .explanation-modal{padding:23px 19px;}
 }
+
+
+/* Final placement override: pin the compact Explanation control beside the question number. */
+.app-shell .question-card{
+  position:relative!important;
+}
+.app-shell .question-card > .question-card-head{
+  display:flex!important;
+  position:relative!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-height:22px!important;
+  padding-right:0!important;
+  margin:0 0 8px!important;
+  gap:8px!important;
+}
+.app-shell .question-card > .question-card-head > .explanation-trigger{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:20px!important;
+  height:20px!important;
+  margin:0!important;
+  padding:2px 5px!important;
+  gap:3px!important;
+  font-size:9px!important;
+  line-height:1!important;
+  border-radius:5px!important;
+  box-shadow:none!important;
+}
+.app-shell .question-card > .question-card-head > .explanation-trigger svg{
+  width:10px!important;
+  height:10px!important;
+  flex:none!important;
+}
+.app-shell .question-card > .question-card-head > .question-label{
+  margin:0!important;
+  padding-right:78px!important;
+}
