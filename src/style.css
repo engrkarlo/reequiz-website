@@ -5037,3 +5037,46 @@ html.theme-transitioning *::after {
     padding-bottom: 4px !important;
   }
 }
+
+/* Keep folder cards and session navigation flat: no stacked/3D layers or raised buttons. */
+.app-shell .folder-list-view .library-folder-card,
+.app-shell .folder-list-view .library-folder-card:hover,
+.app-shell .folder-list-view .library-folder-card:focus-visible,
+.app-shell .folder-list-view .library-folder-card.is-active {
+  transform: none !important;
+  box-shadow: none !important;
+}
+.app-shell .folder-list-view .library-folder-card::before,
+.app-shell .folder-list-view .library-folder-card::after,
+.app-shell .folder-list-view .library-folder-card .sheet-back,
+.app-shell .folder-list-view .library-folder-card .sheet-mid,
+.app-shell .folder-list-view .library-folder-card .sheet-front {
+  display: none !important;
+  content: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.app-shell .builder-back,
+.app-shell .back-link,
+.app-shell .session-bottom > button,
+.app-shell .settings-panel .button.subtle {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+.app-shell .builder-back:hover,
+.app-shell .builder-back:active,
+.app-shell .builder-back:focus-visible,
+.app-shell .back-link:hover,
+.app-shell .back-link:active,
+.app-shell .back-link:focus-visible,
+.app-shell .session-bottom > button:hover,
+.app-shell .session-bottom > button:active,
+.app-shell .session-bottom > button:focus-visible,
+.app-shell .settings-panel .button.subtle:hover,
+.app-shell .settings-panel .button.subtle:active,
+.app-shell .settings-panel .button.subtle:focus-visible {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
