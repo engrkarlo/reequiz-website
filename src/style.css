@@ -5366,3 +5366,74 @@ html.theme-transitioning *::after {
     min-width:26px!important;
   }
 }
+
+
+/* Final mobile spacing: count is anchored away from artwork in grid cards;
+   list cards use a comfortable count + pencil control group on the right. */
+@media (max-width: 760px) {
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder{
+    position:relative!important;
+  }
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-count{
+    position:absolute!important;
+    top:10px!important;
+    right:10px!important;
+    left:auto!important;
+    bottom:auto!important;
+    margin:0!important;
+    z-index:4!important;
+  }
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-art{
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  /* Keep the list's artwork/text in column one, with count and pencil
+     grouped on the far right and separated by a real gap. */
+  .app-shell .folder-list-view .library-custom-folder{
+    grid-template-columns:minmax(0,1fr) auto auto!important;
+    column-gap:12px!important;
+    align-items:center!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-open{
+    grid-column:1!important;
+    grid-row:1!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-art{
+    flex-shrink:0!important;
+    margin-right:10px!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-count{
+    grid-column:2!important;
+    grid-row:1!important;
+    position:static!important;
+    inset:auto!important;
+    justify-self:end!important;
+    align-self:center!important;
+    margin:0 3px 0 0!important;
+    z-index:1!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-edit{
+    grid-column:3!important;
+    grid-row:1!important;
+    position:static!important;
+    inset:auto!important;
+    justify-self:center!important;
+    align-self:center!important;
+    margin:0 2px 0 0!important;
+    z-index:2!important;
+  }
+}
+@media (max-width: 390px) {
+  .app-shell .folder-list-view .library-custom-folder{
+    column-gap:8px!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-art{
+    margin-right:7px!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-count{
+    margin-right:2px!important;
+  }
+}
