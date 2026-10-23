@@ -5850,11 +5850,18 @@ html.theme-transitioning *::after {
   border-radius:7px;
 }
 .app-shell .explanation-trigger{
-  min-height:30px;
-  padding:6px 10px;
-  gap:6px;
-  font-size:11px;
+  min-height:25px;
+  margin-left:auto;
+  padding:4px 7px;
+  gap:4px;
+  font-size:10px;
+  line-height:1;
+  border-radius:7px;
   white-space:nowrap;
+}
+.app-shell .explanation-trigger svg{
+  width:12px;
+  height:12px;
 }
 .app-shell .question-footer{
   margin-top:18px;
