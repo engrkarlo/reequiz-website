@@ -5475,3 +5475,242 @@ html.theme-transitioning *::after {
 @media (max-width:390px){
   .app-shell .folder-list-view .library-custom-folder{column-gap:10px!important}
 }
+
+
+/* REEQUIZ premium interaction layer — dimensional cards, tactile controls, both themes */
+:root{
+  --rq-ease:cubic-bezier(.2,.75,.25,1);
+  --rq-lift-shadow:0 18px 36px rgba(46,35,8,.13),0 5px 12px rgba(40,34,18,.08),inset 0 1px 0 rgba(255,255,255,.88);
+  --rq-card-edge:rgba(190,148,36,.32);
+  --rq-focus:rgba(214,166,46,.55);
+}
+.app-shell .quiz-card,
+.app-shell .stat-card,
+.app-shell .question-card,
+.app-shell .review-row,
+.app-shell .tip-row,
+.app-shell .settings-panel,
+.app-shell .empty-state,
+.app-shell .search-box,
+.app-shell .library-folder-card,
+.app-shell .library-modal,
+.app-shell .folder-dialog,
+.app-shell .choice-modal,
+.app-shell .exit-modal,
+.app-shell .editor-modal,
+.app-shell .confirm-modal{
+  position:relative;
+  isolation:isolate;
+  transition:transform .28s var(--rq-ease),box-shadow .28s var(--rq-ease),border-color .25s ease,background-color .25s ease;
+}
+.app-shell .quiz-card,
+.app-shell .stat-card,
+.app-shell .question-card,
+.app-shell .review-row,
+.app-shell .tip-row,
+.app-shell .library-folder-card{
+  box-shadow:0 3px 0 rgba(139,105,27,.07),0 7px 18px rgba(32,36,58,.055),inset 0 1px 0 rgba(255,255,255,.82);
+  border-color:color-mix(in srgb,var(--line,#eceef5) 72%,#d6a62e 28%);
+}
+.app-shell .quiz-card::before,
+.app-shell .stat-card::before,
+.app-shell .library-folder-card::before,
+.app-shell .review-row::before,
+.app-shell .tip-row::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  padding:1px;
+  pointer-events:none;
+  opacity:0;
+  background:linear-gradient(125deg,rgba(255,225,128,.95),rgba(214,166,46,.12) 34%,rgba(255,255,255,.12) 56%,rgba(214,166,46,.72));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  transition:opacity .25s ease;
+  z-index:2;
+}
+.app-shell .quiz-card:hover,
+.app-shell .stat-card:hover,
+.app-shell .review-row:hover,
+.app-shell .tip-row:hover{
+  transform:translateY(-4px);
+  border-color:rgba(214,166,46,.55);
+  box-shadow:0 5px 0 rgba(139,105,27,.10),0 17px 32px rgba(32,36,58,.13),0 0 0 1px rgba(214,166,46,.12),inset 0 1px 0 rgba(255,255,255,.92);
+}
+.app-shell .quiz-card:hover::before,
+.app-shell .stat-card:hover::before,
+.app-shell .review-row:hover::before,
+.app-shell .tip-row:hover::before,
+.app-shell .library-folder-card:hover::before,
+.app-shell .library-folder-card:focus-within::before{opacity:1}
+.app-shell .quiz-card:active,
+.app-shell .stat-card:active,
+.app-shell .review-row:active,
+.app-shell .tip-row:active{
+  transform:translateY(-1px) scale(.995);
+  box-shadow:0 2px 0 rgba(139,105,27,.08),0 4px 10px rgba(32,36,58,.08);
+}
+.app-shell .quiz-card-art{transition:filter .28s ease,background-color .28s ease}
+.app-shell .quiz-card:hover .quiz-card-art{filter:saturate(1.12) brightness(1.025)}
+.app-shell .card-art-icon{
+  box-shadow:0 5px 0 rgba(43,39,25,.055),0 10px 20px rgba(43,39,25,.08),inset 0 1px 0 rgba(255,255,255,.95);
+  transition:transform .3s var(--rq-ease),box-shadow .3s ease;
+}
+.app-shell .quiz-card:hover .card-art-icon{transform:translateY(-3px) rotate(-3deg) scale(1.04);box-shadow:0 8px 0 rgba(43,39,25,.06),0 15px 24px rgba(43,39,25,.14),inset 0 1px 0 rgba(255,255,255,.98)}
+.app-shell .button,
+.app-shell button.delete-btn,
+.app-shell .library-folder-edit,
+.app-shell .text-button,
+.app-shell .nav-item,
+.app-shell .answer-option,
+.app-shell .mode-choice,
+.app-shell .destination-option,
+.app-shell .icon-picker button,
+.app-shell .timer-presets button,
+.app-shell .per-question-presets button{
+  transition:transform .2s var(--rq-ease),box-shadow .22s ease,border-color .2s ease,background-color .2s ease,color .2s ease,filter .2s ease;
+}
+.app-shell .button{
+  position:relative;
+  transform:translateY(0);
+  box-shadow:0 2px 0 rgba(40,31,9,.12),0 4px 9px rgba(32,36,58,.07),inset 0 1px 0 rgba(255,255,255,.3);
+}
+.app-shell .button:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 4px 0 rgba(40,31,9,.12),0 9px 17px rgba(32,36,58,.15),inset 0 1px 0 rgba(255,255,255,.38);
+  filter:saturate(1.08);
+}
+.app-shell .button:active:not(:disabled){
+  transform:translateY(1px) scale(.985);
+  box-shadow:0 0 0 rgba(32,36,58,0),inset 0 2px 5px rgba(30,25,10,.17);
+  filter:saturate(.96);
+}
+.app-shell .button.primary{
+  box-shadow:0 3px 0 #987012,0 7px 16px rgba(190,145,25,.24),inset 0 1px 0 rgba(255,255,255,.55);
+}
+.app-shell .button.primary:hover:not(:disabled){
+  box-shadow:0 4px 0 #987012,0 12px 24px rgba(190,145,25,.34),0 0 0 3px rgba(242,201,76,.13),inset 0 1px 0 rgba(255,255,255,.68);
+}
+.app-shell .button.primary:active:not(:disabled){box-shadow:0 1px 0 #987012,inset 0 2px 6px rgba(45,31,0,.2)}
+.app-shell .button.ghost:hover:not(:disabled),
+.app-shell .button.subtle:hover:not(:disabled){border-color:rgba(190,148,36,.5);box-shadow:0 4px 0 rgba(40,31,9,.06),0 8px 15px rgba(32,36,58,.08)}
+.app-shell button.delete-btn{
+  box-shadow:0 2px 0 rgba(40,36,22,.08),0 4px 10px rgba(32,36,58,.1),inset 0 1px 0 rgba(255,255,255,.7);
+}
+.app-shell button.delete-btn:hover{transform:translateY(-2px) scale(1.04);box-shadow:0 4px 0 rgba(40,36,22,.08),0 8px 16px rgba(32,36,58,.15)}
+.app-shell button.delete-btn:active{transform:translateY(1px) scale(.96)}
+.app-shell .answer-option{
+  box-shadow:0 2px 0 rgba(32,36,58,.045),0 4px 10px rgba(32,36,58,.035),inset 0 1px 0 rgba(255,255,255,.85);
+}
+.app-shell .answer-option:not(:disabled):hover{
+  transform:translateY(-2px);
+  box-shadow:0 4px 0 rgba(32,36,58,.05),0 9px 18px rgba(32,36,58,.09),inset 0 1px 0 rgba(255,255,255,.95);
+}
+.app-shell .answer-option:not(:disabled):active{transform:translateY(0) scale(.995)}
+.app-shell .mode-choice,
+.app-shell .destination-option{
+  box-shadow:0 2px 0 rgba(32,36,58,.045),0 5px 12px rgba(32,36,58,.045),inset 0 1px 0 rgba(255,255,255,.8);
+}
+.app-shell .mode-choice:hover,
+.app-shell .destination-option:hover{
+  transform:translateY(-2px);
+  border-color:rgba(214,166,46,.55);
+  box-shadow:0 4px 0 rgba(139,105,27,.07),0 10px 22px rgba(32,36,58,.1),inset 0 1px 0 rgba(255,255,255,.9);
+}
+.app-shell .mode-choice:active,.app-shell .destination-option:active{transform:translateY(0) scale(.995)}
+.app-shell .nav-item{position:relative}
+.app-shell .nav-item:hover{transform:translateX(2px);background:color-mix(in srgb,#d6a62e 9%,transparent)}
+.app-shell .nav-item.selected{box-shadow:inset 3px 0 0 #d6a62e,0 3px 8px rgba(190,145,25,.08)}
+.app-shell :is(button,a,input,textarea,select,[tabindex]):focus-visible{
+  outline:2px solid var(--rq-focus);
+  outline-offset:3px;
+}
+.app-shell .button:focus-visible{box-shadow:0 0 0 4px rgba(214,166,46,.2),0 5px 12px rgba(32,36,58,.1)}
+/* Keep the custom-folder interaction 3D while preserving its folder/count layout. */
+.app-shell .library-folder-grid .library-custom-folder{
+  transition:transform .28s var(--rq-ease),box-shadow .28s ease,border-color .25s ease,background-color .25s ease!important;
+}
+.app-shell .library-folder-grid .library-custom-folder:hover,
+.app-shell .library-folder-grid .library-custom-folder:focus-within{
+  transform:translateY(-3px)!important;
+  box-shadow:0 5px 0 rgba(139,105,27,.08),0 14px 27px rgba(32,36,58,.12),inset 0 1px 0 rgba(255,255,255,.65)!important;
+  border-color:rgba(214,166,46,.55)!important;
+}
+.app-shell .library-folder-grid .library-custom-folder:active{transform:translateY(0) scale(.995)!important}
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit{
+  transition:transform .2s var(--rq-ease),box-shadow .2s ease,background-color .2s ease!important;
+}
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit:hover{
+  transform:translateY(-2px) scale(1.06)!important;
+  box-shadow:0 4px 10px rgba(32,36,58,.16)!important;
+}
+/* Dark mode: richer surfaces and clearer elevation against the dark canvas. */
+.app-shell.theme-dark{
+  --rq-lift-shadow:0 20px 40px rgba(0,0,0,.38),0 5px 14px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.055);
+}
+.app-shell.theme-dark .quiz-card,
+.app-shell.theme-dark .stat-card,
+.app-shell.theme-dark .question-card,
+.app-shell.theme-dark .review-row,
+.app-shell.theme-dark .tip-row,
+.app-shell.theme-dark .library-folder-card{
+  border-color:rgba(242,201,76,.17);
+  box-shadow:0 3px 0 rgba(0,0,0,.35),0 9px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.055);
+}
+.app-shell.theme-dark .quiz-card:hover,
+.app-shell.theme-dark .stat-card:hover,
+.app-shell.theme-dark .review-row:hover,
+.app-shell.theme-dark .tip-row:hover{
+  border-color:rgba(242,201,76,.55);
+  box-shadow:0 5px 0 rgba(0,0,0,.3),0 20px 38px rgba(0,0,0,.42),0 0 0 1px rgba(242,201,76,.11),0 0 24px rgba(214,166,46,.075),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.app-shell.theme-dark .button{
+  box-shadow:0 3px 0 rgba(0,0,0,.4),0 7px 16px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.app-shell.theme-dark .button:hover:not(:disabled){
+  box-shadow:0 4px 0 rgba(0,0,0,.4),0 12px 23px rgba(0,0,0,.36),0 0 0 1px rgba(242,201,76,.12),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.app-shell.theme-dark .button.primary{
+  box-shadow:0 3px 0 #7e5a0e,0 8px 20px rgba(214,166,46,.22),inset 0 1px 0 rgba(255,255,255,.4);
+}
+.app-shell.theme-dark .button.primary:hover:not(:disabled){
+  box-shadow:0 4px 0 #7e5a0e,0 13px 28px rgba(214,166,46,.31),0 0 24px rgba(242,201,76,.14),inset 0 1px 0 rgba(255,255,255,.5);
+}
+.app-shell.theme-dark .answer-option,
+.app-shell.theme-dark .mode-choice,
+.app-shell.theme-dark .destination-option{
+  box-shadow:0 3px 0 rgba(0,0,0,.35),0 8px 16px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.app-shell.theme-dark .answer-option:not(:disabled):hover,
+.app-shell.theme-dark .mode-choice:hover,
+.app-shell.theme-dark .destination-option:hover{
+  box-shadow:0 4px 0 rgba(0,0,0,.35),0 13px 25px rgba(0,0,0,.32),0 0 0 1px rgba(242,201,76,.14),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.app-shell.theme-dark .button.ghost,
+.app-shell.theme-dark .button.subtle{border-color:rgba(255,255,255,.12)}
+.app-shell.theme-dark .button.ghost:hover:not(:disabled),
+.app-shell.theme-dark .button.subtle:hover:not(:disabled){border-color:rgba(242,201,76,.4)}
+/* A single traveling gold sheen on hover, not a constant flashing effect. */
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .app-shell .quiz-card:hover::before,
+  .app-shell .stat-card:hover::before,
+  .app-shell .library-folder-card:hover::before{
+    opacity:1;
+    background:linear-gradient(110deg,rgba(255,231,153,.8),rgba(214,166,46,.08) 32%,rgba(255,255,255,.06) 50%,rgba(242,201,76,.8));
+    background-size:220% 100%;
+    animation:rq-gold-sheen 1.15s ease-out 1;
+  }
+  @keyframes rq-gold-sheen{from{background-position:100% 0}to{background-position:-120% 0}}
+}
+@media (hover:none){
+  .app-shell .quiz-card:active,.app-shell .stat-card:active,.app-shell .library-folder-card:active{transform:scale(.99)}
+  .app-shell .button:active:not(:disabled){transform:scale(.97)}
+}
+@media (prefers-reduced-motion:reduce){
+  .app-shell .quiz-card,.app-shell .stat-card,.app-shell .question-card,.app-shell .review-row,.app-shell .tip-row,.app-shell .library-folder-card,
+  .app-shell .button,.app-shell button.delete-btn,.app-shell .library-folder-edit,.app-shell .answer-option,.app-shell .mode-choice,.app-shell .destination-option,
+  .app-shell .nav-item,.app-shell .card-art-icon{transition:none!important;animation:none!important}
+  .app-shell .quiz-card:hover,.app-shell .stat-card:hover,.app-shell .review-row:hover,.app-shell .tip-row:hover,.app-shell .library-folder-grid .library-custom-folder:hover{transform:none!important}
+}
