@@ -5437,3 +5437,41 @@ html.theme-transitioning *::after {
     margin-right:2px!important;
   }
 }
+
+
+/* Structural fix: quiz count is a sibling of the open button, not inside it. */
+.app-shell .library-custom-folder{
+  position:relative;
+}
+@media (max-width:760px){
+  .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder .library-folder-count{
+    position:absolute!important;
+    top:10px!important;right:10px!important;left:auto!important;bottom:auto!important;
+    z-index:4!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) auto auto!important;
+    column-gap:14px!important;
+    align-items:center!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-open{
+    grid-column:1!important;grid-row:1!important;
+    display:flex!important;min-width:0!important;width:100%!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-count{
+    grid-column:2!important;grid-row:1!important;
+    position:static!important;inset:auto!important;
+    justify-self:end!important;align-self:center!important;
+    margin:0 4px 0 0!important;white-space:nowrap!important;
+  }
+  .app-shell .folder-list-view .library-custom-folder .library-folder-edit{
+    grid-column:3!important;grid-row:1!important;
+    position:static!important;inset:auto!important;
+    justify-self:center!important;align-self:center!important;
+    margin:0!important;
+  }
+}
+@media (max-width:390px){
+  .app-shell .folder-list-view .library-custom-folder{column-gap:10px!important}
+}
