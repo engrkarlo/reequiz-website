@@ -4806,3 +4806,69 @@ html.theme-transitioning *::after {
 }
 @keyframes reequiz-mobile-nav-settle{0%{transform:scale(.96)}58%{transform:scale(1.025)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.app-shell .sidebar>.nav-item,.app-shell .sidebar>.nav-item::before,.app-shell .sidebar>.nav-item svg{transition:none!important;animation:none!important}}
+
+/* Mobile bottom navigation: web-native animated notch inspired by better_animated_bottom_bar.
+   The referenced pub.dev package is Flutter-only, so this reproduces its interaction in CSS. */
+@media (max-width: 760px) {
+  .app-shell .sidebar {
+    overflow: visible !important;
+    isolation: isolate;
+  }
+  .app-shell .sidebar > .nav-item,
+  .app-shell .sidebar > .nav-item:not(.selected) {
+    position: relative !important;
+    overflow: visible !important;
+    z-index: 0;
+    transition: color .28s ease, transform .28s cubic-bezier(.2,.8,.2,1) !important;
+  }
+  .app-shell .sidebar > .nav-item::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 7px;
+    right: 7px;
+    top: 0;
+    bottom: 0;
+    border-radius: 17px;
+    opacity: 0;
+    transform: translateY(7px) scale(.86);
+    background: var(--gold-soft, rgba(232,189,75,.12));
+    border: 1px solid transparent;
+    transition: opacity .22s ease, transform .34s cubic-bezier(.2,.8,.2,1), background .24s ease, border-color .24s ease;
+  }
+  .app-shell .sidebar > .nav-item.selected::before {
+    top: -7px;
+    bottom: 1px;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--gold, #f0cb62) 20%, transparent), color-mix(in srgb, var(--gold, #f0cb62) 7%, transparent));
+    border-color: color-mix(in srgb, var(--gold, #f0cb62) 27%, transparent);
+    box-shadow: 0 5px 15px rgba(0,0,0,.12), inset 0 1px rgba(255,255,255,.08);
+  }
+  .app-shell .sidebar > .nav-item.selected svg {
+    transform: translateY(-3px) scale(1.07) !important;
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), filter .24s ease !important;
+  }
+  .app-shell .sidebar > .nav-item.selected {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    animation: reequiz-notch-select .34s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .app-shell .sidebar > .nav-item:not(.selected):active { transform: scale(.94) !important; }
+  .theme-dark .app-shell .sidebar > .nav-item.selected::before {
+    background: linear-gradient(145deg, rgba(232,189,75,.2), rgba(232,189,75,.07));
+    border-color: rgba(232,189,75,.28);
+    box-shadow: 0 5px 18px rgba(0,0,0,.3), inset 0 1px rgba(255,255,255,.04);
+  }
+}
+@keyframes reequiz-notch-select {
+  0% { transform: translateY(3px) scale(.96); }
+  60% { transform: translateY(-1px) scale(1.015); }
+  100% { transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .sidebar > .nav-item,
+  .app-shell .sidebar > .nav-item::before,
+  .app-shell .sidebar > .nav-item svg { transition: none !important; animation: none !important; }
+}
