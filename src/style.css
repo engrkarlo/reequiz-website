@@ -5139,3 +5139,67 @@ html.theme-transitioning *::after {
 .app-shell .library-folder-grid:not(.folder-list-view) .library-custom-folder.is-active{
   box-shadow:0 0 0 1px color-mix(in srgb,var(--gold,var(--lib-accent)) 65%,transparent)!important;
 }
+
+
+/* Created collection cards are flat surfaces, not pressable 3D buttons. */
+.app-shell .library-folder-grid .library-custom-folder,
+.app-shell .library-folder-grid .library-custom-folder:hover,
+.app-shell .library-folder-grid .library-custom-folder:active,
+.app-shell .library-folder-grid .library-custom-folder:focus,
+.app-shell .library-folder-grid .library-custom-folder:focus-within,
+.app-shell .library-folder-grid .library-custom-folder.is-active,
+.app-shell.theme-dark .library-folder-grid .library-custom-folder,
+.app-shell.theme-dark .library-folder-grid .library-custom-folder:hover,
+.app-shell.theme-dark .library-folder-grid .library-custom-folder:active,
+.app-shell.theme-dark .library-folder-grid .library-custom-folder.is-active{
+  transform:none!important;
+  animation:none!important;
+  transition:background-color .15s ease,border-color .15s ease!important;
+  box-shadow:none!important;
+}
+.app-shell .library-folder-grid .library-custom-folder::before,
+.app-shell .library-folder-grid .library-custom-folder::after{
+  content:none!important;
+  display:none!important;
+  animation:none!important;
+  transform:none!important;
+  box-shadow:none!important;
+}
+.app-shell .library-folder-grid .library-custom-folder .library-folder-open,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-open:hover,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-open:focus,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-open:focus-visible,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-open:active,
+.app-shell .library-folder-grid .library-custom-folder.is-active .library-folder-open,
+.app-shell.theme-dark .library-folder-grid .library-custom-folder .library-folder-open{
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  outline-offset:0;
+}
+.app-shell .library-folder-grid .library-custom-folder .library-folder-art,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-art:hover,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-art:active,
+.app-shell .library-folder-grid .library-custom-folder .folder-art-sheet,
+.app-shell .library-folder-grid .library-custom-folder .folder-art-sheet *,
+.app-shell .library-folder-grid .library-custom-folder .folder-art-glow{
+  transform:none!important;
+  animation:none!important;
+  transition:none!important;
+  filter:none!important;
+  box-shadow:none!important;
+}
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit:hover,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit:focus-visible,
+.app-shell .library-folder-grid .library-custom-folder .library-folder-edit:active,
+.app-shell .folder-list-view .library-custom-folder .library-folder-edit,
+.app-shell .folder-list-view .library-custom-folder .library-folder-edit:hover,
+.app-shell .folder-list-view .library-custom-folder .library-folder-edit:active{
+  animation:none!important;
+  transition:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
