@@ -118,7 +118,6 @@ function App(){
  const [aiBusy,setAiBusy]=useState(false),[aiProgress,setAiProgress]=useState(null),[aiLog,setAiLog]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-ai-change-log-v1')||'[]')}catch{return []}});
  const [showCorrections,setShowCorrections]=useState(false);
  const [showClearCorrections,setShowClearCorrections]=useState(false);
- const [showClearAiActivity,setShowClearAiActivity]=useState(false);
  useEffect(()=>localStorage.setItem('reequiz-ai-change-log-v1',JSON.stringify(aiLog.slice(0,500))),[aiLog]);
  const audioContextRef=useRef(null); const timeoutHandledRef=useRef(null); const lastCountdownBeepRef=useRef(''); const timeoutAdvanceRef=useRef(null); const resolvedQuestionRef=useRef(null);
  function handleInterfaceClick(event){
@@ -233,7 +232,7 @@ function App(){
    // If everything is already prepared, treat an explicit second run as a full re-check.
    const indices=pendingIndices.length?pendingIndices:item.questions.map((_,i)=>i);
    if(!indices.length){setNotice('There are no questions to validate.');return item;}
-   setAiBusy(true);setAiProgress({quizId:item.id,completed:0,total:indices.length});setAiActivity([{id:crypto.randomUUID(),time:new Date().toLocaleTimeString(),message:`SESSION — Starting validation for ${item.title}.`},{id:crypto.randomUUID(),time:new Date().toLocaleTimeString(),message:`QUEUE — ${indices.length} question${indices.length===1?'':'s'} queued. Completed work is saved as it finishes.`}]);setError('');setNotice('');
+   setAiBusy(true);setAiProgress({quizId:item.id,completed:0,total:indices.length});setError('');setNotice('');
    let working={...item,questions:[...item.questions]};
    const saveProgress=(next)=>{
     working=next;
@@ -259,11 +258,10 @@ function App(){
      if(data.provider)providersUsed.add(data.provider);
      if(!Array.isArray(data.questions)||data.questions.length!==batch.length)throw new Error(`AI returned incomplete results for questions ${batchIndices[0]+1}–${batchIndices[batchIndices.length-1]+1}. Completed earlier questions are saved; press the AI button again to continue.`);
      const nextQuestions=[...working.questions];
-     const correctionMessages=[];
      for(let j=0;j<data.questions.length;j++){
       const questionIndex=batchIndices[j],q=nextQuestions[questionIndex],a=data.questions[j];
       const oldAnswer=q.answer,newAnswer=Number.isInteger(a.correctAnswer)&&a.correctAnswer>=0&&a.correctAnswer<q.options.length?a.correctAnswer:oldAnswer;
-      if(newAnswer!==oldAnswer){setAiLog(prev=>[{id:crypto.randomUUID(),quiz:item.title,question:q.question,oldAnswer:q.options[oldAnswer],newAnswer:q.options[newAnswer],reason:a.correctionReason||'AI identified a likely answer-key correction.',date:Date.now()},...prev]);correctionMessages.push({id:crypto.randomUUID(),time:new Date().toLocaleTimeString(),message:`CORRECTION — Question ${questionIndex+1}: “${q.options[oldAnswer]}” → “${q.options[newAnswer]}”.`});}
+      if(newAnswer!==oldAnswer){setAiLog(prev=>[{id:crypto.randomUUID(),quiz:item.title,question:q.question,oldAnswer:q.options[oldAnswer],newAnswer:q.options[newAnswer],reason:a.correctionReason||'AI identified a likely answer-key correction.',date:Date.now()},...prev]);}
       nextQuestions[questionIndex]={...q,answer:newAnswer,explanation:a.explanation||q.explanation||'',optionExplanations:Array.isArray(a.optionExplanations)?a.optionExplanations:q.options.map(()=>''),aiPrepared:true,aiReviewed:true,originalAnswer:oldAnswer!==newAnswer?oldAnswer:q.originalAnswer,answerCorrectionReason:newAnswer!==oldAnswer?(a.correctionReason||'AI identified a likely answer-key correction.'):q.answerCorrectionReason};
      }
      saveProgress({...working,questions:nextQuestions});
