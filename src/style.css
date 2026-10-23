@@ -5917,10 +5917,16 @@ html.theme-transitioning *::after {
   display:flex!important;
   align-items:center!important;
   justify-content:space-between!important;
+  width:100%!important;
+  min-width:0!important;
   gap:10px!important;
   min-height:25px!important;
   margin:0 0 8px!important;
   padding:0!important;
+  box-sizing:border-box!important;
+}
+.app-shell .question-card > .question-card-head > .explanation-trigger{
+  margin-left:auto!important;
 }
 .app-shell .question-card > .question-card-head > .question-label{
   margin:0!important;
@@ -5966,3 +5972,54 @@ html.theme-transitioning *::after {
     height:11px!important;
   }
 }
+
+
+/* Explanation uses the same themed confirmation-dialog surface as quiz deletion. */
+.app-shell .explanation-confirm-modal{
+  width:min(100%,390px);
+  padding:25px;
+}
+.app-shell .explanation-confirm-modal .library-section-kicker{
+  display:block;
+  margin:0 0 7px;
+  color:#a17a17;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:1.5px;
+}
+.app-shell .explanation-confirm-modal h2{
+  margin:4px 32px 0 0;
+  font:800 23px Manrope,sans-serif;
+  letter-spacing:-.7px;
+  line-height:1.3;
+}
+.app-shell .explanation-confirm-modal>p{
+  margin:10px 0 0;
+  font-size:12px;
+  line-height:1.65;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.app-shell .explanation-confirm-modal .option-explanations{margin-top:12px}
+.app-shell .explanation-confirm-modal .option-explanations p{
+  margin:8px 0 0;
+  font-size:12px;
+  line-height:1.6;
+}
+.app-shell .explanation-confirm-modal .ai-offline-note{
+  display:block;
+  margin-top:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+.app-shell .explanation-icon{
+  background:#fff5d5;
+  color:#98700c;
+}
+.theme-dark .explanation-confirm-modal .explanation-icon{
+  background:#3b321c;
+  color:#f2cf57;
+}
+.theme-dark .explanation-confirm-modal .library-section-kicker{color:#f2cf57}
+.theme-dark .explanation-confirm-modal>p{color:#a6adc2}
+.theme-dark .explanation-confirm-modal .option-explanations p{color:#c6cadd}
