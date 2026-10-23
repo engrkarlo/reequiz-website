@@ -4920,3 +4920,49 @@ html.theme-transitioning *::after {
     border-color: color-mix(in srgb, var(--gold, #e8bd4b) 42%, #e2d7ad) !important;
   }
 }
+
+/* Tactile, raised controls with a clear pressed-in state. */
+.app-shell button,
+.app-shell .button,
+.app-shell .nav-item,
+.app-shell [role="button"] {
+  transition: transform .16s ease, box-shadow .18s ease, filter .18s ease;
+}
+.app-shell button:not(:disabled):not(.nav-item),
+.app-shell .button:not(:disabled) {
+  box-shadow: 0 3px 0 color-mix(in srgb, currentColor 17%, transparent), 0 5px 12px rgba(0,0,0,.12), inset 0 1px rgba(255,255,255,.2);
+}
+.app-shell button:not(:disabled):not(.nav-item):active,
+.app-shell .button:not(:disabled):active,
+.app-shell [role="button"]:active {
+  transform: translateY(2px) scale(.99);
+  box-shadow: 0 1px 0 color-mix(in srgb, currentColor 15%, transparent), inset 0 2px 5px rgba(0,0,0,.12) !important;
+}
+.app-shell.theme-dark button:not(:disabled):not(.nav-item),
+.app-shell.theme-dark .button:not(:disabled) {
+  box-shadow: 0 3px 0 rgba(0,0,0,.5), 0 6px 14px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.09);
+}
+.app-shell.theme-dark .sidebar {
+  background: rgba(11,12,16,.97) !important;
+  border-color: #292a31 !important;
+  border-bottom: 0 !important;
+  box-shadow: 0 -12px 36px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.035) !important;
+  color: #c5c7d2 !important;
+}
+.app-shell.theme-dark .sidebar > .nav-item { color: #a9adbf !important; }
+.app-shell.theme-dark .sidebar > .nav-item.selected {
+  color: #f5d77a !important;
+  background: rgba(232,189,75,.12) !important;
+  border-color: rgba(232,189,75,.32) !important;
+  box-shadow: inset 0 1px rgba(255,255,255,.06), 0 4px 0 rgba(90,67,15,.55), 0 7px 16px rgba(0,0,0,.3) !important;
+}
+.app-shell.theme-dark .sidebar > .nav-item.selected::before {
+  background: linear-gradient(145deg, rgba(232,189,75,.12), rgba(232,189,75,.035)) !important;
+}
+@media (max-width: 760px) {
+  .app-shell.theme-dark .sidebar {
+    background: rgba(11,12,16,.97) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.2);
+    backdrop-filter: blur(22px) saturate(1.2);
+  }
+}
