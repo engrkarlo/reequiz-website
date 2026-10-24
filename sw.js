@@ -22,6 +22,18 @@ self.addEventListener("fetch", event => {
     }).catch(() => caches.match("/index.html").then(cached => cached || caches.match("/"))));
     return;
   }
+  const path = url.pathname;
+  const sourceAsset = path.endsWith("/src/main.jsx") || path.endsWith("/src/static-loader.js") || path.endsWith("/src/style.css");
+  if (sourceAsset) {
+    event.respondWith(fetch(request, { cache: "no-store" }).then(response => {
+      if (response && response.ok) {
+        const copy = response.clone();
+        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, copy)));
+      }
+      return response;
+    }).catch(() => caches.match(request)));
+    return;
+  }
   event.respondWith(caches.match(request).then(cached => cached || fetch(request).then(response => {
     if (response && response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, copy))); }
     return response;
