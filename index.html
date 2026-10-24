@@ -1,2 +1,14 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><meta name="theme-color" content="#101322"/><link rel="manifest" href="/manifest.webmanifest"/><link rel="icon" type="image/svg+xml" href="/reequiz-icon.svg"/><meta name="description" content="REEQUIZ — import, practice, and master your quiz files."/><title>REEQUIZ — Master Terms to Top!</title></head><body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#101322">
+<meta name="description" content="REEQUIZ — import, practice, and master your quiz files.">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" type="image/svg+xml" href="./reequiz-icon.svg"><link rel="stylesheet" href="./src/style.css">
+<title>REEQUIZ — Master Terms to Top!</title>
+<style>#boot-status{position:fixed;inset:0;display:grid;place-content:center;gap:10px;padding:24px;background:#f6f7fb;color:#252940;font:14px/1.6 system-ui,sans-serif;text-align:center;z-index:9999}#boot-status strong{font-size:18px}#boot-status[hidden]{display:none}#boot-status pre{max-width:min(720px,90vw);white-space:pre-wrap;overflow-wrap:anywhere;text-align:left;color:#9a3040}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.10/babel.min.js" crossorigin></script>
+</head>
+<body><div id="root"></div><div id="boot-status" role="status" aria-live="polite"><strong>Loading REEQUIZ…</strong><span>Preparing the static preview.</span><pre id="boot-error" hidden></pre></div>
+<script type="module" src="./src/static-loader.js"></script></body></html>
