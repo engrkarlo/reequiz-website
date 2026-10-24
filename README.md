@@ -2,32 +2,20 @@
 
 **A simple, polished place to turn quiz files into study sessions.**
 
-REEQUIZ lets you import quizzes, practice at your own pace, review explanations, and keep track of your progress. It works in your browser, keeps your library on your device, and can be installed for offline use.
+REEQUIZ lets you import quizzes, practice at your own pace, review explanations, and keep track of your progress. It runs as a static browser app and stores your library and study progress on your device.
 
 ![REEQUIZ preview](docs/reequiz-preview.svg)
 
 ## App showcase
 
-The SVG previews below illustrate the three main workspace tabs, based on the current app UI. They are lightweight, scalable images that render directly on GitHub.
-
 ### Overview
-
-Your starting point for importing quizzes, jumping into study, and getting a quick snapshot of your workspace.
-
 ![REEQUIZ Overview tab](docs/overview-showcase.svg)
 
 ### Statistics
-
-Review completed sessions, average accuracy, total study time, recent results, and answer reviews.
-
 ![REEQUIZ Statistics tab](docs/statistics-showcase.svg)
 
 ### My Library
-
-Keep quiz sets organized into collections, search your library, and launch practice sessions.
-
 ![REEQUIZ My Library tab](docs/library-showcase.svg)
-
 
 ## What you can do
 
@@ -36,33 +24,17 @@ Keep quiz sets organized into collections, search your library, and launch pract
 - **Pick up where you left off:** Quiz sessions, answers, preferences, and statistics are saved in your browser.
 - **Understand the answers:** Explanations are available when included in a quiz, and the optional AI quiz tutor can check answer keys and prepare explanations.
 - **Make it yours:** Choose a light or dark theme, customize quiz profiles, and use the responsive layout on desktop or mobile.
-- **Study offline:** After opening the app online once and allowing it to cache, the installed app shell and saved quiz data can be used offline. AI preparation still needs an internet connection.
 
-## Getting started
+## Open with Acode Live Server (no Vite)
 
-### Use REEQUIZ
+1. Open the repository folder itself in Acode.
+2. Start **Acode Live Server** from the project root — the folder containing `index.html`.
+3. Keep the device connected to the internet on first load. The static loader fetches React, ReactDOM, Babel, fflate, and Lucide from public CDNs, then compiles the existing JSX in the browser. No Node.js, `npm install`, Vite server, or build step is needed.
+4. Refresh the preview after editing files. The loader fetches `src/main.jsx` without using the browser cache.
 
-Run REEQUIZ locally using the steps below, import a quiz from **My Library**, and start a session. You don't need an account.
-
-### Run it on your computer
-
-You’ll need Node.js 18 or newer.
-
-```bash
-npm install
-npm run dev
-```
-
-To create a production build:
-
-```bash
-npm run build
-npm run preview
-```
+**Important:** This is a static preview workflow, not a bundled/offline-first build. The first load needs internet access for the CDN libraries. The optional AI quiz tutor still requires its configured `/api/ai-import` endpoint; a plain static server does not provide that API by itself.
 
 ## Quiz file formats
-
-REEQUIZ accepts:
 
 - **`.json`** files with a `title` and a `questions` array. Each question can include `question`, `options`, `answer`, and `explanation`.
 - **`.quiz`** files using the ZIP-based format supported by the importer, including the `multipleChoiceV2` entries used by the Custom Quiz app.
@@ -71,20 +43,9 @@ Not every variation of the `.quiz` format is guaranteed to import cleanly. Check
 
 ## Optional AI quiz tutor
 
-AI preparation is optional. Turn on **AI quiz tutor** in Settings, then choose **AI validate & explain** for a quiz in My Library. The tutor can review answer keys and generate explanations with feedback for each choice. Results are saved with the quiz so prepared explanations can be read offline.
+AI preparation is optional. Turn on **AI quiz tutor** in Settings, then choose **AI validate & explain** for a quiz in My Library. The tutor can review answer keys and generate explanations with feedback for each choice. Results are saved with the quiz so prepared explanations can be read later.
 
-AI responses can be wrong, so review answer-key changes before studying from them. AI preparation itself requires an internet connection.
-
-### Configure the AI endpoint
-
-The AI endpoint uses server-side environment variables. Configure these in the environment used to host the server endpoint:
-
-- `GROQ_API_KEY` — primary provider key.
-- `GEMINI_API_KEY` — optional fallback key used when Groq is rate-limited.
-- `GROQ_MODEL` — optional model override.
-- `GEMINI_MODEL` — optional fallback model override.
-
-Keep provider keys on the server. **Never put API keys in frontend code or in variables prefixed with `VITE_`.** Redeploy after changing environment variables. Model availability and provider limits may change.
+AI responses can be wrong, so review answer-key changes before studying from a quiz. AI preparation requires an internet connection and a configured server endpoint. Keep provider API keys on the server; never put API keys in frontend code.
 
 ## Your data stays local
 
@@ -92,7 +53,7 @@ Imported quizzes, preferences, sessions, statistics, and prepared explanations a
 
 ## Built with
 
-React · Vite · JavaScript
+React · JSX compiled in-browser with Babel Standalone · Static HTML/CSS/JavaScript
 
 ---
 
