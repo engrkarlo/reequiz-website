@@ -6596,3 +6596,93 @@ html.theme-transitioning *::after {
     backdrop-filter: none;
   }
 }
+
+
+/* Tactile 3D depth for Library search and Quiz Studio form controls. */
+.app-shell .search-box input,
+.app-shell .library-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.app-shell .library-page select,
+.app-shell .library-page textarea,
+.app-shell .builder-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.app-shell .builder-page select,
+.app-shell .builder-page textarea {
+  border: 1px solid var(--input-border, rgba(126, 119, 96, .28));
+  box-shadow:
+    inset 0 2px 3px rgba(28, 30, 40, .055),
+    0 2px 0 rgba(90, 83, 61, .13),
+    0 4px 8px rgba(28, 30, 40, .055);
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+.app-shell .search-box input:hover,
+.app-shell .library-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
+.app-shell .library-page select:hover,
+.app-shell .library-page textarea:hover,
+.app-shell .builder-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
+.app-shell .builder-page select:hover,
+.app-shell .builder-page textarea:hover {
+  box-shadow:
+    inset 0 2px 3px rgba(28, 30, 40, .045),
+    0 3px 0 rgba(90, 83, 61, .15),
+    0 6px 12px rgba(28, 30, 40, .075);
+}
+.app-shell .search-box input:focus,
+.app-shell .library-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+.app-shell .library-page select:focus,
+.app-shell .library-page textarea:focus,
+.app-shell .builder-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+.app-shell .builder-page select:focus,
+.app-shell .builder-page textarea:focus {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 2px rgba(28, 30, 40, .035),
+    0 3px 0 rgba(90, 83, 61, .13),
+    0 6px 12px rgba(28, 30, 40, .075),
+    0 0 0 3px rgba(217, 185, 87, .17);
+  outline: none;
+}
+.app-shell.theme-dark .search-box input,
+.app-shell.theme-dark .library-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.app-shell.theme-dark .library-page select,
+.app-shell.theme-dark .library-page textarea,
+.app-shell.theme-dark .builder-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+.app-shell.theme-dark .builder-page select,
+.app-shell.theme-dark .builder-page textarea {
+  border-color: #484b5d;
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, .12),
+    0 2px 0 rgba(0, 0, 0, .32),
+    0 4px 9px rgba(0, 0, 0, .2);
+}
+.app-shell.theme-dark .search-box input:hover,
+.app-shell.theme-dark .library-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
+.app-shell.theme-dark .library-page select:hover,
+.app-shell.theme-dark .library-page textarea:hover,
+.app-shell.theme-dark .builder-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
+.app-shell.theme-dark .builder-page select:hover,
+.app-shell.theme-dark .builder-page textarea:hover {
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, .1),
+    0 3px 0 rgba(0, 0, 0, .36),
+    0 6px 12px rgba(0, 0, 0, .25);
+}
+/* In Quiz Studio dark mode, choice text inputs should have no inset shadow. */
+.app-shell.theme-dark .builder-page .choice-text-input {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .32), 0 4px 9px rgba(0, 0, 0, .2) !important;
+}
+.app-shell.theme-dark .builder-page .choice-text-input:hover {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .36), 0 6px 12px rgba(0, 0, 0, .25) !important;
+}
+.app-shell.theme-dark .builder-page .choice-text-input:focus {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, .32), 0 6px 12px rgba(0, 0, 0, .22), 0 0 0 3px rgba(217,185,87,.18) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .search-box input,
+  .app-shell .library-page input,
+  .app-shell .library-page select,
+  .app-shell .library-page textarea,
+  .app-shell .builder-page input,
+  .app-shell .builder-page select,
+  .app-shell .builder-page textarea {
+    transition: none !important;
+  }
+}
