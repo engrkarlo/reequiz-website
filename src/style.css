@@ -7138,3 +7138,37 @@ html.theme-transitioning *::after {
 .app-shell.theme-dark .library-page .paste-import-card:active {
   box-shadow: 0 1px 0 rgba(0,0,0,.40), 0 3px 7px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.035) !important;
 }
+
+
+/* Library action row: the upload tile is a label with class .import-card,
+   not .paste-import-card. Match its depth and press feedback to the two buttons. */
+.app-shell .library-page .library-action-row > .library-action-card.import-card {
+  position: relative;
+  transform: translateY(0) !important;
+  box-shadow: 0 5px 0 rgba(115, 86, 17, .16), 0 9px 18px rgba(45, 37, 16, .075) !important;
+  transition: transform .2s cubic-bezier(.2,.75,.25,1), box-shadow .2s ease, border-color .2s ease !important;
+  cursor: pointer;
+}
+.app-shell .library-page .library-action-row > .library-action-card.import-card:hover,
+.app-shell .library-page .library-action-row > .library-action-card.import-card:focus-within {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 7px 0 rgba(115, 86, 17, .17), 0 13px 23px rgba(45, 37, 16, .11) !important;
+  border-color: rgba(214, 166, 46, .46) !important;
+}
+.app-shell .library-page .library-action-row > .library-action-card.import-card:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(115, 86, 17, .14), 0 3px 7px rgba(45, 37, 16, .06) !important;
+}
+.app-shell.theme-dark .library-page .library-action-row > .library-action-card.import-card {
+  background: linear-gradient(145deg, #252731, #20222b) !important;
+  border-color: rgba(232, 189, 75, .24) !important;
+  box-shadow: 0 5px 0 rgba(0,0,0,.40), 0 9px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+.app-shell.theme-dark .library-page .library-action-row > .library-action-card.import-card:hover,
+.app-shell.theme-dark .library-page .library-action-row > .library-action-card.import-card:focus-within {
+  border-color: rgba(232, 189, 75, .48) !important;
+  box-shadow: 0 7px 0 rgba(0,0,0,.44), 0 13px 23px rgba(0,0,0,.36), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.app-shell.theme-dark .library-page .library-action-row > .library-action-card.import-card:active {
+  box-shadow: 0 1px 0 rgba(0,0,0,.38), 0 3px 7px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
