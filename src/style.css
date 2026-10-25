@@ -6389,11 +6389,7 @@ html.theme-transitioning *::after {
 
 /* The Import quiz action is a pressable card too: give it resting depth,
    a lifted hover state, and a clear press-down response. */
-.app-shell .import-quiz-action {
-  box-shadow: 0 4px 0 rgba(115, 86, 17, .16), 0 8px 18px rgba(45, 37, 16, .07) !important;
-  transform: translateY(0);
-  transition: transform .2s cubic-bezier(.2,.75,.25,1), box-shadow .2s ease, border-color .2s ease !important;
-}
+/* Removed obsolete .import-quiz-action styles; Library upload uses .library-action-card.import-card. */
 
 
 /* The large Library "Import quiz" panel is .paste-import-card (not
