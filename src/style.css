@@ -6686,3 +6686,18 @@ html.theme-transitioning *::after {
     transition: none !important;
   }
 }
+
+
+/* Keep the Library search and Quiz Studio choice text fields borderless;
+   the surrounding controls retain their existing 3D depth styling. */
+.app-shell .search-box input,
+.app-shell .builder-page .choice-text-input,
+.app-shell .builder-page .choice-text-input:hover,
+.app-shell .builder-page .choice-text-input:focus,
+.app-shell.theme-dark .search-box input,
+.app-shell.theme-dark .builder-page .choice-text-input,
+.app-shell.theme-dark .builder-page .choice-text-input:hover,
+.app-shell.theme-dark .builder-page .choice-text-input:focus {
+  border: 0 !important;
+  outline: none !important;
+}
