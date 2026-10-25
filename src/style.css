@@ -6143,3 +6143,26 @@ html.theme-transitioning *::after {
     transition: none !important;
   }
 }
+
+
+/* Smooth page-entry transition when navigating between workspace screens. */
+@keyframes reequiz-page-slide-in {
+  from {
+    opacity: 0;
+    transform: translate3d(18px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.app-shell .main > .page {
+  animation: reequiz-page-slide-in 320ms cubic-bezier(.22, .75, .25, 1) both;
+  will-change: opacity, transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .main > .page {
+    animation: none !important;
+    will-change: auto;
+  }
+}
