@@ -6746,3 +6746,12 @@ html.theme-transitioning *::after {
   box-shadow: none !important;
   transform: none !important;
 }
+
+
+/* Keep Quiz Studio choice text fields transparent so the choice card provides the background. */
+.app-shell.theme-dark .builder-page .choice-text-input,
+.app-shell.theme-dark .builder-page .choice-text-input:hover,
+.app-shell.theme-dark .builder-page .choice-text-input:focus,
+.app-shell.theme-dark .builder-page .choice-text-input:focus-visible {
+  background: transparent !important;
+}
