@@ -6718,3 +6718,31 @@ html.theme-transitioning *::after {
 .app-shell .builder-page .choice-text-input:focus {
   outline: none !important;
 }
+
+
+/* Final dark-mode cleanup: remove the search inset outline and all choice-field focus shadows. */
+.app-shell.theme-dark .library-search-field input,
+.app-shell.theme-dark .library-search-field input:hover,
+.app-shell.theme-dark .library-search-field input:focus,
+.app-shell.theme-dark .library-search-field input:focus-visible {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.app-shell.theme-dark .library-search-field:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, .11) !important;
+}
+
+.app-shell.theme-dark .builder-page .choice-text-input,
+.app-shell.theme-dark .builder-page .choice-text-input:hover,
+.app-shell.theme-dark .builder-page .choice-text-input:focus,
+.app-shell.theme-dark .builder-page .choice-text-input:focus-visible {
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
