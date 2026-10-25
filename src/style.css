@@ -7104,3 +7104,37 @@ html.theme-transitioning *::after {
 .app-shell.theme-dark .import-quiz-action:active {
   box-shadow: 0 1px 0 rgba(0,0,0,.30), 0 3px 7px rgba(0,0,0,.16) !important;
 }
+
+
+/* The large Library "Import quiz" panel is .paste-import-card (not
+   .import-quiz-action, which belongs to a smaller action). Apply tactile depth
+   directly to the correct element with page-scoped specificity. */
+.app-shell .library-page .paste-import-card {
+  position: relative;
+  transform: translateY(0) !important;
+  box-shadow: 0 4px 0 rgba(115, 86, 17, .16), 0 9px 20px rgba(45, 37, 16, .08) !important;
+  transition: transform .2s cubic-bezier(.2,.75,.25,1), box-shadow .2s ease, border-color .2s ease !important;
+}
+.app-shell .library-page .paste-import-card:hover,
+.app-shell .library-page .paste-import-card:focus-within {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 0 rgba(115, 86, 17, .17), 0 13px 25px rgba(45, 37, 16, .12) !important;
+  border-color: rgba(214, 166, 46, .42) !important;
+}
+.app-shell .library-page .paste-import-card:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(115, 86, 17, .14), 0 3px 7px rgba(45, 37, 16, .07) !important;
+}
+.app-shell.theme-dark .library-page .paste-import-card {
+  background: linear-gradient(145deg, #252731, #20222b) !important;
+  border-color: rgba(232, 189, 75, .24) !important;
+  box-shadow: 0 4px 0 rgba(0,0,0,.42), 0 9px 20px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.045) !important;
+}
+.app-shell.theme-dark .library-page .paste-import-card:hover,
+.app-shell.theme-dark .library-page .paste-import-card:focus-within {
+  border-color: rgba(232, 189, 75, .48) !important;
+  box-shadow: 0 6px 0 rgba(0,0,0,.46), 0 13px 25px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06) !important;
+}
+.app-shell.theme-dark .library-page .paste-import-card:active {
+  box-shadow: 0 1px 0 rgba(0,0,0,.40), 0 3px 7px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
