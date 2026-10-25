@@ -6893,3 +6893,53 @@ html.theme-transitioning *::after {
   .app-shell .folder-card::after,
   .app-shell .quiz-detail-card::after { animation: none !important; }
 }
+
+
+/* Library light-mode search: keep the input itself completely unboxed.
+   The outer search control retains its normal rounded container. */
+.app-shell:not(.theme-dark) .library-search-field input,
+.app-shell:not(.theme-dark) .library-search-field input:hover,
+.app-shell:not(.theme-dark) .library-search-field input:focus,
+.app-shell:not(.theme-dark) .library-search-field input:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Created folders in Library grid view should use the same card treatment as
+   All quizzes: matching surface, hover lift, and gold-white animated edge.
+   Keep the custom folder's own controls and content intact. */
+.app-shell .library-folder-grid:not(.folder-list-view) > .library-custom-folder {
+  background: var(--lib-panel) !important;
+  border: 1px solid var(--lib-line) !important;
+  border-radius: 19px !important;
+  box-shadow: 0 4px 12px rgba(28, 30, 65, .025) !important;
+  transition: transform .24s cubic-bezier(.2,.8,.2,1), box-shadow .24s, border-color .24s !important;
+}
+.app-shell .library-folder-grid:not(.folder-list-view) > .library-custom-folder:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--lib-line) !important;
+  box-shadow: 0 12px 30px rgba(34, 30, 82, .08) !important;
+}
+.app-shell .library-folder-grid:not(.folder-list-view) > .library-custom-folder.is-active {
+  border-color: var(--lib-line) !important;
+  box-shadow: 0 0 0 1px rgba(214, 166, 46, .16), 0 10px 24px rgba(34, 30, 82, .06) !important;
+}
+.app-shell .library-folder-grid:not(.folder-list-view) > .library-custom-folder .library-folder-art {
+  background: linear-gradient(145deg, rgba(255,225,138,.32), rgba(214,166,46,.12)) !important;
+}
+.app-shell.theme-dark .library-folder-grid:not(.folder-list-view) > .library-custom-folder {
+  background: var(--panel, rgba(21,23,28,.96)) !important;
+  border-color: var(--panel-border, rgba(255,255,255,.09)) !important;
+  box-shadow: 0 7px 20px rgba(0,0,0,.12) !important;
+}
+.app-shell.theme-dark .library-folder-grid:not(.folder-list-view) > .library-custom-folder:hover {
+  border-color: rgba(232,189,75,.35) !important;
+  box-shadow: 0 12px 28px rgba(0,0,0,.24) !important;
+}
+.app-shell.theme-dark .library-folder-grid:not(.folder-list-view) > .library-custom-folder .library-folder-art {
+  background: linear-gradient(145deg, rgba(232,189,75,.18), rgba(232,189,75,.07)) !important;
+}
