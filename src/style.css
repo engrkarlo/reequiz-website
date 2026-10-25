@@ -6364,3 +6364,235 @@ html.theme-transitioning *::after {
     background-color: rgba(31,32,39,.96) !important;
   }
 }
+
+
+/* Quiz Studio: complete, high-contrast dark theme coverage. */
+.app-shell.theme-dark .builder-page {
+  --text: #f3f4fb;
+  --text-main: #f3f4fb;
+  --muted: #b8bbcb;
+  --ink: #f3f4fb;
+  --line: #3a3d4c;
+  color: #f3f4fb;
+}
+.app-shell.theme-dark .builder-page .builder-hero,
+.app-shell.theme-dark .builder-page .builder-settings-card,
+.app-shell.theme-dark .builder-page .paste-import-card,
+.app-shell.theme-dark .builder-page .paste-workspace,
+.app-shell.theme-dark .builder-page .builder-question-card,
+.app-shell.theme-dark .builder-page .builder-footer {
+  background-color: #20222d;
+  border-color: #3b3e4e;
+  color: #f3f4fb;
+  box-shadow: 0 10px 28px rgba(0,0,0,.22);
+}
+.app-shell.theme-dark .builder-page .builder-hero {
+  background: linear-gradient(125deg, #28263a 0%, #20222d 72%);
+}
+.app-shell.theme-dark .builder-page h1,
+.app-shell.theme-dark .builder-page h2,
+.app-shell.theme-dark .builder-page h3,
+.app-shell.theme-dark .builder-page p,
+.app-shell.theme-dark .builder-page b,
+.app-shell.theme-dark .builder-page label,
+.app-shell.theme-dark .builder-page .builder-question-heading b,
+.app-shell.theme-dark .builder-page .builder-choices-label b,
+.app-shell.theme-dark .builder-page .builder-footer > div:first-child b {
+  color: #f3f4fb;
+}
+.app-shell.theme-dark .builder-page .builder-hero p,
+.app-shell.theme-dark .builder-page .paste-import-copy p,
+.app-shell.theme-dark .builder-page .paste-workspace-head p,
+.app-shell.theme-dark .builder-page .builder-list-heading p,
+.app-shell.theme-dark .builder-page .builder-choices-label small,
+.app-shell.theme-dark .builder-page .builder-title-fields label span,
+.app-shell.theme-dark .builder-page .builder-field-label span,
+.app-shell.theme-dark .builder-page .builder-footer p,
+.app-shell.theme-dark .builder-page .paste-actions > span,
+.app-shell.theme-dark .builder-page .builder-step,
+.app-shell.theme-dark .builder-page .builder-step b {
+  color: #b8bbcb;
+}
+.app-shell.theme-dark .builder-page .builder-back {
+  color: #d5d7e5;
+}
+.app-shell.theme-dark .builder-page .builder-back:hover,
+.app-shell.theme-dark .builder-page .builder-back:focus-visible {
+  color: #ffffff;
+}
+.app-shell.theme-dark .builder-page .eyebrow {
+  color: #e6c66c;
+}
+.app-shell.theme-dark .builder-page .builder-step span {
+  background: #343646;
+  color: #e3e5f1;
+  border-color: #4a4d60;
+}
+.app-shell.theme-dark .builder-page .builder-step.active span {
+  background: #d8b75a;
+  border-color: #d8b75a;
+  color: #201c12;
+}
+.app-shell.theme-dark .builder-page .builder-step.active b {
+  color: #f0d784;
+}
+.app-shell.theme-dark .builder-page .builder-step-line {
+  background: #454858;
+}
+.app-shell.theme-dark .builder-page .builder-section-icon {
+  background: #403824;
+  color: #f2d47c;
+}
+.app-shell.theme-dark .builder-page .paste-import-icon {
+  background: #1e3b32;
+  color: #8ce0bc;
+}
+.app-shell.theme-dark .builder-page .builder-count {
+  background: #302a40;
+  border-color: #4a405f;
+  color: #e5d7ff;
+}
+.app-shell.theme-dark .builder-page .builder-title-fields input,
+.app-shell.theme-dark .builder-page .builder-field-label textarea,
+.app-shell.theme-dark .builder-page .paste-textarea,
+.app-shell.theme-dark .builder-page .choice-text-input {
+  background: #171923;
+  color: #f5f6fc;
+  border-color: #484b5d;
+  caret-color: #f0cf70;
+}
+.app-shell.theme-dark .builder-page .builder-title-fields input::placeholder,
+.app-shell.theme-dark .builder-page .builder-field-label textarea::placeholder,
+.app-shell.theme-dark .builder-page .paste-textarea::placeholder,
+.app-shell.theme-dark .builder-page .choice-text-input::placeholder {
+  color: #969bad;
+  opacity: 1;
+}
+.app-shell.theme-dark .builder-page .builder-title-fields input:focus,
+.app-shell.theme-dark .builder-page .builder-field-label textarea:focus,
+.app-shell.theme-dark .builder-page .paste-textarea:focus,
+.app-shell.theme-dark .builder-page .choice-text-input:focus {
+  border-color: #d9b957;
+  box-shadow: 0 0 0 3px rgba(217,185,87,.18);
+  outline: none;
+}
+.app-shell.theme-dark .builder-page .builder-choice {
+  background: #252733;
+  border-color: #424556;
+  color: #f0f1f8;
+}
+.app-shell.theme-dark .builder-page .builder-choice:hover {
+  background: #2d3040;
+  border-color: #656982;
+}
+.app-shell.theme-dark .builder-page .builder-choice .choice-letter {
+  background: #393747;
+  color: #e0d9f3;
+}
+.app-shell.theme-dark .builder-page .builder-choice.correct-choice {
+  background: #1b382f;
+  border-color: #43896d;
+  color: #f0fff8;
+}
+.app-shell.theme-dark .builder-page .builder-choice.correct-choice .choice-letter {
+  background: #245b43;
+  color: #c9f6df;
+}
+.app-shell.theme-dark .builder-page .choice-check {
+  color: #8ce0b6;
+}
+.app-shell.theme-dark .builder-page .builder-question-number {
+  background: linear-gradient(145deg, #55482a, #3f3522);
+  color: #ffe6a0;
+}
+.app-shell.theme-dark .builder-page .needs-review {
+  color: #ffd18a;
+}
+.app-shell.theme-dark .builder-page .answer-confirmed {
+  color: #8ce0b6;
+}
+.app-shell.theme-dark .builder-page .builder-remove {
+  background: #38252b;
+  color: #ffadb5;
+  border: 1px solid #5c343d;
+}
+.app-shell.theme-dark .builder-page .builder-remove:hover {
+  background: #512b34;
+  color: #fff0f1;
+}
+.app-shell.theme-dark .builder-page .paste-tag {
+  background: #40351e;
+  color: #f2d37b;
+  border: 1px solid #65532a;
+}
+.app-shell.theme-dark .builder-page .ai-scan-workspace {
+  background: linear-gradient(135deg, rgba(232,189,75,.07), #20222d 58%, rgba(139,120,232,.06));
+  border-color: #4b4433;
+  color: #f3f4fb;
+}
+.app-shell.theme-dark .builder-page .ai-scan-heading h3,
+.app-shell.theme-dark .builder-page .ai-scan-heading p,
+.app-shell.theme-dark .builder-page .ai-scan-note,
+.app-shell.theme-dark .builder-page .ai-scan-actions > span {
+  color: #e5e7f2;
+}
+.app-shell.theme-dark .builder-page .ai-upload-drop {
+  background: #191b26;
+  border-color: #55586b;
+  color: #e8eaf5;
+}
+.app-shell.theme-dark .builder-page .ai-upload-drop span,
+.app-shell.theme-dark .builder-page .ai-upload-list small {
+  color: #b8bbcb;
+}
+.app-shell.theme-dark .builder-page .ai-upload-list > div {
+  background: #252733;
+  border-color: #414456;
+  color: #f0f1f8;
+}
+.app-shell.theme-dark .builder-page .ai-upload-list button {
+  color: #d9dbea;
+}
+.app-shell.theme-dark .builder-page .ai-scan-note {
+  background: #292a35;
+  border-color: #424455;
+}
+.app-shell.theme-dark .builder-page .builder-footer {
+  background: linear-gradient(120deg, #29251f, #292538);
+  border-color: #51452e;
+}
+.app-shell.theme-dark .builder-page .builder-footer-actions .button.subtle,
+.app-shell.theme-dark .builder-page .builder-list-actions .button.subtle {
+  background: #292b37;
+  border-color: #494c5e;
+  color: #e8eaf5;
+}
+.app-shell.theme-dark .builder-page .builder-footer-actions .button.subtle:hover,
+.app-shell.theme-dark .builder-page .builder-list-actions .button.subtle:hover {
+  background: #343746;
+  border-color: #666a80;
+}
+.app-shell.theme-dark .builder-page .button.primary {
+  color: #201b10;
+  background: #e0bd59;
+  border-color: #e0bd59;
+}
+.app-shell.theme-dark .builder-page .button.primary:hover {
+  background: #f0d477;
+  border-color: #f0d477;
+}
+.app-shell.theme-dark .builder-page .button:focus-visible,
+.app-shell.theme-dark .builder-page .builder-remove:focus-visible {
+  outline: 2px solid #f0d477;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-transparency: reduce) {
+  .app-shell.theme-dark .builder-page .builder-hero,
+  .app-shell.theme-dark .builder-page .builder-settings-card,
+  .app-shell.theme-dark .builder-page .paste-import-card,
+  .app-shell.theme-dark .builder-page .paste-workspace,
+  .app-shell.theme-dark .builder-page .builder-question-card,
+  .app-shell.theme-dark .builder-page .builder-footer {
+    backdrop-filter: none;
+  }
+}
