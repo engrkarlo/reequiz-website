@@ -6701,3 +6701,20 @@ html.theme-transitioning *::after {
   border: 0 !important;
   outline: none !important;
 }
+
+
+/* Match Library search and Quiz Studio choice fields to the flat Explanation field. */
+.app-shell .library-search-field input,
+.app-shell .library-search-field input:hover,
+.app-shell .library-search-field input:focus,
+.app-shell .builder-page .choice-text-input,
+.app-shell .builder-page .choice-text-input:hover,
+.app-shell .builder-page .choice-text-input:focus {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.app-shell .library-search-field input:focus,
+.app-shell .builder-page .choice-text-input:focus {
+  outline: none !important;
+}
