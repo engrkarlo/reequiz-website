@@ -7174,82 +7174,7 @@ html.theme-transitioning *::after {
 }
 
 
-/* Explanation dialog uses .confirm-modal in the rendered markup (not .explanation-modal).
-   Force viewport-based centering so its position never depends on the trigger button. */
-.app-shell .explanation-backdrop {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 1200 !important;
-  display: grid !important;
-  place-items: center !important;
-  padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important;
-  box-sizing: border-box !important;
-  overflow: auto !important;
-  overscroll-behavior: contain;
-}
-.app-shell .explanation-backdrop > .explanation-confirm-modal {
-  position: relative !important;
-  inset: auto !important;
-  align-self: center !important;
-  justify-self: center !important;
-  margin: auto !important;
-  width: min(390px, 100%) !important;
-  max-width: 100% !important;
-  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  box-sizing: border-box !important;
-  padding: clamp(12px, 3.5vw, 22px) !important;
-  overscroll-behavior: contain;
-  overflow-wrap: anywhere;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal h2 {
-  font-size: clamp(14px, 3.4vw, 18px) !important;
-  line-height: 1.25 !important;
-  margin: 5px 28px 9px 0 !important;
-  overflow-wrap: anywhere;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal > p {
-  font-size: clamp(10px, 2.6vw, 12px) !important;
-  line-height: 1.5 !important;
-  overflow-wrap: anywhere;
-  white-space: pre-wrap;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal .option-explanations {
-  margin-top: 8px !important;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal .option-explanations p {
-  font-size: clamp(9px, 2.35vw, 11px) !important;
-  line-height: 1.4 !important;
-  margin: 5px 0 !important;
-  overflow-wrap: anywhere;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal .library-section-kicker {
-  font-size: 9px !important;
-  letter-spacing: 1.2px !important;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal .ai-offline-note {
-  font-size: 9px !important;
-  line-height: 1.35 !important;
-}
-.app-shell .explanation-backdrop .explanation-confirm-modal .confirm-actions {
-  margin-top: 12px !important;
-}
-@media (max-width: 380px) {
-  .app-shell .explanation-backdrop > .explanation-confirm-modal {
-    width: 100% !important;
-    padding: 12px !important;
-  }
-  .app-shell .explanation-backdrop .explanation-confirm-modal .explanation-icon {
-    width: 36px;
-    height: 36px;
-    margin-bottom: 8px;
-  }
-}
-
-
-/* Explanation dialog is portaled to document.body so transformed app wrappers and
-   scroll position cannot turn its fixed position into a trigger-relative position. */
+/* Explanation dialog: viewport-centered portal with the same modal theme as other dialogs. */
 body > .explanation-backdrop {
   position: fixed !important;
   inset: 0 !important;
@@ -7259,6 +7184,9 @@ body > .explanation-backdrop {
   padding: max(12px, env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)) !important;
   box-sizing: border-box !important;
   overflow: auto !important;
+  background: rgba(8, 9, 13, .68) !important;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
 }
 body > .explanation-backdrop > .explanation-confirm-modal {
   position: relative !important;
@@ -7272,17 +7200,76 @@ body > .explanation-backdrop > .explanation-confirm-modal {
   overflow-x: hidden !important;
   overflow-y: auto !important;
   box-sizing: border-box !important;
+  padding: clamp(16px, 4vw, 24px) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(214, 166, 46, .24) !important;
+  background: linear-gradient(145deg, #fffefa, #f8f5ec) !important;
+  color: #292a36 !important;
+  box-shadow: 0 24px 70px rgba(23, 20, 12, .28), 0 4px 0 rgba(117, 86, 17, .12), inset 0 1px 0 rgba(255,255,255,.9) !important;
 }
-body > .explanation-backdrop .explanation-confirm-modal h2 {
+body > .explanation-backdrop > .explanation-confirm-modal p {
+  color: #777b8b;
+  overflow-wrap: anywhere !important;
+}
+body > .explanation-backdrop > .explanation-confirm-modal h2 {
+  color: #252737 !important;
   font-size: clamp(14px, 3.4vw, 18px) !important;
+  line-height: 1.25 !important;
 }
-body > .explanation-backdrop .explanation-confirm-modal > p {
+body > .explanation-backdrop > .explanation-confirm-modal > p {
   font-size: clamp(10px, 2.6vw, 12px) !important;
   line-height: 1.5 !important;
-  overflow-wrap: anywhere !important;
 }
-body > .explanation-backdrop .explanation-confirm-modal .option-explanations p {
+body > .explanation-backdrop > .explanation-confirm-modal .option-explanations p {
   font-size: clamp(9px, 2.35vw, 11px) !important;
   line-height: 1.4 !important;
-  overflow-wrap: anywhere !important;
+}
+body > .explanation-backdrop > .explanation-confirm-modal .modal-close {
+  background: #fffdf6;
+  color: #55586a;
+  border-color: rgba(44, 45, 59, .14);
+}
+body > .explanation-backdrop.theme-dark > .explanation-confirm-modal {
+  background: linear-gradient(145deg, #1b1c22, #191a1f) !important;
+  color: #f4f0e4 !important;
+  border-color: rgba(232, 189, 75, .24) !important;
+  box-shadow: 0 28px 90px rgba(0,0,0,.58), 0 4px 0 rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+body > .explanation-backdrop.theme-dark > .explanation-confirm-modal h2 {
+  color: #f4f0e4 !important;
+}
+body > .explanation-backdrop.theme-dark > .explanation-confirm-modal p {
+  color: #b7b2a4 !important;
+}
+body > .explanation-backdrop.theme-dark > .explanation-confirm-modal .modal-close {
+  background: #27282e !important;
+  color: #e9dfc4 !important;
+  border-color: #3b3b40 !important;
+}
+body > .explanation-backdrop.theme-dark > .explanation-confirm-modal .confirm-icon {
+  background: rgba(214, 166, 46, .16);
+  color: #e8bd4b;
+}
+body > .explanation-backdrop.theme-light > .explanation-confirm-modal .confirm-icon {
+  background: rgba(214, 166, 46, .12);
+  color: #c79b28;
+}
+body > .explanation-backdrop .explanation-confirm-modal .library-section-kicker {
+  font-size: 9px !important;
+  letter-spacing: 1.2px !important;
+}
+body > .explanation-backdrop .explanation-confirm-modal .ai-offline-note {
+  font-size: 9px !important;
+  line-height: 1.35 !important;
+}
+@media (max-width: 380px) {
+  body > .explanation-backdrop > .explanation-confirm-modal {
+    width: 100% !important;
+    padding: 12px !important;
+  }
+  body > .explanation-backdrop .explanation-confirm-modal .explanation-icon {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
 }
