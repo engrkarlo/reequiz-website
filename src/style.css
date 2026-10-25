@@ -6755,3 +6755,141 @@ html.theme-transitioning *::after {
 .app-shell.theme-dark .builder-page .choice-text-input:focus-visible {
   background: transparent !important;
 }
+
+
+/* Global card interaction: the Settings gold-white edge sweep and subtle lift also
+   apply to cards rendered dynamically by quiz imports and folder creation. */
+.app-shell .stat-card,
+.app-shell .quiz-card,
+.app-shell .resume-card,
+.app-shell .settings-card,
+.app-shell .builder-settings-card,
+.app-shell .builder-question-card,
+.app-shell .question-card,
+.app-shell .review-row,
+.app-shell .saved-session-card,
+.app-shell .stats-history,
+.app-shell .stats-session-detail,
+.app-shell .library-folder-card,
+.app-shell .library-action-card,
+.app-shell .library-folder,
+.app-shell .session-summary-card,
+.app-shell .history-card,
+.app-shell .analytics-card,
+.app-shell .dashboard-card,
+.app-shell .folder-card,
+.app-shell .quiz-detail-card {
+  position: relative;
+  isolation: isolate;
+  transition: transform .22s cubic-bezier(.2,.75,.25,1), box-shadow .22s ease, border-color .22s ease;
+}
+.app-shell .stat-card::after,
+.app-shell .builder-settings-card::after,
+.app-shell .builder-question-card::after,
+.app-shell .question-card::after,
+.app-shell .review-row::after,
+.app-shell .saved-session-card::after,
+.app-shell .stats-history::after,
+.app-shell .stats-session-detail::after,
+.app-shell .library-folder-card::after,
+.app-shell .library-action-card::after,
+.app-shell .library-folder::after,
+.app-shell .session-summary-card::after,
+.app-shell .history-card::after,
+.app-shell .analytics-card::after,
+.app-shell .dashboard-card::after,
+.app-shell .folder-card::after,
+.app-shell .quiz-detail-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.6px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  background: conic-gradient(from var(--edge-angle,0deg), transparent 0 43%, rgba(255,255,255,.82) 49%, rgba(255,233,160,.98) 55%, rgba(232,189,75,.96) 62%, rgba(255,255,255,.48) 68%, transparent 76% 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .25s ease;
+  will-change: opacity;
+}
+.app-shell .stat-card:hover,
+.app-shell .builder-settings-card:hover,
+.app-shell .builder-question-card:hover,
+.app-shell .question-card:hover,
+.app-shell .review-row:hover,
+.app-shell .saved-session-card:hover,
+.app-shell .stats-history:hover,
+.app-shell .stats-session-detail:hover,
+.app-shell .library-folder-card:hover,
+.app-shell .library-action-card:hover,
+.app-shell .library-folder:hover,
+.app-shell .session-summary-card:hover,
+.app-shell .history-card:hover,
+.app-shell .analytics-card:hover,
+.app-shell .dashboard-card:hover,
+.app-shell .folder-card:hover,
+.app-shell .quiz-detail-card:hover {
+  transform: translateY(-2px);
+}
+.app-shell .stat-card:hover::after,
+.app-shell .builder-settings-card:hover::after,
+.app-shell .builder-question-card:hover::after,
+.app-shell .question-card:hover::after,
+.app-shell .review-row:hover::after,
+.app-shell .saved-session-card:hover::after,
+.app-shell .stats-history:hover::after,
+.app-shell .stats-session-detail:hover::after,
+.app-shell .library-folder-card:hover::after,
+.app-shell .library-action-card:hover::after,
+.app-shell .library-folder:hover::after,
+.app-shell .session-summary-card:hover::after,
+.app-shell .history-card:hover::after,
+.app-shell .analytics-card:hover::after,
+.app-shell .dashboard-card:hover::after,
+.app-shell .folder-card:hover::after,
+.app-shell .quiz-detail-card:hover::after {
+  opacity: 1;
+  animation: reequiz-edge-turn 4.8s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell .stat-card,
+  .app-shell .builder-settings-card,
+  .app-shell .builder-question-card,
+  .app-shell .question-card,
+  .app-shell .review-row,
+  .app-shell .saved-session-card,
+  .app-shell .stats-history,
+  .app-shell .stats-session-detail,
+  .app-shell .library-folder-card,
+  .app-shell .library-action-card,
+  .app-shell .library-folder,
+  .app-shell .session-summary-card,
+  .app-shell .history-card,
+  .app-shell .analytics-card,
+  .app-shell .dashboard-card,
+  .app-shell .folder-card,
+  .app-shell .quiz-detail-card {
+    transition: none !important;
+    transform: none !important;
+  }
+  .app-shell .stat-card::after,
+  .app-shell .builder-settings-card::after,
+  .app-shell .builder-question-card::after,
+  .app-shell .question-card::after,
+  .app-shell .review-row::after,
+  .app-shell .saved-session-card::after,
+  .app-shell .stats-history::after,
+  .app-shell .stats-session-detail::after,
+  .app-shell .library-folder-card::after,
+  .app-shell .library-action-card::after,
+  .app-shell .library-folder::after,
+  .app-shell .session-summary-card::after,
+  .app-shell .history-card::after,
+  .app-shell .analytics-card::after,
+  .app-shell .dashboard-card::after,
+  .app-shell .folder-card::after,
+  .app-shell .quiz-detail-card::after { animation: none !important; }
+}
