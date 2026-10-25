@@ -6214,3 +6214,153 @@ html.theme-transitioning *::after {
     animation: none !important;
   }
 }
+
+
+/* Site-wide glassmorphism card treatment — light and dark themes. */
+/* Keep the glass effect on content cards across Overview, Library, practice,
+   results, statistics, settings, and quiz-building screens without changing
+   controls or the main page backgrounds. */
+.app-shell {
+  --glass-light-bg: rgba(255, 255, 255, 0.58);
+  --glass-light-border: rgba(255, 255, 255, 0.78);
+  --glass-light-shadow: 0 8px 26px rgba(48, 43, 25, 0.07), inset 0 1px 0 rgba(255,255,255,.72);
+  --glass-dark-bg: rgba(31, 32, 39, 0.66);
+  --glass-dark-border: rgba(255, 255, 255, 0.09);
+  --glass-dark-shadow: 0 8px 28px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,.055);
+}
+.app-shell .stat-card,
+.app-shell .quiz-card,
+.app-shell .tip-row,
+.app-shell .settings-panel,
+.app-shell .question-card,
+.app-shell .review-row,
+.app-shell .settings-card,
+.app-shell .builder-settings-card,
+.app-shell .builder-question-card,
+.app-shell .saved-session-card,
+.app-shell .stats-history,
+.app-shell .stats-session-detail,
+.app-shell .library-folder-card,
+.app-shell .library-folder,
+.app-shell .empty-state,
+.app-shell .search-box,
+.app-shell .results-banner,
+.app-shell .session-summary-card,
+.app-shell .history-card,
+.app-shell .analytics-card,
+.app-shell .dashboard-card,
+.app-shell .folder-card,
+.app-shell .quiz-detail-card {
+  background-color: var(--glass-light-bg) !important;
+  border-color: var(--glass-light-border) !important;
+  box-shadow: var(--glass-light-shadow);
+  -webkit-backdrop-filter: blur(16px) saturate(145%);
+  backdrop-filter: blur(16px) saturate(145%);
+}
+.app-shell .quiz-card,
+.app-shell .library-folder-card,
+.app-shell .library-folder,
+.app-shell .review-row,
+.app-shell .settings-card,
+.app-shell .builder-settings-card,
+.app-shell .builder-question-card,
+.app-shell .saved-session-card,
+.app-shell .stats-history,
+.app-shell .stats-session-detail {
+  overflow: hidden;
+}
+.app-shell .quiz-card:hover,
+.app-shell .library-folder-card:hover,
+.app-shell .settings-card:hover,
+.app-shell .builder-settings-card:hover,
+.app-shell .builder-question-card:hover,
+.app-shell .saved-session-card:hover {
+  box-shadow: 0 12px 32px rgba(48, 43, 25, 0.11), inset 0 1px 0 rgba(255,255,255,.78);
+}
+.app-shell.theme-dark .stat-card,
+.app-shell.theme-dark .quiz-card,
+.app-shell.theme-dark .tip-row,
+.app-shell.theme-dark .settings-panel,
+.app-shell.theme-dark .question-card,
+.app-shell.theme-dark .review-row,
+.app-shell.theme-dark .settings-card,
+.app-shell.theme-dark .builder-settings-card,
+.app-shell.theme-dark .builder-question-card,
+.app-shell.theme-dark .saved-session-card,
+.app-shell.theme-dark .stats-history,
+.app-shell.theme-dark .stats-session-detail,
+.app-shell.theme-dark .library-folder-card,
+.app-shell.theme-dark .library-folder,
+.app-shell.theme-dark .empty-state,
+.app-shell.theme-dark .search-box,
+.app-shell.theme-dark .results-banner,
+.app-shell.theme-dark .session-summary-card,
+.app-shell.theme-dark .history-card,
+.app-shell.theme-dark .analytics-card,
+.app-shell.theme-dark .dashboard-card,
+.app-shell.theme-dark .folder-card,
+.app-shell.theme-dark .quiz-detail-card {
+  background-color: var(--glass-dark-bg) !important;
+  border-color: var(--glass-dark-border) !important;
+  box-shadow: var(--glass-dark-shadow);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(16px) saturate(135%);
+}
+.app-shell.theme-dark .quiz-card:hover,
+.app-shell.theme-dark .library-folder-card:hover,
+.app-shell.theme-dark .settings-card:hover,
+.app-shell.theme-dark .builder-settings-card:hover,
+.app-shell.theme-dark .builder-question-card:hover,
+.app-shell.theme-dark .saved-session-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,.08);
+}
+/* Keep illustrated card headers and nested status chips colorful and legible. */
+.app-shell .quiz-card-art,
+.app-shell .stat-icon,
+.app-shell .card-art-icon,
+.app-shell .tip-icon,
+.app-shell .review-status,
+.app-shell .empty-icon {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+@supports not ((backdrop-filter: blur(1px))) {
+  .app-shell .stat-card,
+  .app-shell .quiz-card,
+  .app-shell .tip-row,
+  .app-shell .settings-panel,
+  .app-shell .question-card,
+  .app-shell .review-row,
+  .app-shell .settings-card,
+  .app-shell .builder-settings-card,
+  .app-shell .builder-question-card,
+  .app-shell .saved-session-card,
+  .app-shell .stats-history,
+  .app-shell .stats-session-detail,
+  .app-shell .library-folder-card,
+  .app-shell .library-folder,
+  .app-shell .empty-state,
+  .app-shell .search-box,
+  .app-shell .results-banner {
+    background-color: rgba(255,255,255,.92) !important;
+  }
+  .app-shell.theme-dark .stat-card,
+  .app-shell.theme-dark .quiz-card,
+  .app-shell.theme-dark .tip-row,
+  .app-shell.theme-dark .settings-panel,
+  .app-shell.theme-dark .question-card,
+  .app-shell.theme-dark .review-row,
+  .app-shell.theme-dark .settings-card,
+  .app-shell.theme-dark .builder-settings-card,
+  .app-shell.theme-dark .builder-question-card,
+  .app-shell.theme-dark .saved-session-card,
+  .app-shell.theme-dark .stats-history,
+  .app-shell.theme-dark .stats-session-detail,
+  .app-shell.theme-dark .library-folder-card,
+  .app-shell.theme-dark .library-folder,
+  .app-shell.theme-dark .empty-state,
+  .app-shell.theme-dark .search-box,
+  .app-shell.theme-dark .results-banner {
+    background-color: rgba(31,32,39,.96) !important;
+  }
+}
