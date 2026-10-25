@@ -7040,3 +7040,67 @@ html.theme-transitioning *::after {
 .app-shell.theme-dark .library-folder-grid:not(.folder-list-view) .library-folder-card.library-custom-folder.is-active {
   box-shadow: 0 5px 0 rgba(0,0,0,.42), 0 12px 24px rgba(0,0,0,.30), 0 0 0 1px rgba(232,189,75,.22) !important;
 }
+
+
+/* Fine-tune Library card depth to match the built-in All quizzes card. */
+.app-shell .library-folder-grid .library-folder-card.library-custom-folder {
+  box-shadow: 0 3px 0 rgba(54, 48, 26, .12), 0 7px 15px rgba(36, 31, 18, .055) !important;
+  filter: none !important;
+}
+.app-shell .library-folder-grid .library-folder-card.library-custom-folder:hover,
+.app-shell .library-folder-grid .library-folder-card.library-custom-folder:focus-within {
+  box-shadow: 0 4px 0 rgba(54, 48, 26, .13), 0 10px 20px rgba(36, 31, 18, .075) !important;
+  filter: none !important;
+}
+.app-shell .library-folder-grid .library-folder-card.library-custom-folder.is-active {
+  box-shadow: 0 3px 0 rgba(157, 116, 18, .17), 0 8px 17px rgba(36, 31, 18, .07), inset 0 0 0 1px rgba(214, 166, 46, .12) !important;
+}
+.app-shell.theme-dark .library-folder-grid .library-folder-card.library-custom-folder {
+  box-shadow: 0 3px 0 rgba(0,0,0,.30), 0 7px 15px rgba(0,0,0,.17) !important;
+}
+.app-shell.theme-dark .library-folder-grid .library-folder-card.library-custom-folder:hover,
+.app-shell.theme-dark .library-folder-grid .library-folder-card.library-custom-folder:focus-within {
+  box-shadow: 0 4px 0 rgba(0,0,0,.32), 0 10px 20px rgba(0,0,0,.22) !important;
+}
+
+/* Subtle gold rim on All quizzes at rest, not only while hovered. */
+.app-shell .library-folder-grid .library-all-card {
+  border-color: rgba(214, 166, 46, .24) !important;
+  box-shadow: 0 3px 0 rgba(54, 48, 26, .12), 0 7px 16px rgba(36, 31, 18, .055), inset 0 0 0 1px rgba(255, 226, 151, .20) !important;
+}
+.app-shell .library-folder-grid .library-all-card:hover,
+.app-shell .library-folder-grid .library-all-card:focus-within {
+  border-color: rgba(214, 166, 46, .48) !important;
+  box-shadow: 0 4px 0 rgba(54, 48, 26, .13), 0 11px 22px rgba(36, 31, 18, .085), inset 0 0 0 1px rgba(255, 226, 151, .28) !important;
+}
+.app-shell.theme-dark .library-folder-grid .library-all-card {
+  border-color: rgba(232, 189, 75, .24) !important;
+  box-shadow: 0 3px 0 rgba(0,0,0,.30), 0 7px 16px rgba(0,0,0,.17), inset 0 0 0 1px rgba(232,189,75,.08) !important;
+}
+
+/* The Import quiz action is a pressable card too: give it resting depth,
+   a lifted hover state, and a clear press-down response. */
+.app-shell .import-quiz-action {
+  box-shadow: 0 4px 0 rgba(115, 86, 17, .16), 0 8px 18px rgba(45, 37, 16, .07) !important;
+  transform: translateY(0);
+  transition: transform .2s cubic-bezier(.2,.75,.25,1), box-shadow .2s ease, border-color .2s ease !important;
+}
+.app-shell .import-quiz-action:hover,
+.app-shell .import-quiz-action:focus-within {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 0 rgba(115, 86, 17, .16), 0 12px 23px rgba(45, 37, 16, .10) !important;
+}
+.app-shell .import-quiz-action:active {
+  transform: translateY(2px) !important;
+  box-shadow: 0 1px 0 rgba(115, 86, 17, .14), 0 3px 7px rgba(45, 37, 16, .06) !important;
+}
+.app-shell.theme-dark .import-quiz-action {
+  box-shadow: 0 4px 0 rgba(0,0,0,.32), 0 8px 18px rgba(0,0,0,.18) !important;
+}
+.app-shell.theme-dark .import-quiz-action:hover,
+.app-shell.theme-dark .import-quiz-action:focus-within {
+  box-shadow: 0 6px 0 rgba(0,0,0,.34), 0 12px 23px rgba(0,0,0,.25) !important;
+}
+.app-shell.theme-dark .import-quiz-action:active {
+  box-shadow: 0 1px 0 rgba(0,0,0,.30), 0 3px 7px rgba(0,0,0,.16) !important;
+}
