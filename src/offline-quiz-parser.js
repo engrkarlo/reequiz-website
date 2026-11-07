@@ -32,14 +32,14 @@ function normalizedLines(text) {
     .filter(Boolean);
 }
 
-function keyPairsFromLine(line) {
+function keyPairsFromLine(line, strict = true) {
   const value = String(line || '').trim()
     .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
   const matches = [...value.matchAll(KEY_PAIR)];
   if (!matches.length) return [];
   // Entire line must contain key pairs separated only by punctuation/whitespace.
   // This prevents question text ("1. A system...") from being mistaken for a key.
-  if (value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
+  if (strict && value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
@@ -82,21 +82,39 @@ function repairKeyNumberSequence(entries) {
   return repaired;
 }
 
+function looksLikeKeyHeading(line) {
+  const value = String(line || '').trim();
+  if (KEY_TITLE.test(value)) return true;
+  // Tesseract on a narrow answer-key list often reads "ANSWER KEY" as
+  // "ANSWEI", "ANSWE", "ANSWFR KEY", etc. Only accept a short heading.
+  return /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*$/i.test(value) && value.length <= 22;
+}
+
 function inspectKeyGroup(group) {
   const sections = group.sections.map(section => ({ page: section, lines: normalizedLines(section.text) }));
   const all = sections.flatMap(section => section.lines);
-  const explicitHeading = all.some(line => KEY_TITLE.test(line));
-  const pairs = sections.flatMap(section =>
-    repairKeyNumberSequence(section.lines.flatMap(keyPairsFromLine)));
-  const meaningful = all.filter(line => !isExamHeader(line) && !KEY_TITLE.test(line));
-  const questionLike = meaningful.filter(line => numberedQuestion(line) && !keyPairsFromLine(line).length).length;
-  const options = meaningful.filter(line => OPTION.test(line)).length;
-  // A photographed key has lots of numbered-letter pairs, two parallel
-  // columns and a title that may appear only over the LEFT column.
-  const density = pairs.length / Math.max(meaningful.length, 1);
-  const isKeyPage = pairs.length >= 2 && questionLike === 0 && options === 0 &&
-    (explicitHeading || density >= 0.62 || sections.some(section => section.page.keyLane));
-  return { sections, isKeyPage, pairs, explicitHeading };
+  const meaningful = all.filter(line => !isExamHeader(line) && !looksLikeKeyHeading(line));
+  const knownKeyLayout = sections.some(section => section.page.keyLane === true || section.page.scanRole === 'answer-key');
+  const heading = all.slice(0, 14).some(looksLikeKeyHeading);
+  const strictPairs = sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line))));
+  const keyLikeLines = meaningful.filter(line =>
+    keyPairsFromLine(line).length || /^(?:q(?:uestion)?\s*)?\d{1,3}\s*[.):,\-]?\s*[A-H0O€¢]\s*$/i.test(line)).length;
+  const fullQuestionLines = meaningful.filter(line =>
+    numberedQuestion(line) && !keyPairsFromLine(line).length).length;
+  const choiceLines = meaningful.filter(line => OPTION.test(line)).length;
+  // Visual narrow-strip metadata is stronger than OCR text. Even a totally
+  // unreadable key must never become a 31st exam question.
+  const denseKey = keyLikeLines >= 3 && keyLikeLines / Math.max(meaningful.length, 1) >= 0.52 &&
+    choiceLines <= 1;
+  const headerKey = heading && (choiceLines < 3 || fullQuestionLines === 0);
+  const isKeyPage = knownKeyLayout || headerKey || denseKey;
+  // Salvage number-letter pairs on noisy lines only AFTER classifying the
+  // entire source as a key, never in question or option text.
+  const pairs = isKeyPage ? sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line, false)))) : strictPairs;
+  return { sections, isKeyPage, pairs, heading, knownKeyLayout,
+    unreadable: isKeyPage && pairs.length < 2 };
 }
 
 function splitInlineChoices(line) {
@@ -189,9 +207,9 @@ function repairUnambiguousQuestionNumbers(questions, answerKeys) {
     const expected = prev.number + 1;
     if (prev.source !== item.source || item.source !== next.source ||
         expected + 1 !== next.number ||
-        expected < 10 || item.number >= expected ||
+        expected < 10 || item.number === expected ||
         currentNumbers.has(expected) || !keyNums.has(expected) ||
-        !String(expected).endsWith(String(item.number))) continue;
+        expected % 10 !== item.number % 10) continue;
     currentNumbers.delete(item.number);
     item.originalOcrNumber = item.number;
     item.number = expected;
@@ -206,17 +224,26 @@ export function parseOfflineQuizPages(pages) {
       missingQuestionNumbers: [], incompleteNumbers: [], duplicateNumbers: [], answerKeyCount: 0, matchedKeyCount: 0 };
   }
   const groups = sectionsBySource(pages), answerKeys = [], raw = [];
+  const detectedKeyPages = [], unreadableKeyPages = [];
   let current = null;
   let previousColumn = null;
 
   for (const group of groups) {
     const assessment = inspectKeyGroup(group);
     if (assessment.isKeyPage) {
+      detectedKeyPages.push(group.sourcePage);
+      if (assessment.unreadable) unreadableKeyPages.push(group.sourcePage);
       completeQuestion(current, raw);
       current = null;
       previousColumn = null;
       answerKeys.push(...assessment.pairs);
       continue;
+    }
+    // Do not let a completed question absorb OCR noise from a new file.
+    // Incomplete, single-choice questions may continue on a following page.
+    if (current && Object.keys(current.optionsByLetter).length >= 2) {
+      completeQuestion(current, raw);
+      current = null;
     }
     let inKeySection = false;
     for (const section of assessment.sections) {
@@ -278,5 +305,6 @@ export function parseOfflineQuizPages(pages) {
   repairUnambiguousQuestionNumbers(raw, answerKeys);
   const questions = reconcileOfflineAnswerKeys(raw, answerKeys);
   const audit = auditNumbers(questions, answerKeys);
-  return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length, ...audit };
+  return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length,
+    detectedKeyPages, unreadableKeyPages, ...audit };
 }
