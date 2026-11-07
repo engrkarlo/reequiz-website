@@ -11,5 +11,5 @@ export function validateCombinedScanSize(files) {
 }
 
 export function isSupportedScanFile(file) {
-  return ACCEPTED_IMAGES.includes(file.type) || file.type === 'application/pdf' || /\\.pdf$/i.test(file.name);
+  return ACCEPTED_IMAGES.includes(file.type) || file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
 }
