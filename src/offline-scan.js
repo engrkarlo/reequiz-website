@@ -17,6 +17,11 @@ pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 let cachedWorker = null;
 let cachedWorkerPromise = null;
 let currentPSM = null;
+/**
+ * Load the on-device Tesseract worker once per session, reusing language data.
+ * @param {(message:string)=>void} onProgress Progress reporter.
+ * @returns {Promise<object>} Ready OCR worker.
+ */
 async function getCachedWorker(onProgress) {
   if (cachedWorker) return cachedWorker;
   if (!cachedWorkerPromise) {
@@ -41,6 +46,11 @@ async function getCachedWorker(onProgress) {
 
 // Inspect a small, inexpensive preview rather than running a whole-page OCR
 // pass just to discover whether there are two independent text columns.
+/**
+ * Inspect a small image preview for normal columns or narrow key strips.
+ * @param {HTMLCanvasElement} canvas Full resolution source page.
+ * @returns {Array<object>} Ordered crop regions.
+ */
 function regionsForCanvas(canvas) {
   const preview = document.createElement('canvas');
   const scale = Math.min(1, 360 / canvas.width);
@@ -63,6 +73,14 @@ function regionsForCanvas(canvas) {
 // Crop each detected column separately, in natural reading order. By using
 // Tesseract's single-column page segmentation for each half we avoid mixing
 // horizontally aligned questions from opposite sides of an exam paper.
+/**
+ * OCR each column locally and selectively retry low-confidence parsing.
+ * @param {HTMLCanvasElement} canvas Rendered photo or PDF page.
+ * @param {string} name Human-readable page name.
+ * @param {(message:string)=>void} onProgress Progress reporter.
+ * @param {boolean} forceAnswerKey Explicit key-only file designation.
+ * @returns {Promise<Array<object>>} OCR section results with role metadata.
+ */
 async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false) {
   const regions = regionsForCanvas(canvas);
   const worker = await getCachedWorker(onProgress);
@@ -144,6 +162,11 @@ async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false)
   return results;
 }
 
+/**
+ * Preserve text line boundaries from selectable PDF glyph positions.
+ * @param {Array<object>} items PDF.js text content items.
+ * @returns {string} Ordered extracted text.
+ */
 function textFromPdfItems(items) {
   let output = '';
   let previousY = null;
@@ -162,6 +185,11 @@ function textFromPdfItems(items) {
   return output.trim();
 }
 
+/**
+ * Decode a local image to a bounded canvas without uploading its contents.
+ * @param {File} file User-selected image file.
+ * @returns {Promise<HTMLCanvasElement>} Rendered page canvas.
+ */
 function imageOnCanvas(file) {
   const url = URL.createObjectURL(file);
   return new Promise((resolve, reject) => {
@@ -188,9 +216,13 @@ function imageOnCanvas(file) {
 }
 
 /**
- * Local-only scan: PDF text is read on-device; image and scanned PDF pages
- * are recognized with a self-hosted Tesseract WebAssembly worker.
- * No external providers are contacted and no scan content leaves the browser.
+ * Scan local photos/PDF pages and reconcile explicit printed answer keys.
+ * File indices, not names, determine role and page identity. Identical
+ * filenames are not interchangeable. No scan content leaves the browser.
+ * @param {File[]} files Selected images and PDF documents.
+ * @param {(message:string)=>void} onProgress Progress reporter.
+ * @param {{answerKeyIndices?:number[]}} options Explicit key-file indices.
+ * @returns {Promise<object>} Questions and source-aware scan diagnostics.
  */
 export async function scanQuizFilesOffline(files, onProgress = () => {}, options = {}) {
   if (!Array.isArray(files) || !files.length) throw new Error('Choose at least one image or PDF to scan.');
@@ -200,7 +232,10 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}, options
   const pages = [];
   let pageCount = 0;
   let forceAnswerKey = false;
-  const recognize = (canvas, name) => recognizeCanvas(canvas, name, onProgress, forceAnswerKey);
+  const recognize = async (canvas, name, sourceId, fileIndex) => {
+    const sections = await recognizeCanvas(canvas, name, onProgress, forceAnswerKey);
+    return sections.map(section => ({ ...section, sourceId, fileIndex }));
+  };
 
   try {
     for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
@@ -210,7 +245,7 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}, options
       if (!isPdf) {
         if (pageCount >= MAX_SCAN_IMAGES) throw new Error(`Scan up to ${MAX_SCAN_IMAGES} images/pages at a time.`);
         const canvas = await imageOnCanvas(file);
-        try { pages.push(...await recognize(canvas, file.name)); pageCount++; }
+        try { pages.push(...await recognize(canvas, file.name, `file:${fileIndex}:image`, fileIndex)); pageCount++; }
         finally { canvas.width = 0; canvas.height = 0; }
         continue;
       }
@@ -226,7 +261,8 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}, options
           onProgress(`Checking selectable text on ${name}…`);
           const extracted = textFromPdfItems((await page.getTextContent()).items);
           if (extracted.replace(/\s+/g, '').length >= 8) {
-            pages.push({ name, sourcePage: name, scanRole: forceAnswerKey ? 'answer-key' : undefined,
+            pages.push({ name, sourcePage: name, sourceId: `file:${fileIndex}:page:${i}`,
+              fileIndex, scanRole: forceAnswerKey ? 'answer-key' : undefined,
               text: extracted, confidence: null, type: 'pdf-text' });
             pageCount++;
             page.cleanup();
@@ -244,7 +280,7 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}, options
             context.fillStyle = '#ffffff';
             context.fillRect(0, 0, canvas.width, canvas.height);
             await page.render({ canvasContext: context, viewport: target }).promise;
-            pages.push(...await recognize(canvas, name));
+            pages.push(...await recognize(canvas, name, `file:${fileIndex}:page:${i}`, fileIndex));
             pageCount++;
           } finally {
             canvas.width = 0;
@@ -263,8 +299,8 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}, options
     const lateIndices = lateRetryColumnIndices(pages, initialAudit.missingQuestionNumbers);
     for (const i of lateIndices) {
       const section = pages[i];
-      const file = files.find(item => item.name === section.sourcePage &&
-        item.type !== 'application/pdf' && !/\.pdf$/i.test(item.name));
+      const file = Number.isInteger(section.fileIndex) ? files[section.fileIndex] : null;
+      if (file && (file.type === 'application/pdf' || /\.pdf$/i.test(file.name))) continue;
       if (!file) continue;
       section.retryAttempted = true;
       onProgress('Checking missed question numbers in ' + (section.column || file.name) + '…');
