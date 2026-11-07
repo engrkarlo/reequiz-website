@@ -6559,3 +6559,60 @@ body > .explanation-backdrop .explanation-confirm-modal .ai-offline-note {
     margin-bottom: 8px;
   }
 }
+
+
+/* Offline scanner: keep progress outside the action button on mobile. */
+.app-shell .ai-scan-actions .button {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  text-align: center;
+}
+.app-shell .ai-scan-actions .ai-scan-spinner {
+  flex: 0 0 13px;
+}
+.app-shell .ai-scan-status {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 9px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted, #85899e);
+  background: color-mix(in srgb, var(--panel, #fff) 93%, var(--gold, #d6a62e) 7%);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.app-shell .ocr-review-banner {
+  padding: 12px 14px;
+  margin: 15px 0;
+  border: 1px solid rgba(58, 153, 110, .35);
+  border-radius: 11px;
+  background: rgba(58, 153, 110, .075);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.app-shell .ocr-review-banner strong { display: block; font-size: 14px; margin-bottom: 4px; }
+.app-shell .ocr-review-banner p { margin: 0; }
+.app-shell .ocr-review-banner.ocr-review-warning {
+  border-color: rgba(214, 166, 46, .52);
+  background: rgba(214, 166, 46, .09);
+}
+@media (max-width: 620px) {
+  .app-shell .ai-scan-actions,
+  .app-shell .ai-scan-actions .button {
+    width: 100%;
+    max-width: 100%;
+  }
+  .app-shell .ai-scan-actions .button {
+    padding-inline: 13px;
+    min-height: 47px;
+  }
+  .app-shell .ai-scan-status { font-size: 11px; }
+}
