@@ -1,23 +1,38 @@
-const CACHE_NAME = "reequiz-offline-v16";
+const CACHE_NAME = "reequiz-offline-v17";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/reequiz-icon.svg"];
+
+async function assetsForOffline() {
+  // The Vite manifest includes dynamic imports (PDF parser) and the PDF
+  // worker as an emitted asset; the OCR manifest includes every local
+  // Tesseract WASM/worker/language file copied during install/build.
+  const [viteResponse, ocrResponse] = await Promise.all([
+    fetch("/offline-manifest.json", { cache: "no-store" }),
+    fetch("/ocr/precache.json", { cache: "no-store" })
+  ]);
+  if (!viteResponse.ok || !ocrResponse.ok) {
+    throw new Error("Offline asset manifests missing; run npm run build before deploying.");
+  }
+  const vite = await viteResponse.json();
+  const ocr = await ocrResponse.json();
+  const paths = new Set(["/offline-manifest.json", "/ocr/precache.json"]);
+  for (const item of Object.values(vite)) {
+    for (const file of [item.file, ...(item.css || []), ...(item.assets || [])]) {
+      if (typeof file === "string" && !file.startsWith("http")) paths.add("/" + file.replace(/^\//, ""));
+    }
+  }
+  for (const file of ocr) paths.add(file);
+  return [...paths];
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
     await cache.addAll(APP_SHELL);
-    // Vite emits hashed JS/CSS filenames. Read the built HTML so those exact
-    // files are cached on the first online visit too.
-    const response = await fetch("/index.html", { cache: "no-cache" });
-    if (response.ok) {
-      const html = await response.text();
-      const assets = new Set();
-      for (const match of html.matchAll(/(?:src|href)=["']([^"']+)["']/g)) {
-        const path = match[1];
-        if (path.startsWith("/") && !path.startsWith("//")) assets.add(path);
-      }
-      await Promise.all([...assets].map(async (path) => {
-        try { await cache.add(path); } catch { /* optional asset; retry via fetch handler */ }
-      }));
+    const assets = await assetsForOffline();
+    // Fail installation rather than advertise an offline-capable PWA with
+    // missing OCR models or PDF workers. Old SW stays available on failure.
+    for (const asset of assets) {
+      await cache.add(new Request(asset, { cache: "reload" }));
     }
     await self.skipWaiting();
   })());
@@ -42,7 +57,6 @@ self.addEventListener("fetch", (event) => {
       fetch(request, { cache: "no-cache" })
         .then((response) => {
           if (response && response.ok) {
-            // Clone synchronously before the browser consumes the navigation response.
             const cachedCopy = response.clone();
             event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put("/index.html", cachedCopy)));
           }
@@ -58,7 +72,6 @@ self.addEventListener("fetch", (event) => {
       if (cached) return cached;
       return fetch(request).then((response) => {
         if (response && response.ok) {
-          // Clone before returning the original response to the page.
           const cachedCopy = response.clone();
           event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(request, cachedCopy)));
         }
