@@ -5,6 +5,7 @@ import { flushSync } from 'react-dom';
 import { unzipSync, strFromU8, zipSync, strToU8 } from 'fflate';
 import { BarChart3, BookOpen, Brain, Check, ChevronLeft, ChevronRight, CircleHelp, Clock3, FileUp, FolderOpen, GraduationCap, Home, ImagePlus, Library, ListChecks, Moon, RotateCcw, Search, Settings2, Shuffle, Sparkles, Sun, Trash2, Trophy, Upload, X, Zap, Plus, Save, Download, FileText, WandSparkles, Trash, ArrowLeft, PencilLine, ClipboardPaste, Folder, Volume2, VolumeX, Pause, Play, Terminal, LayoutGrid, List } from 'lucide-react';
 import './style.css';
+import { isSupportedScanFile, validateCombinedScanSize, prepareScanFiles, buildScanBatches, reconcileScanAnswers } from './scan-utils.js';
 
 const STORE='quizforge-library-v1';
 const PREFS='reequiz-preferences-v1';
@@ -113,7 +114,7 @@ function App(){
  const [index,setIndex]=useState(0),[answers,setAnswers]=useState({}),[reviewOnly,setReviewOnly]=useState(false),[shuffle,setShuffle]=useState(false),[timed,setTimed]=useState(false),[seconds,setSeconds]=useState(0),[startedAt,setStartedAt]=useState(0),[timerExpired,setTimerExpired]=useState(false),[showSettings,setShowSettings]=useState(false),[selectedIds,setSelectedIds]=useState([]),[resumeAvailable,setResumeAvailable]=useState(()=>readSavedSessions().length>0),[pendingQuiz,setPendingQuiz]=useState(null),[exitConfirm,setExitConfirm]=useState(false),[questionStartedAt,setQuestionStartedAt]=useState(Date.now()),[questionSecondsLeft,setQuestionSecondsLeft]=useState(0),[timedOutQuestion,setTimedOutQuestion]=useState(null),[questionTimerPaused,setQuestionTimerPaused]=useState(false),[questionPausedAt,setQuestionPausedAt]=useState(null);
  const [prefs,setPrefs]=useState(()=>{try{return {theme:'dark',shuffleChoices:true,timerMinutes:10,soundOn:true,aiEnabled:false,perQuestionTimerEnabled:false,perQuestionSeconds:15,timerSoundVolume:75,...JSON.parse(localStorage.getItem(PREFS)||'{}')}}catch{return {theme:'dark',shuffleChoices:true,timerMinutes:10,soundOn:true,aiEnabled:false,perQuestionTimerEnabled:false,perQuestionSeconds:15,timerSoundVolume:75}}});
  const [quizEditor,setQuizEditor]=useState(null),[deleteTarget,setDeleteTarget]=useState(null);const [coverCropSource,setCoverCropSource]=useState(''),[coverCropX,setCoverCropX]=useState(50),[coverCropY,setCoverCropY]=useState(50),[coverCropZoom,setCoverCropZoom]=useState(1);
- const [builder,setBuilder]=useState(null),[pasteText,setPasteText]=useState(''),[builderMode,setBuilderMode]=useState('edit'),[pasteOpen,setPasteOpen]=useState(false);const [scanFiles,setScanFiles]=useState([]),[scanBusy,setScanBusy]=useState(false);
+ const [builder,setBuilder]=useState(null),[pasteText,setPasteText]=useState(''),[builderMode,setBuilderMode]=useState('edit'),[pasteOpen,setPasteOpen]=useState(false);const [scanFiles,setScanFiles]=useState([]),[scanBusy,setScanBusy]=useState(false),[scanProgress,setScanProgress]=useState('');
  const [statsHistory,setStatsHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-stats-history-v1')||'[]')}catch{return []}});
  const [selectedStatsSession,setSelectedStatsSession]=useState(null);
  const [aiBusy,setAiBusy]=useState(false),[aiProgress,setAiProgress]=useState(null),[aiLog,setAiLog]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-ai-change-log-v1')||'[]')}catch{return []}});
@@ -285,57 +286,45 @@ function App(){
  function updateBuilderQuestion(index,patch){setBuilder(b=>({...b,questions:b.questions.map((q,i)=>i===index?{...q,...patch}:q)}))}
  function parsePastedIntoBuilder(){try{const parsed=parsePastedQuestions(pasteText);setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);setNotice(`Detected ${parsed.length} questions. Review each correct answer before saving.`);setError('')}catch(e){setError(e.message)}}
  async function scanUploadsIntoBuilder(){
-  if(!scanFiles.length){setError('Choose at least one image or PDF to scan.');return}
-  if(!navigator.onLine){setError('Connect to the internet before scanning files with AI.');return}
-  const supported=scanFiles.filter(f=>f.type==='application/pdf'||['image/jpeg','image/png','image/webp','image/gif'].includes(f.type));
-  if(supported.length!==scanFiles.length){setError('Use PDF, JPEG, PNG, WEBP, or GIF files.');return}
-  const totalBytes=supported.reduce((n,f)=>n+f.size,0);
-  if(totalBytes>3*1024*1024){setError('Please keep the combined upload size under 3 MB per scan.');return}
-  setScanBusy(true);setError('');setNotice('');
-  try{
-   const encoded=await Promise.all(supported.map(async file=>{
-    if(file.type!=='application/pdf')return await new Promise((resolve,reject)=>{
-     const reader=new FileReader();
-     reader.onerror=()=>reject(new Error(`Could not read ${file.name}.`));
-     reader.onload=()=>{const result=String(reader.result||'');const comma=result.indexOf(',');if(comma<0){reject(new Error(`Could not encode ${file.name}.`));return}resolve({name:file.name,mimeType:file.type,data:result.slice(comma+1)})};
-     reader.readAsDataURL(file);
-    });
-    // Groq's vision endpoint accepts images, so render PDF pages to JPEGs in the browser.
-    const pdfjs=await import(/* @vite-ignore */ 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
-    pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-    const buffer=await file.arrayBuffer();
-    const pdf=await pdfjs.getDocument({data:buffer}).promise;
-    if(pdf.numPages>10)throw new Error(`${file.name} has ${pdf.numPages} pages. Please split it into PDFs of 10 pages or fewer.`);
-    const pages=[];
-    for(let pageNo=1;pageNo<=pdf.numPages;pageNo++){
-     const page=await pdf.getPage(pageNo);
-     const viewport=page.getViewport({scale:1.35});
-     const canvas=document.createElement('canvas');
-     canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);
-     const context=canvas.getContext('2d');
-     await page.render({canvasContext:context,viewport}).promise;
-     const result=canvas.toDataURL('image/jpeg',0.78);
-     pages.push({name:`${file.name} — page ${pageNo}`,mimeType:'image/jpeg',data:result.slice(result.indexOf(',')+1)});
-     canvas.width=0;canvas.height=0;
+   if(!scanFiles.length){setError('Choose at least one image or PDF to scan.');return}
+   if(!navigator.onLine){setError('Connect to the internet before scanning files with AI.');return}
+   if(scanFiles.some(file=>!isSupportedScanFile(file))){setError('Use PDF, JPEG, PNG, WEBP, or GIF files.');return}
+   try{validateCombinedScanSize(scanFiles)}catch(error){setError(error.message);return}
+   setScanBusy(true);setScanProgress('Preparing images and PDF pages…');setError('');setNotice('');
+   try{
+    // Vercel cannot receive 20 MB in one function request. Batch up to three
+    // pages and 2.5 MB of image data per request instead.
+    const pages=await prepareScanFiles(scanFiles);
+    const batches=buildScanBatches(pages);
+    const extracted=[],answerKeys=[],providers=new Set();
+    let completed=0;
+    for(const files of batches){
+     setScanProgress(`Scanning page ${completed+1}–${completed+files.length} of ${pages.length}…`);
+     const response=await fetch('/api/ai-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:builder?.title||'Imported test',files})});
+     const data=await response.json().catch(()=>({}));
+     if(!response.ok)throw new Error(data.error||`AI could not scan pages ${completed+1}–${completed+files.length}. Please try again.`);
+     if(!Array.isArray(data.questions)||!Array.isArray(data.answerKey))throw new Error('AI returned an incomplete scan result. Please try again.');
+     extracted.push(...data.questions);
+     answerKeys.push(...data.answerKey);
+     if(data.provider)providers.add(data.provider);
+     completed+=files.length;
     }
-    return pages;
-   }));
-   const files=encoded.flatMap(x=>Array.isArray(x)?x:[x]);
-   const encodedBytes=files.reduce((sum,f)=>sum+Math.floor(f.data.length*3/4),0);
-   if(encodedBytes>3*1024*1024)throw new Error('Rendered pages are larger than the 3 MB scan limit. Try a smaller PDF or fewer pages.');
-   if(files.length>25)throw new Error('This scan creates more than 25 page images. Please split the files into smaller batches.');
-   const response=await fetch('/api/ai-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:builder?.title||'Imported test',files})});
-   const data=await response.json().catch(()=>({}));
-   if(!response.ok)throw new Error(data.error||'AI could not scan those files. Please try again.');
-   if(!Array.isArray(data.questions)||!data.questions.length)throw new Error('No questions were detected. Try a clearer scan or a PDF with readable text.');
-   const parsed=data.questions.map(q=>({question:String(q.question||'').trim(),options:(Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8),answer:Number.isInteger(q.answer)&&q.answer>=0&&q.answer<(q.options||[]).length?q.answer:0,explanation:String(q.explanation||''),verified:q.answerProvided===true&&Number.isInteger(q.answer)&&q.answer>=0&&q.answer<(q.options||[]).length,sourceAnswer:q.answerProvided===true?'AI extracted answer key':''})).filter(q=>q.question&&q.options.length>=2);
-   if(!parsed.length)throw new Error('The scan did not produce usable multiple-choice questions. Please use a clearer file or add questions manually.');
-   setBuilder(b=>({...b,questions:parsed}));
-   setPasteOpen(false);setNotice(`AI extracted ${parsed.length} questions from ${supported.length} file(s). ${parsed.some(q=>!q.verified)?'Questions without an explicit answer key are marked for your review.':''}`);
-   setScanFiles([]);
-  }catch(e){setError(e?.message||'File scan failed. Please try again.')}finally{setScanBusy(false)}
- }
- function saveBuilder(){if(!builder?.title?.trim()){setError('Give your quiz a title first.');return}if(!builder.questions.length){setError('Add at least one question.');return}for(let i=0;i<builder.questions.length;i++){const q=builder.questions[i];if(!q.question.trim()||q.options.filter(o=>o.trim()).length<2){setError(`Question ${i+1} needs text and at least two answer choices.`);return}if(!Number.isInteger(q.answer)||q.answer<0||!q.options[q.answer]?.trim()){setError(`Choose a valid correct answer for question ${i+1}.`);return}if(q.verified===false){setError(`Please confirm the correct answer for question ${i+1} before saving. Select the correct answer in its card.`);return}}
+    if(!extracted.length)throw new Error('No questions were detected. Try clearer images or a PDF with readable text.');
+    // Answers from key-only pages can confirm uniquely numbered questions
+    // extracted earlier. Duplicate numbers and conflicting keys stay unverified.
+    const reconciled=reconcileScanAnswers(extracted,answerKeys);
+    const parsed=reconciled.map(q=>{
+     const options=(Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8);
+     const verified=q.answerProvided===true&&Number.isInteger(q.answer)&&q.answer>=0&&q.answer<options.length;
+     return {question:String(q.question||'').trim(),options,answer:verified?q.answer:0,explanation:String(q.explanation||''),verified,sourceAnswer:verified?'AI extracted answer key':''};
+    }).filter(q=>q.question&&q.options.length>=2);
+    if(!parsed.length)throw new Error('The scan did not produce usable multiple-choice questions. Try a clearer file.');
+    setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);
+    setNotice(`AI extracted ${parsed.length} questions from ${scanFiles.length} file(s) using ${[...providers].join(' + ')||'AI'}. ${parsed.some(q=>!q.verified)?'Questions without an explicit answer key are marked for your review.':''}`);
+    setScanFiles([]);
+   }catch(error){setError(error?.message||'File scan failed. Please try again.')}finally{setScanBusy(false);setScanProgress('')}
+  }
+  function saveBuilder(){if(!builder?.title?.trim()){setError('Give your quiz a title first.');return}if(!builder.questions.length){setError('Add at least one question.');return}for(let i=0;i<builder.questions.length;i++){const q=builder.questions[i];if(!q.question.trim()||q.options.filter(o=>o.trim()).length<2){setError(`Question ${i+1} needs text and at least two answer choices.`);return}if(!Number.isInteger(q.answer)||q.answer<0||!q.options[q.answer]?.trim()){setError(`Choose a valid correct answer for question ${i+1}.`);return}if(q.verified===false){setError(`Please confirm the correct answer for question ${i+1} before saving. Select the correct answer in its card.`);return}}
  const clean={...builder,title:builder.title.trim(),questions:builder.questions.map(q=>({...q,options:q.options.filter(o=>o.trim()),answer:q.options.slice(0,q.answer+1).filter(o=>o.trim()).length-1,verified:true})),updatedAt:Date.now()};
  setLibrary(prev=>[clean,...prev.filter(q=>q.id!==clean.id)]);setBuilder(clean);setNotice('Quiz saved to your library.');setScreen('library');setError('')}
  function removeBuilderQuestion(index){setBuilder(b=>({...b,questions:b.questions.filter((_,i)=>i!==index)}))}
@@ -404,10 +393,10 @@ B) Straight-line
 C) Sinking fund
 D) Units of production
 Answer: B`} rows={12}/><div className="paste-actions"><span><Check size={14}/> Text stays in your browser</span><button className="button primary" onClick={parsePastedIntoBuilder}><WandSparkles size={16}/> Detect questions</button></div></section>}
-    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDF with AI</h3><p>Upload a test photo or PDF. AI extracts questions and choices, and checks for a provided answer key.</p></div><span className="paste-tag ai-online-tag"><span/> INTERNET REQUIRED</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>setScanFiles(Array.from(e.target.files||[]))}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, or PDF · Combined maximum 3 MB</span></label>
+    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDF with AI</h3><p>Upload a test photo or PDF. AI extracts questions and choices, and checks for a provided answer key.</p></div><span className="paste-tag ai-online-tag"><span/> INTERNET REQUIRED</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>{const files=Array.from(e.target.files||[]);setScanFiles(files);try{validateCombinedScanSize(files);setError('')}catch(error){setError(error.message)}e.target.value=''}}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, GIF, or PDF · Combined maximum 20 MB</span></label>
     {scanFiles.length>0&&<div className="ai-upload-list">{scanFiles.map((f,i)=><div key={f.name+i}><FileText size={15}/><span>{f.name}</span><small>{(f.size/1024).toFixed(0)} KB</small><button type="button" aria-label={`Remove ${f.name}`} disabled={scanBusy} onClick={()=>setScanFiles(prev=>prev.filter((_,j)=>j!==i))}><X size={14}/></button></div>)}</div>}
     <div className="ai-scan-note"><Brain size={15}/><span>If the document includes an answer key or clearly marked answers, AI will extract them. If no key is provided, answers stay unconfirmed for you to review—AI will not silently guess the key.</span></div>
-    <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) selected`:'Your files are sent to the AI service for processing.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/>Scanning files…</>:<><WandSparkles size={16}/> Scan and build questions</>}</button></div></section>}
+    <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) · ${(scanFiles.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)} / 20 MB`:'Your files are sent to the AI service for processing.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/>{scanProgress||'Scanning files…'}</>:<><WandSparkles size={16}/> Scan and build questions</>}</button></div></section>}
     <div className="builder-list-heading"><div><div className="eyebrow">QUESTION BANK</div><h2>Your questions <span>{builder.questions.length}</span></h2><p>Fill in each question and its choices, then confirm the correct answer.</p></div><div className="builder-list-actions"><button className="button subtle" onClick={()=>setPasteOpen(true)}><ClipboardPaste size={15}/> Paste text</button><button className="button primary" onClick={()=>setBuilder(b=>({...b,questions:[...b.questions,blankQuestion()]}))}><Plus size={16}/> Add question</button></div></div>
     <div className="builder-question-list">{builder.questions.map((q,i)=><article className="builder-question-card" key={`${builder.id}-${i}`}><div className="builder-question-top"><div className="builder-question-number">{String(i+1).padStart(2,'0')}</div><div className="builder-question-heading"><b>Question {i+1}</b><span>{q.verified===false?<em className="needs-review">Answer needs review</em>:<em className="answer-confirmed"><Check size={12}/> Answer selected</em>}</span></div><button className="builder-remove" title="Remove question" onClick={()=>removeBuilderQuestion(i)} disabled={builder.questions.length===1}><Trash size={16}/></button></div><label className="builder-field-label">Question text<textarea rows={2} value={q.question} onChange={e=>updateBuilderQuestion(i,{question:e.target.value})} placeholder="Write the question clearly…"/></label><div className="builder-choices-label"><b>Answer choices</b><small>Choose the radio button beside the correct answer.</small></div><div className="builder-choice-grid">{q.options.map((option,j)=><label key={j} className={`builder-choice ${q.answer===j?'correct-choice':''}`}><input type="radio" name={`answer-${builder.id}-${i}`} checked={q.answer===j} onChange={()=>updateBuilderQuestion(i,{answer:j,verified:true})} onClick={()=>updateBuilderQuestion(i,{answer:j,verified:true})}/><span className="choice-letter">{String.fromCharCode(65+j)}</span><input className="choice-text-input" value={option} onChange={e=>updateBuilderQuestion(i,{options:q.options.map((o,k)=>k===j?e.target.value:o)})} placeholder={`Choice ${String.fromCharCode(65+j)}`}/>{q.answer===j&&<Check size={15} className="choice-check"/>}</label>)}</div><label className="builder-field-label explanation-field">Explanation <span>(optional)</span><textarea rows={2} value={q.explanation||''} onChange={e=>updateBuilderQuestion(i,{explanation:e.target.value})} placeholder="Explain why the answer is correct…"/></label></article>)}</div>
     <div className="builder-footer"><div><b>Ready when you are.</b><p>Saved quizzes stay in your local library. Export a .quiz file for the Custom Quiz app, or use .zip if your phone handles ZIP files better.</p></div><div className="builder-footer-actions"><button className="button subtle" onClick={downloadJSONQuiz}><Download size={16}/> Export JSON</button><button className="button subtle" onClick={()=>{if(builder.questions.every(q=>q.verified!==false))exportQuizFile(builder,'quiz');else setError('Review and confirm every detected correct answer before exporting.')}}><Download size={16}/> Export .quiz</button><button className="button subtle" onClick={()=>{if(builder.questions.every(q=>q.verified!==false))exportQuizFile(builder,'zip');else setError('Review and confirm every detected correct answer before exporting.')}}><Download size={16}/> Export .zip</button><button className="button primary big" onClick={saveBuilder}><Save size={17}/> Save quiz</button></div></div>

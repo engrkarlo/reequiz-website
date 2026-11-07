@@ -15,12 +15,16 @@ async function callGroq({ apiKey, model, messages, questions }) {
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ model, messages, ...(jsonMode ? { response_format: { type: 'json_object' } } : {}), max_completion_tokens: Math.min(8000, 500 + questions.length * 350), temperature: 0.2 })
   });
-  let response = await request(true), payload = await response.json().catch(() => ({}));
-  if (!response.ok && response.status === 400 && /validat(e|ion).*json|json.*validat/i.test(payload.error?.message || '')) {
-    response = await request(false); payload = await response.json().catch(() => ({}));
+  try {
+    let response = await request(true), payload = await response.json().catch(() => ({}));
+    if (!response.ok && response.status === 400 && /validat(e|ion).*json|json.*validat/i.test(payload.error?.message || '')) {
+      response = await request(false); payload = await response.json().catch(() => ({}));
+    }
+    if (!response.ok) return { ok: false, status: response.status, error: payload.error?.message || 'Groq request failed', retryable: response.status === 429 };
+    return { ok: true, provider: 'Groq', output: payload.choices?.[0]?.message?.content };
+  } catch (error) {
+    return { ok: false, status: 502, error: `Groq network error: ${error?.message || 'request failed'}`, retryable: true };
   }
-  if (!response.ok) return { ok: false, status: response.status, error: payload.error?.message || 'Groq request failed', retryable: response.status === 429 };
-  return { ok: true, provider: 'Groq', output: payload.choices?.[0]?.message?.content };
 }
 
 async function callGemini({ apiKey, model, system, userPrompt }) {
@@ -59,23 +63,40 @@ export default async function handler(req, res) {
     const userPrompt = `Review this quiz and return the requested JSON only:\n${JSON.stringify({ title, questions })}`;
     const messages = [{ role: 'system', content: SYSTEM }, { role: 'user', content: userPrompt }];
 
-    let result;
-    if (process.env.GROQ_API_KEY) {
-      result = await callGroq({ apiKey: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b', messages, questions });
-      // Only switch providers for a real Groq rate-limit response. Other errors should remain visible.
-      if (!result.ok && result.status === 429 && process.env.GEMINI_API_KEY) {
-        const groqRateLimit = result.error;
-        const fallback = await callGemini({ apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', system: SYSTEM, userPrompt });
-        if (fallback.ok) result = fallback;
-        else return res.status(fallback.status || 502).json({ error: `Groq rate limit reached; Gemini fallback also failed: ${fallback.error}. Groq said: ${groqRateLimit}`, retryable: fallback.retryable || fallback.status === 429, provider: 'Gemini' });
+    // Either provider can be the primary. Fail over on quota, network,
+    // HTTP, invalid JSON, or incomplete AI result errors.
+    const preferred = String(process.env.AI_PREPARE_PROVIDER || process.env.AI_PRIMARY_PROVIDER || 'groq').toLowerCase();
+    const order = preferred === 'gemini' ? ['Gemini', 'Groq'] : ['Groq', 'Gemini'];
+    const failures = [];
+    let result, parsed;
+    for (const provider of order) {
+      if (provider === 'Groq' && !process.env.GROQ_API_KEY) continue;
+      if (provider === 'Gemini' && !process.env.GEMINI_API_KEY) continue;
+      const attempt = provider === 'Groq'
+        ? await callGroq({ apiKey: process.env.GROQ_API_KEY, model: process.env.GROQ_MODEL || 'openai/gpt-oss-120b', messages, questions })
+        : await callGemini({ apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', system: SYSTEM, userPrompt });
+      if (!attempt.ok) {
+        failures.push({ provider, status: attempt.status, error: attempt.error });
+        continue;
       }
-    } else {
-      result = await callGemini({ apiKey: process.env.GEMINI_API_KEY, model: process.env.GEMINI_MODEL || 'gemini-2.5-flash', system: SYSTEM, userPrompt });
+      try {
+        const candidate = parseModelJson(attempt.output);
+        if (!Array.isArray(candidate.questions) || candidate.questions.length !== questions.length)
+          throw new Error('returned an incomplete question review');
+        result = attempt;
+        parsed = candidate;
+        break;
+      } catch (error) {
+        failures.push({ provider, status: 502, error: error.message });
+      }
     }
-    if (!result.ok) return res.status(result.status || 502).json({ error: result.error, retryable: !!result.retryable, provider: process.env.GROQ_API_KEY ? 'Groq' : 'Gemini' });
-    let parsed;
-    try { parsed = parseModelJson(result.output); } catch (error) { return res.status(502).json({ error: `${result.provider} response error: ${error.message}`, retryable: true, provider: result.provider }); }
-    if (!Array.isArray(parsed.questions) || parsed.questions.length !== questions.length) return res.status(502).json({ error: `${result.provider} returned an incomplete question review`, retryable: true, provider: result.provider });
+    if (!result) {
+      const allRateLimited = failures.length > 0 && failures.every(f => f.status === 429);
+      return res.status(allRateLimited ? 429 : 502).json({
+        error: `AI preparation failed with all configured providers: ${failures.map(f => `${f.provider}: ${String(f.error).slice(0, 250)}`).join('; ')}`,
+        retryable: failures.some(f => f.status === 429 || f.status >= 500)
+      });
+    }
     const safe = parsed.questions.map((q, i) => ({ correctAnswer: Number.isInteger(q.correctAnswer) && q.correctAnswer >= 0 && q.correctAnswer < questions[i].options.length ? q.correctAnswer : questions[i].answer, correctionReason: String(q.correctionReason || '').slice(0, 1000), explanation: String(q.explanation || '').slice(0, 3000), optionExplanations: questions[i].options.map((_, j) => String(Array.isArray(q.optionExplanations) ? q.optionExplanations[j] || '' : '').slice(0, 1500)) }));
     return res.status(200).json({ questions: safe, provider: result.provider });
   } catch (error) {
