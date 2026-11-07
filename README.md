@@ -46,7 +46,7 @@ Run REEQUIZ locally using the steps below, import a quiz from **My Library**, an
 
 ### Run it on your computer
 
-You’ll need Node.js 18 or newer.
+You’ll need Node.js 20 or newer (Node.js 22 recommended for deployment).
 
 ```bash
 npm install
@@ -83,12 +83,20 @@ The AI endpoint uses server-side environment variables. Configure these in the e
 - `GEMINI_API_KEY` — second provider key. Used if Groq fails, is unavailable, or reaches its quota; Groq is likewise a fallback when Gemini is primary.
 - `GROQ_MODEL` — optional model override.
 - `GEMINI_MODEL` — optional model override for Gemini (default: `gemini-2.5-flash`).
-- `GROQ_IMPORT_MODEL` — optional vision model for scanning (default: `qwen/qwen3.8-27b`).
-- `GEMINI_IMPORT_MODEL` — optional Gemini vision model override (defaults to `GEMINI_MODEL`).
 - `AI_PRIMARY_PROVIDER` — optional `groq` (default) or `gemini`. The other available provider is automatically tried if the primary fails.
-- `AI_IMPORT_PROVIDER`, `AI_PREPARE_PROVIDER` — optional per-endpoint primary-provider overrides.
+- `AI_PREPARE_PROVIDER` — optional primary-provider override for AI validate & explain.
 
-In **Quiz Studio**, image and PDF scanning accepts **20 MB combined** across the selected original files. The browser renders PDFs into page images and splits the scan into requests of at most three images and 2.5 MB each, avoiding Vercel's 4.5 MB request-body limit. Scans support up to 25 image/pages total, with at most 10 pages per PDF. A key printed on a separate page can be matched to a uniquely numbered question across batches; ambiguous or missing answers remain unconfirmed for manual review. Scanning requires an internet connection.
+## Fully offline Quiz Studio scanner
+
+Quiz Studio scans image files (JPG, PNG, WebP, GIF) and PDFs **entirely in your browser**. It uses Tesseract.js with a self-hosted English OCR model and PDF.js to read selectable PDF text directly; image-only PDF pages are rasterized and OCR'd locally. No images, extracted text, questions, or printed answer keys are uploaded to the server, and scanning does not need provider API keys.
+
+The app accepts **20 MB of original files combined**, up to **25 images/PDF pages** in one scan, and at most **10 pages per PDF**. It recognizes numbered questions and A–H answer choices, and automatically matches explicit printed answer keys even when the key is in a later PDF page or a **separate uploaded image**. Identical key entries are safe; conflicting keys, duplicate question numbers, missing choices, and unkeyed answers require manual review. The local parser does **not** invent missing answers or choices.
+
+For true offline operation, the OCR JavaScript worker, WebAssembly core variants, English language data, PDF parsing code, and PDF worker are **bundled locally** and precached by the PWA service worker. The user must open the site **once while online and allow its offline installation to finish**; scanning then works without connectivity. Browser storage clearing will require a new download of those assets. OCR accuracy depends on image quality and page layout. English is the packaged recognition language.
+
+`npm install` copies OCR assets from dependencies into `public/ocr/` using the `postinstall` script, and `npm run build` repeats the copy and generates `dist/offline-manifest.json` to precache the Vite chunks. **Do not omit the install/build scripts on deployment**. The generated model and WASM files are intentionally not committed to Git. Use `npm test` to run parser and API regression tests.
+
+The manual **AI validate & explain** action in My Library remains an optional **online** feature using Groq/Gemini; it is separate from the fully offline Quiz Studio scanner.
 
 Keep provider keys on the server. **Never put API keys in frontend code or in variables prefixed with `VITE_`.** Redeploy after changing environment variables. Model availability and provider limits may change.
 

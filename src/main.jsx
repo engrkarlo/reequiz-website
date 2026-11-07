@@ -5,7 +5,7 @@ import { flushSync } from 'react-dom';
 import { unzipSync, strFromU8, zipSync, strToU8 } from 'fflate';
 import { BarChart3, BookOpen, Brain, Check, ChevronLeft, ChevronRight, CircleHelp, Clock3, FileUp, FolderOpen, GraduationCap, Home, ImagePlus, Library, ListChecks, Moon, RotateCcw, Search, Settings2, Shuffle, Sparkles, Sun, Trash2, Trophy, Upload, X, Zap, Plus, Save, Download, FileText, WandSparkles, Trash, ArrowLeft, PencilLine, ClipboardPaste, Folder, Volume2, VolumeX, Pause, Play, Terminal, LayoutGrid, List } from 'lucide-react';
 import './style.css';
-import { isSupportedScanFile, validateCombinedScanSize, prepareScanFiles, buildScanBatches, reconcileScanAnswers } from './scan-utils.js';
+import { isSupportedScanFile, validateCombinedScanSize } from './scan-utils.js';
 
 const STORE='quizforge-library-v1';
 const PREFS='reequiz-preferences-v1';
@@ -287,42 +287,30 @@ function App(){
  function parsePastedIntoBuilder(){try{const parsed=parsePastedQuestions(pasteText);setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);setNotice(`Detected ${parsed.length} questions. Review each correct answer before saving.`);setError('')}catch(e){setError(e.message)}}
  async function scanUploadsIntoBuilder(){
    if(!scanFiles.length){setError('Choose at least one image or PDF to scan.');return}
-   if(!navigator.onLine){setError('Connect to the internet before scanning files with AI.');return}
    if(scanFiles.some(file=>!isSupportedScanFile(file))){setError('Use PDF, JPEG, PNG, WEBP, or GIF files.');return}
    try{validateCombinedScanSize(scanFiles)}catch(error){setError(error.message);return}
-   setScanBusy(true);setScanProgress('Preparing images and PDF pages…');setError('');setNotice('');
+   setScanBusy(true);setScanProgress('Starting offline scanner…');setError('');setNotice('');
    try{
-    // Vercel cannot receive 20 MB in one function request. Batch up to three
-    // pages and 2.5 MB of image data per request instead.
-    const pages=await prepareScanFiles(scanFiles);
-    const batches=buildScanBatches(pages);
-    const extracted=[],answerKeys=[],providers=new Set();
-    let completed=0;
-    for(const files of batches){
-     setScanProgress(`Scanning page ${completed+1}–${completed+files.length} of ${pages.length}…`);
-     const response=await fetch('/api/ai-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:builder?.title||'Imported test',files})});
-     const data=await response.json().catch(()=>({}));
-     if(!response.ok)throw new Error(data.error||`AI could not scan pages ${completed+1}–${completed+files.length}. Please try again.`);
-     if(!Array.isArray(data.questions)||!Array.isArray(data.answerKey))throw new Error('AI returned an incomplete scan result. Please try again.');
-     extracted.push(...data.questions);
-     answerKeys.push(...data.answerKey);
-     if(data.provider)providers.add(data.provider);
-     completed+=files.length;
-    }
-    if(!extracted.length)throw new Error('No questions were detected. Try clearer images or a PDF with readable text.');
-    // Answers from key-only pages can confirm uniquely numbered questions
-    // extracted earlier. Duplicate numbers and conflicting keys stay unverified.
-    const reconciled=reconcileScanAnswers(extracted,answerKeys);
-    const parsed=reconciled.map(q=>{
-     const options=(Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8);
-     const verified=q.answerProvided===true&&Number.isInteger(q.answer)&&q.answer>=0&&q.answer<options.length;
-     return {question:String(q.question||'').trim(),options,answer:verified?q.answer:0,explanation:String(q.explanation||''),verified,sourceAnswer:verified?'AI extracted answer key':''};
-    }).filter(q=>q.question&&q.options.length>=2);
-    if(!parsed.length)throw new Error('The scan did not produce usable multiple-choice questions. Try a clearer file.');
+    // All recognition, parsing, and key matching runs on this device.
+    const { scanQuizFilesOffline } = await import('./offline-scan.js');
+    const result = await scanQuizFilesOffline(scanFiles, setScanProgress);
+    const parsed = result.questions.map(q => ({
+     question: String(q.question||'').trim(),
+     options: (Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8),
+     answer: q.answerProvided && Number.isInteger(q.answer) ? q.answer : 0,
+     explanation: String(q.explanation||''),
+     verified: q.answerProvided===true && Number.isInteger(q.answer),
+     sourceAnswer: q.answerProvided===true?'Offline answer key matching':''
+    })).filter(q=>q.question&&q.options.length>=2);
+    if(!parsed.length)throw new Error('No complete multiple-choice questions were detected. Use clearer images or provide numbered questions with A–D choices.');
     setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);
-    setNotice(`AI extracted ${parsed.length} questions from ${scanFiles.length} file(s) using ${[...providers].join(' + ')||'AI'}. ${parsed.some(q=>!q.verified)?'Questions without an explicit answer key are marked for your review.':''}`);
+    const unreadable=result.pages.filter(p=>p.type==='ocr'&&p.confidence!==null&&p.confidence<55).length;
+    setNotice(`Offline scan extracted ${parsed.length} questions from ${result.pages.length} image/PDF page(s). `+
+     (result.skipped?`${result.skipped} incomplete question(s) skipped. `:'')+
+     (result.needsReview?`${result.needsReview} answers need review because no unambiguous printed key was found. `:'')+
+     (unreadable?'Some pages have low OCR confidence; double-check the text.':''));
     setScanFiles([]);
-   }catch(error){setError(error?.message||'File scan failed. Please try again.')}finally{setScanBusy(false);setScanProgress('')}
+   }catch(error){setError(error?.message||'Offline scan failed. Check the files and try again.')}finally{setScanBusy(false);setScanProgress('')}
   }
   function saveBuilder(){if(!builder?.title?.trim()){setError('Give your quiz a title first.');return}if(!builder.questions.length){setError('Add at least one question.');return}for(let i=0;i<builder.questions.length;i++){const q=builder.questions[i];if(!q.question.trim()||q.options.filter(o=>o.trim()).length<2){setError(`Question ${i+1} needs text and at least two answer choices.`);return}if(!Number.isInteger(q.answer)||q.answer<0||!q.options[q.answer]?.trim()){setError(`Choose a valid correct answer for question ${i+1}.`);return}if(q.verified===false){setError(`Please confirm the correct answer for question ${i+1} before saving. Select the correct answer in its card.`);return}}
  const clean={...builder,title:builder.title.trim(),questions:builder.questions.map(q=>({...q,options:q.options.filter(o=>o.trim()),answer:q.options.slice(0,q.answer+1).filter(o=>o.trim()).length-1,verified:true})),updatedAt:Date.now()};
@@ -393,10 +381,10 @@ B) Straight-line
 C) Sinking fund
 D) Units of production
 Answer: B`} rows={12}/><div className="paste-actions"><span><Check size={14}/> Text stays in your browser</span><button className="button primary" onClick={parsePastedIntoBuilder}><WandSparkles size={16}/> Detect questions</button></div></section>}
-    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDF with AI</h3><p>Upload a test photo or PDF. AI extracts questions and choices, and checks for a provided answer key.</p></div><span className="paste-tag ai-online-tag"><span/> INTERNET REQUIRED</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>{const files=Array.from(e.target.files||[]);setScanFiles(files);try{validateCombinedScanSize(files);setError('')}catch(error){setError(error.message)}e.target.value=''}}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, GIF, or PDF · Combined maximum 20 MB</span></label>
+    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDFs offline</h3><p>Process exam photos and PDFs on this device. Printed answer keys are matched across files and pages.</p></div><span className="paste-tag ai-online-tag"><span/> OFFLINE · PRIVATE</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>{const files=Array.from(e.target.files||[]);setScanFiles(files);try{validateCombinedScanSize(files);setError('')}catch(error){setError(error.message)}e.target.value=''}}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, GIF, or PDF · Combined maximum 20 MB</span></label>
     {scanFiles.length>0&&<div className="ai-upload-list">{scanFiles.map((f,i)=><div key={f.name+i}><FileText size={15}/><span>{f.name}</span><small>{(f.size/1024).toFixed(0)} KB</small><button type="button" aria-label={`Remove ${f.name}`} disabled={scanBusy} onClick={()=>setScanFiles(prev=>prev.filter((_,j)=>j!==i))}><X size={14}/></button></div>)}</div>}
-    <div className="ai-scan-note"><Brain size={15}/><span>If the document includes an answer key or clearly marked answers, AI will extract them. If no key is provided, answers stay unconfirmed for you to review—AI will not silently guess the key.</span></div>
-    <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) · ${(scanFiles.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)} / 20 MB`:'Your files are sent to the AI service for processing.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/>{scanProgress||'Scanning files…'}</>:<><WandSparkles size={16}/> Scan and build questions</>}</button></div></section>}
+    <div className="ai-scan-note"><Brain size={15}/><span>Offline OCR reads text, and local matching finds printed answer keys even in a different image or PDF page. Missing, conflicting, or unclear keys remain unconfirmed. No scanning files are uploaded.</span></div>
+    <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) · ${(scanFiles.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)} / 20 MB`:'Your files never leave this browser. Offline after the first visit is cached.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/>{scanProgress||'Scanning files…'}</>:<><WandSparkles size={16}/> Scan offline & build questions</>}</button></div></section>}
     <div className="builder-list-heading"><div><div className="eyebrow">QUESTION BANK</div><h2>Your questions <span>{builder.questions.length}</span></h2><p>Fill in each question and its choices, then confirm the correct answer.</p></div><div className="builder-list-actions"><button className="button subtle" onClick={()=>setPasteOpen(true)}><ClipboardPaste size={15}/> Paste text</button><button className="button primary" onClick={()=>setBuilder(b=>({...b,questions:[...b.questions,blankQuestion()]}))}><Plus size={16}/> Add question</button></div></div>
     <div className="builder-question-list">{builder.questions.map((q,i)=><article className="builder-question-card" key={`${builder.id}-${i}`}><div className="builder-question-top"><div className="builder-question-number">{String(i+1).padStart(2,'0')}</div><div className="builder-question-heading"><b>Question {i+1}</b><span>{q.verified===false?<em className="needs-review">Answer needs review</em>:<em className="answer-confirmed"><Check size={12}/> Answer selected</em>}</span></div><button className="builder-remove" title="Remove question" onClick={()=>removeBuilderQuestion(i)} disabled={builder.questions.length===1}><Trash size={16}/></button></div><label className="builder-field-label">Question text<textarea rows={2} value={q.question} onChange={e=>updateBuilderQuestion(i,{question:e.target.value})} placeholder="Write the question clearly…"/></label><div className="builder-choices-label"><b>Answer choices</b><small>Choose the radio button beside the correct answer.</small></div><div className="builder-choice-grid">{q.options.map((option,j)=><label key={j} className={`builder-choice ${q.answer===j?'correct-choice':''}`}><input type="radio" name={`answer-${builder.id}-${i}`} checked={q.answer===j} onChange={()=>updateBuilderQuestion(i,{answer:j,verified:true})} onClick={()=>updateBuilderQuestion(i,{answer:j,verified:true})}/><span className="choice-letter">{String.fromCharCode(65+j)}</span><input className="choice-text-input" value={option} onChange={e=>updateBuilderQuestion(i,{options:q.options.map((o,k)=>k===j?e.target.value:o)})} placeholder={`Choice ${String.fromCharCode(65+j)}`}/>{q.answer===j&&<Check size={15} className="choice-check"/>}</label>)}</div><label className="builder-field-label explanation-field">Explanation <span>(optional)</span><textarea rows={2} value={q.explanation||''} onChange={e=>updateBuilderQuestion(i,{explanation:e.target.value})} placeholder="Explain why the answer is correct…"/></label></article>)}</div>
     <div className="builder-footer"><div><b>Ready when you are.</b><p>Saved quizzes stay in your local library. Export a .quiz file for the Custom Quiz app, or use .zip if your phone handles ZIP files better.</p></div><div className="builder-footer-actions"><button className="button subtle" onClick={downloadJSONQuiz}><Download size={16}/> Export JSON</button><button className="button subtle" onClick={()=>{if(builder.questions.every(q=>q.verified!==false))exportQuizFile(builder,'quiz');else setError('Review and confirm every detected correct answer before exporting.')}}><Download size={16}/> Export .quiz</button><button className="button subtle" onClick={()=>{if(builder.questions.every(q=>q.verified!==false))exportQuizFile(builder,'zip');else setError('Review and confirm every detected correct answer before exporting.')}}><Download size={16}/> Export .zip</button><button className="button primary big" onClick={saveBuilder}><Save size={17}/> Save quiz</button></div></div>
