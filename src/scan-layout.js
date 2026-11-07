@@ -96,3 +96,51 @@ export function scanRegionsFromImageData(imageData) {
     { label: 'right column', left: split.fraction, right: 1 }
   ] : [{ label: null, left: 0, right: 1 }];
 }
+
+
+/**
+ * Printed answer-key photos often have two NARROW lists of "1. C" entries
+ * separated by huge blank areas. Full column crops cause PSM 4 to skip most
+ * of the first list. Locate the two real ink bands and crop tightly instead.
+ * Detection uses only preview pixels and never contacts a server.
+ */
+export function detectNarrowKeyLanes({ width, height, data }) {
+  if (!Number.isInteger(width) || !Number.isInteger(height) ||
+      width < 90 || height < 90 || !data || data.length < width * height * 4) return null;
+  const profile = new Float64Array(width);
+  const startY = Math.floor(height * 0.13), endY = Math.ceil(height * 0.88);
+  let samples = 0;
+  for (let y = startY; y < endY; y += 2) {
+    samples++;
+    for (let x = 0; x < width; x++) {
+      const k = (y * width + x) * 4;
+      if (data[k+3] > 128 && (data[k]*3+data[k+1]*6+data[k+2]) < 1600)
+        profile[x]++;
+    }
+  }
+  for (let x = 0; x < width; x++) profile[x] /= samples;
+  const candidates = [];
+  const minX = Math.floor(width * 0.045), maxX = Math.ceil(width * 0.95);
+  const maxGap = Math.max(3, Math.round(width * 0.018));
+  for (let x = minX; x < maxX; x++) {
+    if (profile[x] < 0.05) continue;
+    const previous = candidates[candidates.length - 1];
+    if (previous && x - previous.end <= maxGap) previous.end = x;
+    else candidates.push({ start: x, end: x });
+  }
+  const lanes = candidates.filter(item => {
+    const span = item.end - item.start;
+    return span >= width * 0.025 && span <= width * 0.16;
+  });
+  if (lanes.length !== 2) return null;
+  lanes.sort((a,b) => a.start - b.start);
+  if ((lanes[1].start - lanes[0].end) < width * 0.23 ||
+      lanes[0].start > width * 0.34 || lanes[1].start < width * 0.46) return null;
+  const pad = width * 0.029;
+  return lanes.map((lane,i) => ({
+    label: i === 0 ? 'left column' : 'right column',
+    left: Math.max(0, (lane.start - pad)/width),
+    right: Math.min(1, (lane.end + pad)/width),
+    keyLane: true
+  }));
+}
