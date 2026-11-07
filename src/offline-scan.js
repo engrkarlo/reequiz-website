@@ -4,6 +4,7 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { isSupportedScanFile, validateCombinedScanSize, MAX_SCAN_IMAGES } from './scan-utils.js';
 import { parseOfflineQuizPages } from './offline-quiz-parser.js';
 import { scanRegionsFromImageData } from './scan-layout.js';
+import { retryColumnsForOCR, ocrResultScore, lateRetryColumnIndices } from './ocr-recovery.js';
 
 const OCR_BASE = '/ocr';
 const MAX_PDF_PAGES = 10;
@@ -88,6 +89,41 @@ async function recognizeCanvas(canvas, name, onProgress) {
         name: label, sourcePage: name, column: region.label,
         text: ocr?.data?.text || '', confidence: ocr?.data?.confidence ?? null, type: 'ocr'
       });
+    }
+
+    // Recover only suspicious columns. This costs an extra OCR pass solely
+    // where the numbered sequence has gaps, options are incomplete, or a
+    // printed answer-key list is missing entries.
+    const retryIndices = retryColumnsForOCR(results);
+    for (const i of retryIndices) {
+      const region = regions[i];
+      const x = Math.floor(canvas.width * region.left);
+      crop.width = Math.max(1, Math.ceil(canvas.width * region.right) - x);
+      crop.height = canvas.height;
+      const context = crop.getContext('2d');
+      if (!context) continue;
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, crop.width, crop.height);
+      context.drawImage(canvas, x, 0, crop.width, canvas.height, 0, 0, crop.width, crop.height);
+      results[i].retryAttempted = true;
+      onProgress('Double-checking ' + (region.label || 'page') + ' for missing numbers…');
+      try {
+        if (currentPSM !== '6') {
+          await worker.setParameters({ tessedit_pageseg_mode: '6' });
+          currentPSM = '6';
+        }
+        const alternate = await worker.recognize(crop);
+        const candidate = {
+          ...results[i], text: alternate?.data?.text || '',
+          confidence: alternate?.data?.confidence ?? null, retryAttempted: true,
+          recovered: true
+        };
+        const replaced = [...results];
+        replaced[i] = candidate;
+        if (ocrResultScore(replaced) > ocrResultScore(results)) results[i] = candidate;
+      } catch {
+        // Never discard the first-pass result when recovery OCR fails.
+      }
     }
   } finally {
     crop.width = 0;
@@ -204,9 +240,61 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}) {
         await pdf.destroy();
       }
     }
+    // A separate answer-key image can reveal an edge question (such as #1
+    // or #100) that was missed before the answer key became available.
+    // Retry only nearby, still-untried photo columns.
+    const initialAudit = parseOfflineQuizPages(pages);
+    const lateIndices = lateRetryColumnIndices(pages, initialAudit.missingQuestionNumbers);
+    for (const i of lateIndices) {
+      const section = pages[i];
+      const file = files.find(item => item.name === section.sourcePage &&
+        item.type !== 'application/pdf' && !/\.pdf$/i.test(item.name));
+      if (!file) continue;
+      section.retryAttempted = true;
+      onProgress('Checking missed question numbers in ' + (section.column || file.name) + '…');
+      let canvas = null, crop = null;
+      try {
+        canvas = await imageOnCanvas(file);
+        const regions = regionsForCanvas(canvas);
+        const region = regions.find(item => item.label === section.column) ||
+          (regions.length === 1 ? regions[0] : null);
+        if (!region) continue;
+        const x = Math.floor(canvas.width * region.left);
+        crop = document.createElement('canvas');
+        crop.width = Math.max(1, Math.ceil(canvas.width * region.right) - x);
+        crop.height = canvas.height;
+        const context = crop.getContext('2d');
+        if (!context) continue;
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, crop.width, crop.height);
+        context.drawImage(canvas, x, 0, crop.width, canvas.height, 0, 0, crop.width, crop.height);
+        const worker = await getCachedWorker(onProgress);
+        if (currentPSM !== '6') {
+          await worker.setParameters({ tessedit_pageseg_mode: '6' });
+          currentPSM = '6';
+        }
+        const ocr = await worker.recognize(crop);
+        const candidate = {
+          ...section, text: ocr?.data?.text || '',
+          confidence: ocr?.data?.confidence ?? null,
+          retryAttempted: true, recovered: true
+        };
+        const attempted = pages.slice();
+        attempted[i] = candidate;
+        if (ocrResultScore(attempted) > ocrResultScore(pages)) pages[i] = candidate;
+      } catch {
+        // Failed fallback must never discard the initial OCR result.
+      } finally {
+        if (crop) { crop.width = 0; crop.height = 0; }
+        if (canvas) { canvas.width = 0; canvas.height = 0; }
+      }
+    }
     onProgress('Matching questions with printed answer keys locally…');
     const parsed = parseOfflineQuizPages(pages);
-    return { ...parsed, pages, pageCount, columnsDetected: pages.filter(p => p.column).length, scannedFiles: files.length };
+    return { ...parsed, pages, pageCount, columnsDetected: pages.filter(p => p.column).length,
+      retriedRegions: pages.filter(p => p.retryAttempted).length,
+      recoveredRegions: pages.filter(p => p.recovered).length,
+      scannedFiles: files.length };
   } finally {
     // Keep the worker ready for subsequent scans; the browser disposes it on navigation.
   }
