@@ -63,10 +63,10 @@ function regionsForCanvas(canvas) {
 // Crop each detected column separately, in natural reading order. By using
 // Tesseract's single-column page segmentation for each half we avoid mixing
 // horizontally aligned questions from opposite sides of an exam paper.
-async function recognizeCanvas(canvas, name, onProgress) {
+async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false) {
   const regions = regionsForCanvas(canvas);
   const worker = await getCachedWorker(onProgress);
-  const mode = regions.some(region => region.keyLane) ? '6' : regions.length > 1 ? '4' : '3';
+  const mode = (forceAnswerKey || regions.some(region => region.keyLane)) ? '6' : regions.length > 1 ? '4' : '3';
   if (currentPSM !== mode) {
     await worker.setParameters({ tessedit_pageseg_mode: mode });
     currentPSM = mode;
@@ -98,6 +98,7 @@ async function recognizeCanvas(canvas, name, onProgress) {
       const ocr = await worker.recognize(crop);
       results.push({
         name: label, sourcePage: name, column: region.label, keyLane: Boolean(region.keyLane),
+        scanRole: forceAnswerKey ? 'answer-key' : undefined,
         text: ocr?.data?.text || '', confidence: ocr?.data?.confidence ?? null, type: 'ocr'
       });
     }
@@ -105,7 +106,7 @@ async function recognizeCanvas(canvas, name, onProgress) {
     // Recover only suspicious columns. This costs an extra OCR pass solely
     // where the numbered sequence has gaps, options are incomplete, or a
     // printed answer-key list is missing entries.
-    const retryIndices = regions.some(region => region.keyLane) ? [] : retryColumnsForOCR(results);
+    const retryIndices = (forceAnswerKey || regions.some(region => region.keyLane)) ? [] : retryColumnsForOCR(results);
     for (const i of retryIndices) {
       const region = regions[i];
       const x = Math.floor(canvas.width * region.left);
@@ -191,17 +192,20 @@ function imageOnCanvas(file) {
  * are recognized with a self-hosted Tesseract WebAssembly worker.
  * No external providers are contacted and no scan content leaves the browser.
  */
-export async function scanQuizFilesOffline(files, onProgress = () => {}) {
+export async function scanQuizFilesOffline(files, onProgress = () => {}, options = {}) {
   if (!Array.isArray(files) || !files.length) throw new Error('Choose at least one image or PDF to scan.');
   if (files.some(file => !isSupportedScanFile(file))) throw new Error('Use PDF, JPEG, PNG, WEBP, or GIF files.');
   validateCombinedScanSize(files);
 
   const pages = [];
   let pageCount = 0;
-  const recognize = (canvas, name) => recognizeCanvas(canvas, name, onProgress);
+  let forceAnswerKey = false;
+  const recognize = (canvas, name) => recognizeCanvas(canvas, name, onProgress, forceAnswerKey);
 
   try {
-    for (const file of files) {
+    for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+      const file = files[fileIndex];
+      forceAnswerKey = Array.isArray(options.answerKeyIndices) && options.answerKeyIndices.includes(fileIndex);
       const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
       if (!isPdf) {
         if (pageCount >= MAX_SCAN_IMAGES) throw new Error(`Scan up to ${MAX_SCAN_IMAGES} images/pages at a time.`);
@@ -222,7 +226,8 @@ export async function scanQuizFilesOffline(files, onProgress = () => {}) {
           onProgress(`Checking selectable text on ${name}…`);
           const extracted = textFromPdfItems((await page.getTextContent()).items);
           if (extracted.replace(/\s+/g, '').length >= 8) {
-            pages.push({ name, sourcePage: name, text: extracted, confidence: null, type: 'pdf-text' });
+            pages.push({ name, sourcePage: name, scanRole: forceAnswerKey ? 'answer-key' : undefined,
+              text: extracted, confidence: null, type: 'pdf-text' });
             pageCount++;
             page.cleanup();
             continue;
