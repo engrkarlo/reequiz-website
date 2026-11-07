@@ -55,3 +55,21 @@ test('a few side-by-side options do not turn a page into two columns', () => {
 test('reject small or invalid image data without throwing', () => {
   assert.equal(detectTwoColumnSplit({ width: 2, height: 2, data: new Uint8ClampedArray(16) }), null);
 });
+
+
+test('sparse answer-key columns near page margins are detected', () => {
+  const width=360,height=640,data=new Uint8ClampedArray(width*height*4).fill(255);
+  for(let i=0;i<48;i++){
+    const y=92+i*10;
+    for(const [x0,x1] of [[22,41],[185,208]]) {
+      for(let yy=y;yy<y+3;yy++) for(let x=x0;x<x1;x++){
+        const k=(yy*width+x)*4;
+        data[k]=35; data[k+1]=35; data[k+2]=35;
+      }
+    }
+  }
+  const regions=scanRegionsFromImageData({width,height,data});
+  assert.equal(regions.length,2);
+  assert.equal(regions[0].label,'left column');
+  assert.ok(regions[0].right>0.44 && regions[0].right<0.56);
+});
