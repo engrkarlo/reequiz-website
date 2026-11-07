@@ -100,6 +100,16 @@ For true offline operation, the OCR JavaScript worker, WebAssembly core variants
 
 `npm install` copies OCR assets from dependencies into `public/ocr/` using the `postinstall` script, and `npm run build` repeats the copy and generates `dist/offline-manifest.json` to precache the Vite chunks. **Do not omit the install/build scripts on deployment**. The generated model and WASM files are intentionally not committed to Git. Use `npm test` to run parser and API regression tests.
 
+
+
+### OCR accuracy safeguards (two-column exam photos)
+
+The offline scanner treats all columns of a source image or PDF page as one logical page when detecting an **answer key**. A heading on the left applies to key entries in the right column too. Sparse keys, such as numbered answers 1–51 on the left and 52–100 on the right, are supported, including those without a repeated heading. Repeated uppercase subject headings (for example, **THERMODYNAMICS**) and page footers are excluded from question text and answer choices.
+
+Printed question numbers are audited for gaps and duplicates. Only suspicious columns get a **second, local OCR attempt** using a different Tesseract segmentation mode; improved text is kept only when it recovers more usable questions/key entries. If a numbered question is readable but a choice is missing, the scanner retains that question with explicit OCR placeholders rather than silently omitting it or shifting answer labels. Unrecovered question numbers and incomplete choices are displayed in a persistent review banner. Ambiguous or missing answers always require manual confirmation.
+
+On mobile, the scan button shows a compact loading label and detailed progress appears below it, wrapping safely within the available width. The browser still does all processing locally with no AI service calls. Performance varies by hardware; the extra OCR pass is **selective**, not applied to every page.
+
 The manual **AI validate & explain** action in My Library remains an optional **online** feature using Groq/Gemini; it is separate from the fully offline Quiz Studio scanner.
 
 Keep provider keys on the server. **Never put API keys in frontend code or in variables prefixed with `VITE_`.** Redeploy after changing environment variables. Model availability and provider limits may change.
