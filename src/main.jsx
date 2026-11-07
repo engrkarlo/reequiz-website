@@ -114,7 +114,7 @@ function App(){
  const [index,setIndex]=useState(0),[answers,setAnswers]=useState({}),[reviewOnly,setReviewOnly]=useState(false),[shuffle,setShuffle]=useState(false),[timed,setTimed]=useState(false),[seconds,setSeconds]=useState(0),[startedAt,setStartedAt]=useState(0),[timerExpired,setTimerExpired]=useState(false),[showSettings,setShowSettings]=useState(false),[selectedIds,setSelectedIds]=useState([]),[resumeAvailable,setResumeAvailable]=useState(()=>readSavedSessions().length>0),[pendingQuiz,setPendingQuiz]=useState(null),[exitConfirm,setExitConfirm]=useState(false),[questionStartedAt,setQuestionStartedAt]=useState(Date.now()),[questionSecondsLeft,setQuestionSecondsLeft]=useState(0),[timedOutQuestion,setTimedOutQuestion]=useState(null),[questionTimerPaused,setQuestionTimerPaused]=useState(false),[questionPausedAt,setQuestionPausedAt]=useState(null);
  const [prefs,setPrefs]=useState(()=>{try{return {theme:'dark',shuffleChoices:true,timerMinutes:10,soundOn:true,aiEnabled:false,perQuestionTimerEnabled:false,perQuestionSeconds:15,timerSoundVolume:75,...JSON.parse(localStorage.getItem(PREFS)||'{}')}}catch{return {theme:'dark',shuffleChoices:true,timerMinutes:10,soundOn:true,aiEnabled:false,perQuestionTimerEnabled:false,perQuestionSeconds:15,timerSoundVolume:75}}});
  const [quizEditor,setQuizEditor]=useState(null),[deleteTarget,setDeleteTarget]=useState(null);const [coverCropSource,setCoverCropSource]=useState(''),[coverCropX,setCoverCropX]=useState(50),[coverCropY,setCoverCropY]=useState(50),[coverCropZoom,setCoverCropZoom]=useState(1);
- const [builder,setBuilder]=useState(null),[pasteText,setPasteText]=useState(''),[builderMode,setBuilderMode]=useState('edit'),[pasteOpen,setPasteOpen]=useState(false);const [scanFiles,setScanFiles]=useState([]),[scanBusy,setScanBusy]=useState(false),[scanProgress,setScanProgress]=useState(''),[scanAudit,setScanAudit]=useState(null);
+ const [builder,setBuilder]=useState(null),[pasteText,setPasteText]=useState(''),[builderMode,setBuilderMode]=useState('edit'),[pasteOpen,setPasteOpen]=useState(false);const [scanFiles,setScanFiles]=useState([]),[scanBusy,setScanBusy]=useState(false),[scanProgress,setScanProgress]=useState(''),[scanAudit,setScanAudit]=useState(null),[scanKeyIndices,setScanKeyIndices]=useState([]);
  const [statsHistory,setStatsHistory]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-stats-history-v1')||'[]')}catch{return []}});
  const [selectedStatsSession,setSelectedStatsSession]=useState(null);
  const [aiBusy,setAiBusy]=useState(false),[aiProgress,setAiProgress]=useState(null),[aiLog,setAiLog]=useState(()=>{try{return JSON.parse(localStorage.getItem('reequiz-ai-change-log-v1')||'[]')}catch{return []}});
@@ -293,7 +293,7 @@ function App(){
    try{
     // All recognition, parsing, and key matching runs on this device.
     const { scanQuizFilesOffline } = await import('./offline-scan.js');
-    const result = await scanQuizFilesOffline(scanFiles, setScanProgress);
+    const result = await scanQuizFilesOffline(scanFiles, setScanProgress, {answerKeyIndices:scanKeyIndices});
     const parsed = result.questions.map(q => ({
      question: String(q.question||'').trim(),
      options: (Array.isArray(q.options)?q.options:[]).slice(0,8).map((o,i)=>String(o||'').trim()||`[OCR could not read choice ${'ABCDEFGH'[i]} — replace with text from the image]`),
@@ -308,16 +308,20 @@ function App(){
     const missing=result.missingQuestionNumbers||[];
     const incomplete=result.incompleteNumbers||[];
     const duplicates=result.duplicateNumbers||[];
+    const keyPages=result.detectedKeyPages||[];
+    const unreadableKeyPages=result.unreadableKeyPages||[];
     const displayNumbers=nums=>nums.slice(0,24).join(', ')+(nums.length>24?' and more':'');
     setScanAudit({missing,incomplete,duplicates,matchedKeyCount:result.matchedKeyCount||0,
-      answerKeyCount:result.answerKeyCount||0,retried:result.retriedRegions||0});
+      answerKeyCount:result.answerKeyCount||0,retried:result.retriedRegions||0,
+      keyPages,unreadableKeyPages});
     setNotice(`Offline scan extracted ${parsed.length} numbered questions from ${result.pageCount} page(s). `+
      (result.columnsDetected?`${result.columnsDetected/2} two-column page(s) read separately. `:'')+
-     (result.answerKeyCount?`Matched ${result.matchedKeyCount}/${result.answerKeyCount} printed answer-key entries. `:'No printed answer key detected. ')+
+     (result.answerKeyCount?`Matched ${result.matchedKeyCount}/${result.answerKeyCount} printed answer-key entries. `:
+       keyPages.length?'An answer-key page was detected, but no reliable entries were read. ': 'No printed answer key detected. ')+
      (missing.length?`Missing question #${displayNumbers(missing)} — verify against the images. `:'')+
      (incomplete.length?`Incomplete choices in question #${displayNumbers(incomplete)} — correct them before saving. `:'')+
      (unreadable?'Some images had low OCR confidence; check the text.':''));
-    setScanFiles([]);
+    setScanFiles([]);setScanKeyIndices([]);
    }catch(error){setError(error?.message||'Offline scan failed. Check the files and try again.')}finally{setScanBusy(false);setScanProgress('')}
   }
   function saveBuilder(){if(!builder?.title?.trim()){setError('Give your quiz a title first.');return}if(!builder.questions.length){setError('Add at least one question.');return}for(let i=0;i<builder.questions.length;i++){const q=builder.questions[i];if(!q.question.trim()||q.options.filter(o=>o.trim()).length<2){setError(`Question ${i+1} needs text and at least two answer choices.`);return}if(!Number.isInteger(q.answer)||q.answer<0||!q.options[q.answer]?.trim()){setError(`Choose a valid correct answer for question ${i+1}.`);return}if(q.verified===false){setError(`Please confirm the correct answer for question ${i+1} before saving. Select the correct answer in its card.`);return}}
@@ -389,13 +393,14 @@ B) Straight-line
 C) Sinking fund
 D) Units of production
 Answer: B`} rows={12}/><div className="paste-actions"><span><Check size={14}/> Text stays in your browser</span><button className="button primary" onClick={parsePastedIntoBuilder}><WandSparkles size={16}/> Detect questions</button></div></section>}
-    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDFs offline</h3><p>Scan one- or two-column exam photos and PDFs locally, reading left-to-right by column. Printed answer keys are matched across files and pages.</p></div><span className="paste-tag ai-online-tag"><span/> OFFLINE · PRIVATE</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>{const files=Array.from(e.target.files||[]);setScanFiles(files);try{validateCombinedScanSize(files);setError('')}catch(error){setError(error.message)}e.target.value=''}}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, GIF, or PDF · Combined maximum 20 MB</span></label>
-    {scanFiles.length>0&&<div className="ai-upload-list">{scanFiles.map((f,i)=><div key={f.name+i}><FileText size={15}/><span>{f.name}</span><small>{(f.size/1024).toFixed(0)} KB</small><button type="button" aria-label={`Remove ${f.name}`} disabled={scanBusy} onClick={()=>setScanFiles(prev=>prev.filter((_,j)=>j!==i))}><X size={14}/></button></div>)}</div>}
-    <div className="ai-scan-note"><Brain size={15}/><span>Offline OCR reads text, and local matching finds printed answer keys even in a different image or PDF page. Missing, conflicting, or unclear keys remain unconfirmed. No scanning files are uploaded.</span></div>
+    {pasteOpen&&<section className="ai-scan-workspace"><div className="ai-scan-heading"><div className="ai-scan-icon"><FileUp size={19}/></div><div><h3>Scan images or PDFs offline</h3><p>Scan one- or two-column exam photos and PDFs locally, reading left-to-right by column. Printed answer keys are matched across files and pages.</p></div><span className="paste-tag ai-online-tag"><span/> OFFLINE · PRIVATE</span></div><label className="ai-upload-drop"><input type="file" accept="image/*,application/pdf,.pdf" multiple disabled={scanBusy} onChange={e=>{const files=Array.from(e.target.files||[]);setScanFiles(files);setScanKeyIndices([]);try{validateCombinedScanSize(files);setError('')}catch(error){setError(error.message)}e.target.value=''}}/><Upload size={21}/><b>Choose images or PDF files</b><span>JPG, PNG, WEBP, GIF, or PDF · Combined maximum 20 MB</span></label>
+    {scanFiles.length>0&&<div className="ai-upload-list">{scanFiles.map((f,i)=><div key={f.name+i}><FileText size={15}/><span>{f.name}</span><small>{(f.size/1024).toFixed(0)} KB</small><button type="button" className={`ai-key-toggle ${scanKeyIndices.includes(i)?'active':''}`} aria-pressed={scanKeyIndices.includes(i)} aria-label={`${scanKeyIndices.includes(i)?'Unmark':'Mark'} ${f.name} as an answer key`} disabled={scanBusy} onClick={()=>setScanKeyIndices(prev=>prev.includes(i)?prev.filter(j=>j!==i):[...prev,i])}>{scanKeyIndices.includes(i)?'Key ✓':'Mark key'}</button><button type="button" aria-label={`Remove ${f.name}`} disabled={scanBusy} onClick={()=>{setScanFiles(prev=>prev.filter((_,j)=>j!==i));setScanKeyIndices(prev=>prev.filter(j=>j!==i).map(j=>j>i?j-1:j))}}><X size={14}/></button></div>)}</div>}
+    <div className="ai-scan-note"><Brain size={15}/><span>Offline OCR reads text, and local matching finds printed answer keys even in a different image or PDF page. Missing, conflicting, or unclear keys remain unconfirmed. If an answer-key photo is not recognized automatically, tap Mark key beside its filename. No scanning files are uploaded.</span></div>
     <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) · ${(scanFiles.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)} / 20 MB`:'Your files never leave this browser. Offline after the first visit is cached.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/> Scanning offline…</>:<><WandSparkles size={16}/> Scan offline & build questions</>}</button></div>{scanBusy&&scanProgress&&<p className="ai-scan-status" role="status" aria-live="polite">{scanProgress}</p>}</section>}
     {scanAudit&&<div className={`ocr-review-banner ${scanAudit.missing.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'ocr-review-warning':''}`} role="status">
      <strong>{scanAudit.missing.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'OCR scan requires review':'Offline scan completed'}</strong>
-     <p>{scanAudit.answerKeyCount?`${scanAudit.matchedKeyCount} of ${scanAudit.answerKeyCount} printed answers matched. `:'No printed key was recognized. '}
+     <p>{scanAudit.answerKeyCount?`${scanAudit.matchedKeyCount} of ${scanAudit.answerKeyCount} printed answers matched. `:
+      scanAudit.keyPages?.length?'Answer-key image detected, but its entries could not be read. Try a sharper photo or mark the key file explicitly. ':'No printed key was recognized; try Mark key on the answer-key file. '}
      {scanAudit.missing.length?`Missing question numbers: ${scanAudit.missing.slice(0,40).join(', ')}. Please add or rescan them. `:''}
      {scanAudit.incomplete.length?`Incomplete options in question numbers ${scanAudit.incomplete.slice(0,40).join(', ')}. Replace OCR placeholders and confirm answers. `:''}
      {scanAudit.duplicates.length?`Repeated numbers ${scanAudit.duplicates.join(', ')} require checking. `:''}</p>

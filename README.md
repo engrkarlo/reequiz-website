@@ -138,3 +138,13 @@ React · Vite · JavaScript
   <br />
   <sub>Copyright © 2026 Orion Hub Development. All rights reserved.</sub>
 </p>
+
+
+### False answer-key questions and manual key identification
+
+The scan now classifies each **source image or PDF page** before creating question-bank entries. A detected narrow printed answer-key layout, a short OCR-damaged heading such as \`ANSWEI\`, or a dense group of numbered answer letters identifies a key-only page. Even if the entire printed key is unreadable, it is **not** added as an extra quiz question (such as a false question 31). OCR key pairs are matched across separate images, and any unreadable key page is reported explicitly.
+
+To override automatic detection for a difficult or unusually formatted answer-key image, select **Mark key** beside that uploaded file before scanning. It is optional: automatic detection remains the default. This setting only affects locally processed scan content and does not send files anywhere. For truly unreadable answer letters, the scanner does not guess and the quiz still requires manual review. A corrupted duplicate number, such as question 17 read as 27, can be repaired only when the surrounding question sequence and printed key support it.
+
+After installing a new deployment, open the site once while online and reload it so the revised offline service-worker cache is installed. Stored OCR engines and PDF models remain local.
+

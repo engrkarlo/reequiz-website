@@ -257,3 +257,362 @@ test('isolated OCR key number without supporting neighbors remains unverified', 
   ]);
   assert.equal(parsed.questions[0].answerProvided,false);
 });
+
+
+test('unreadable OCR answer-key photo must never become question 31 or corrupt question 30', () => {
+  const page = Array.from({length: 30}, (_,i) =>
+    `${i+1}. Thermodynamics question ${i+1}?\nA. One\nB. Two\nC. Three\nD. Four`).join('\n');
+  const scanned = parseOfflineQuizPages([
+    {name:'exam left',sourcePage:'exam.jpg',text:page},
+    {name:'key left',sourcePage:'answer.jpg',column:'left column',keyLane:true,
+      text:'ANSWEI\n31. Weird number artifact\n1.€\n2.D\n3.B\n4.D\n5B\n6.B'},
+    {name:'key right',sourcePage:'answer.jpg',column:'right column',keyLane:true,
+      text:'52.A\n53.A\n54.D'}
+  ]);
+  assert.equal(scanned.questions.length, 30);
+  assert.equal(scanned.questions.at(-1).number, 30);
+  assert.ok(!scanned.questions.some(q=>q.number===31));
+  assert.ok(!scanned.answerKeys.some(k=>k.number===31));
+  assert.deepEqual(scanned.detectedKeyPages,['answer.jpg']);
+  assert.ok(scanned.answerKeyCount >= 6);
+  assert.equal(scanned.questions.find(q=>q.number===2).answer,3);
+});
+
+test('even a completely illegible visually detected key photo cannot be parsed as question', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. What is heat?\nA. Energy\nB. Matter'},
+    {name:'key',sourcePage:'key.jpeg',column:'left column',keyLane:true,text:'31. Garbled text instead of key\nBroken answer words'},
+    {name:'key',sourcePage:'key.jpeg',column:'right column',keyLane:true,text:'xx %% ?!'}
+  ]);
+  assert.equal(scanned.questions.length,1);
+  assert.equal(scanned.answerKeyCount,0);
+  assert.deepEqual(scanned.unreadableKeyPages,['key.jpeg']);
+  assert.deepEqual(scanned.detectedKeyPages,['key.jpeg']);
+});
+
+test('manual answer-key file marking prevents bogus questions even when automatic OCR has no clues', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. A question?\nA. Yes\nB. No'},
+    {name:'key',sourcePage:'photo.jpg',scanRole:'answer-key',
+      text:'31. This is garbled\n42. Nonsense word\n43. unreadable letters'}
+  ]);
+  assert.equal(scanned.questions.length,1);
+  assert.equal(scanned.answerKeyCount,0);
+  assert.deepEqual(scanned.unreadableKeyPages,['photo.jpg']);
+});
+
+test('fuzzy ANSWEI heading plus three numbered key entries is a key even without visual metadata', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. What?\nA. One\nB. Two\nC. Three\n2. Why?\nA. One\nB. Two\nC. Three'},
+    {name:'key photo',text:'ANSWEI\n31. Some OCR garbage\n1. C\n2. B\n3. A'}
+  ]);
+  assert.equal(scanned.questions.length,2);
+  assert.ok(scanned.answerKeyCount>=3);
+  assert.equal(scanned.questions.find(q=>q.number===1).answer,2);
+  assert.equal(scanned.questions.find(q=>q.number===2).answer,1);
+});
+
+test('OCR reads question 17 as duplicate 27, verified adjacent numbers and key recover it safely', () => {
+  const output=parseOfflineQuizPages([
+    {name:'right',sourcePage:'exam.jpg',text:'16. Select entropy statements?\nA. I only C. I and II\nB, II only D, Neither\n27. What device encloses a boundary?\nA. Closed system C. Isolated system\nB. Open system D. All of these\n18. What mass flows?\nA. Open\nB. Closed\nC. Isolated\nD. None\n27. Which force?\nA. x\nB. y\nC. z\nD. w'},
+    {name:'key',sourcePage:'key.jpg',scanRole:'answer-key',text:'16. C\n17. B\n18. B\n27. B'}
+  ]);
+  assert.ok(output.questions.some(q=>q.number===17));
+  assert.equal(output.duplicateNumbers.includes(27),false);
+  assert.equal(output.questions.find(q=>q.number===16).answer,2);
+  assert.equal(output.questions.find(q=>q.number===17).answer,1);
+});
+
+
+test('key-page OCR words cannot silently set correct answers', () => {
+  const parsed=parseOfflineQuizPages([
+    {sourceId:'questions',name:'exam.jpg',text:'42. Choose?\nA. First\nB. Second\nC. Third'},
+    {sourceId:'answer-key',name:'key.jpg',scanRole:'answer-key',text:'ANSWER KEY\n42. A garbled word'}
+  ]);
+  assert.equal(parsed.questions.length,1);
+  assert.equal(parsed.answerKeyCount,0);
+  assert.equal(parsed.questions[0].answerProvided,false);
+  assert.deepEqual(parsed.unreadableKeyPages,['key.jpg']);
+});
+
+test('noise cannot override or conflict with a valid printed answer entry', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'exam',sourceId:'exam',text:'42. Choose?\nA. First\nB. Second\nC. Third'},
+    {name:'key',sourceId:'key',scanRole:'answer-key',text:'42. B\n42. A garbled word'}
+  ]);
+  assert.equal(parsed.answerKeyCount,1);
+  assert.equal(parsed.questions[0].answer,1);
+  assert.equal(parsed.questions[0].answerProvided,true);
+  assert.deepEqual(parsed.unreadableKeyPages,[]);
+});
+
+test('short OCR punctuation salvage still accepts genuine printed key entries', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'exam',sourceId:'exam',text:'42. Choose?\nA. First\nB. Second\nC. Third'},
+    {name:'key',sourceId:'key',scanRole:'answer-key',text:'ANSWEI\n42. C ~~'}
+  ]);
+  assert.equal(parsed.answerKeyCount,1);
+  assert.equal(parsed.questions[0].answer,2);
+  assert.equal(parsed.questions[0].answerProvided,true);
+  assert.deepEqual(parsed.unreadableKeyPages,[]);
+});
+
+test('noise-only key page with multiple apparent pairs stays unreadable', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'exam',sourceId:'exam',text:'42. Choose?\nA. First\nB. Second\nC. Third'},
+    {name:'unreadable key',sourceId:'key',scanRole:'answer-key',
+      text:'42. A garbled word\n43. B another blurred line'}
+  ]);
+  assert.equal(parsed.answerKeyCount,0);
+  assert.deepEqual(parsed.unreadableKeyPages,['unreadable key']);
+  assert.equal(parsed.questions[0].answerProvided,false);
+});
+
+test('options beginning the next uploaded page flag a finalized question incomplete', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'first',sourceId:'img1',text:'1. Which?\nA) false\nB) maybe'},
+    {name:'second',sourceId:'img2',text:'C) true\nD) unknown'},
+    {name:'keys',sourceId:'key',text:'Answer Key\n1. C'}
+  ]);
+  assert.equal(parsed.questions.length,1);
+  assert.equal(parsed.questions[0].incomplete,true);
+  assert.deepEqual(parsed.questions[0].missingChoices,['C','D']);
+  assert.deepEqual(parsed.questions[0].options,['false','maybe','','']);
+  assert.equal(parsed.questions[0].answerProvided,false);
+});
+
+test('unrelated next-page options never corrupt a question once a new number is read', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'first',sourceId:'img1',text:'1. Which?\nA) false\nB) maybe'},
+    {name:'second',sourceId:'img2',text:'2. New question?\nA) green\nB) blue'},
+    {name:'key',sourceId:'key',text:'Answer Key\n1. B\n2. A'}
+  ]);
+  assert.equal(parsed.questions.length,2);
+  assert.equal(parsed.questions[0].incomplete,false);
+  assert.equal(parsed.questions[0].answer,1);
+  assert.equal(parsed.questions[1].answer,0);
+});
+
+test('identical filenames never join a manually marked key image to question image', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'IMG.jpg',sourcePage:'IMG.jpg',sourceId:'file:0:image',
+      text:'1. Which?\nA. yes\nB. no'},
+    {name:'IMG.jpg',sourcePage:'IMG.jpg',sourceId:'file:1:image',
+      scanRole:'answer-key',text:'ANSWER KEY\n1. B'}
+  ]);
+  assert.equal(parsed.questions.length,1);
+  assert.equal(parsed.questions[0].question,'Which?');
+  assert.equal(parsed.questions[0].answer,1);
+  assert.deepEqual(parsed.detectedKeyPages,['IMG.jpg']);
+});
+
+test('two same-name question files stay separate when one is marked key and unreadable', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'duplicate.jpg',sourceId:'file:0:image',text:'1. Real question?\nA. yes\nB. no'},
+    {name:'duplicate.jpg',sourceId:'file:1:image',scanRole:'answer-key',
+      text:'2. A garbled sentence'}
+  ]);
+  assert.equal(parsed.questions.length,1);
+  assert.equal(parsed.questions[0].number,1);
+  assert.deepEqual(parsed.unreadableKeyPages,['duplicate.jpg']);
+});
+
+
+test('question number repair does not borrow evidence across same-named files', () => {
+  const parsed = parseOfflineQuizPages([
+    {name:'same.jpg',sourcePage:'same.jpg',sourceId:'file:0:image',
+      text:'16. First?\nA. true\nB. false'},
+    {name:'same.jpg',sourcePage:'same.jpg',sourceId:'file:1:image',
+      text:'27. Second?\nA. true\nB. false\n18. Third?\nA. true\nB. false'},
+    {name:'key',sourceId:'file:2:image',scanRole:'answer-key',
+      text:'16. B\n17. A\n18. A'}
+  ]);
+  assert.ok(parsed.questions.some(q => q.number === 27));
+  assert.ok(!parsed.questions.some(q => q.number === 17));
+  assert.ok(parsed.missingQuestionNumbers.includes(17));
+});
+
+
+test('answer-key heading and several printed pairs on one line are recognized', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'questions', sourceId: 'file:0', text: '1. First question?\nA. one\nB. two\nC. three\n2. Second question?\nA. one\nB. two\nC. three\n3. Third question?\nA. one\nB. two\nC. three' },
+    { name: 'key', sourceId: 'file:1', text: 'Answer Key: 1. B 2. C 3. A' }
+  ]);
+  assert.equal(result.questions.length, 3);
+  assert.equal(result.answerKeyCount, 3);
+  assert.equal(result.matchedKeyCount, 3);
+  assert.deepEqual(result.questions.map(q => q.answer), [1, 2, 0]);
+  assert.deepEqual(result.unreadableKeyPages, []);
+});
+
+test('key heading with inline pair followed by separate numbered entries is preserved', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First?\nA. one\nB. two\n2. Second?\nA. one\nB. two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key', text: 'ANSWER KEY: 1. B\n2. A' }
+  ]);
+  assert.equal(result.answerKeyCount, 2);
+  assert.deepEqual(result.questions.map(q => q.answer), [1, 0]);
+});
+
+test('inline key heading never permits OCR prose to supply an answer', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First?\nA. one\nB. two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key', text: 'Answer Key: 1. A garbled word' }
+  ]);
+  assert.equal(result.answerKeyCount, 0);
+  assert.equal(result.questions[0].answerProvided, false);
+  assert.deepEqual(result.unreadableKeyPages, ['key']);
+});
+
+test('unlabelled text on a new page flags the page-finalized answer as incomplete', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Which option?\nA. no\nB. choice whose last line' },
+    { name: 'page2', sourceId: 'page2', text: 'continues at the start of another image.' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B' }
+  ]);
+  assert.equal(result.questions.length, 1);
+  assert.equal(result.questions[0].incomplete, true);
+  assert.equal(result.questions[0].answerProvided, false);
+  assert.deepEqual(result.incompleteNumbers, [1]);
+});
+
+test('a repeated header on a following page does not trigger a false incompleteness warning', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Which option?\nA. no\nB. yes' },
+    { name: 'page2', sourceId: 'page2', text: 'THERMODYNAMICS\nPage 2 of 4' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B' }
+  ]);
+  assert.equal(result.questions[0].incomplete, false);
+  assert.equal(result.questions[0].answerProvided, true);
+});
+
+test('unlabelled text after a new numbered question stays with the new question', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Completed?\nA. no\nB. yes' },
+    { name: 'page2', sourceId: 'page2', text: '2. New question?\ncontinued stem\nA. true\nB. false' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B\n2. A' }
+  ]);
+  assert.equal(result.questions.length, 2);
+  assert.equal(result.questions[0].incomplete, false);
+  assert.equal(result.questions[1].question, 'New question? continued stem');
+  assert.deepEqual(result.questions.map(q => q.answerProvided), [true, true]);
+});
+
+
+test('OCR-damaged key heading followed by inline entries is classified and confirmed automatically', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First question?\nA. One\nB. Two\n2. Next question?\nA. One\nB. Two\nC. Three' },
+    { name: 'key-photo', sourceId: 'key', text: 'ANSWEI 1. B 2. C' }
+  ]);
+  assert.equal(parsed.questions.length, 2);
+  assert.equal(parsed.answerKeyCount, 2);
+  assert.equal(parsed.matchedKeyCount, 2);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 2]);
+  assert.deepEqual(parsed.detectedKeyPages, ['key-photo']);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('OCR-damaged heading with inline entries is recovered on visually identified key pages', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two\n2. Another choice?\nA. One\nB. Two' },
+    { name: 'photo', sourceId: 'key', keyLane: true, text: 'ANSWFR KEY: 1. A 2. B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 2);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [0, 1]);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('OCR-damaged heading with inline key in a question page is parsed via the non-key path', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'page', sourceId: 'page', text: '1. Select answer?\nA. One\nB. Two\nANSWEI 1. B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+});
+
+test('standalone OCR-damaged heading still allows entries on subsequent lines', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'page', sourceId: 'page', text: '1. Select answer?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', text: 'ANSWEI\n1. B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+});
+
+test('OCR prefix without a following digit does not turn key prose into an answer', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key',
+      text: 'ANSWEI note 1. B 2. A' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 0);
+  assert.equal(parsed.questions[0].answerProvided, false);
+  assert.deepEqual(parsed.unreadableKeyPages, ['key']);
+});
+
+test('damaged heading followed by prose cannot silently confirm a key', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', keyLane: true,
+      text: 'ANSWEI 1. B garbled note' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 0);
+  assert.equal(parsed.questions[0].answerProvided, false);
+  assert.deepEqual(parsed.unreadableKeyPages, ['key']);
+});
+
+
+test('ordinary Answer 2 of the following continuation never switches to answer-key mode', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'exam', text:
+      '1. First question?\nA. one\nB. first line\nAnswer 2 of the following statements.\n2. Second question?\nA. yes\nB. no\n3. Third question?\nA. left\nB. right' },
+    { name:'key', sourceId:'key', text:'Answer Key\n1. B\n2. A\n3. B' }
+  ]);
+  assert.equal(parsed.questions.length, 3);
+  assert.deepEqual(parsed.questions.map(q => q.number), [1, 2, 3]);
+  assert.ok(parsed.questions[0].options[1].includes('Answer 2 of the following'));
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 0, 1]);
+  assert.deepEqual(parsed.detectedKeyPages, ['key']);
+});
+
+test('even prose resembling Answer 2 A is not accepted as a printed key entry', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'page', text:'1. Choose?\nA. first\nB. second\nAnswer 2 A question should continue here.\n2. Next?\nA. one\nB. two' },
+    { name:'key', text:'Answer Key\n1. B\n2. A' }
+  ]);
+  assert.equal(parsed.questions.length, 2);
+  assert.deepEqual(parsed.questions.map(q => q.number), [1, 2]);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 0]);
+});
+
+test('noisy ANSWEI 1«B key is recognized and confirmed on a separate key image', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam.jpg', sourceId:'exam', text:'1. Which answer?\nA. incorrect\nB. correct' },
+    { name:'key.jpg', sourceId:'key', text:'ANSWEI 1«B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('noisy ANSWEI 1«B can be applied inside a mixed question-and-key page', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'same-page',
+      text:'1. Which answer?\nA. incorrect\nB. correct\nANSWEI 1«B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+  assert.equal(parsed.questions[0].answer, 1);
+});
+
+test('standalone damaged key heading still uses subsequent printed answer lines', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'exam', text:'1. Which answer?\nA. false\nB. true' },
+    { name:'key', sourceId:'key', text:'ANSWEI\n1«B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+});

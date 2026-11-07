@@ -1,6 +1,9 @@
 // Fully local, deterministic OCR/PDF question and answer-key parser.
 // Keeps incomplete numbered questions for review instead of silently dropping them.
 const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
+// Strip OCR-damaged "ANSWER KEY" prefixes only when a numbered key entry
+// immediately follows. Standalone headings retain their existing handling.
+const OCR_KEY_HEADING_PREFIX = /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*(?=\d{1,4}\s*[.):,\-«¢·•]*\s*[A-H](?![A-Za-z]))/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
 const OPTION = /^(?:\(([A-H])\)|([A-H])[.):,;\]\-])\s*(\S.*)$/i;
@@ -9,6 +12,11 @@ const KEY_PAIR = /(?:^|[\s,;|/])(?:q(?:uestion)?\s*)?(\d{1,4})\s*[.):,\-]?\s*([A
 const PAGE_FOOTER = /^(?:page\s*\d+\s*(?:of\s*\d+)?|p(?:age)?\.\s*\d+\s*(?:of\s*\d+)?|name\s*:|date\s*:|section\s*:|instructions\s*:|directions?\s*:)\s*$/i;
 const ALPHABET = 'ABCDEFGH';
 
+/**
+ * Exclude printed subject banners and page footers from parsed choices.
+ * @param {string} line Printed OCR line.
+ * @returns {boolean} Whether the text is an ignorable exam header.
+ */
 export function isExamHeader(line) {
   const text = String(line || '').trim();
   if (!text || PAGE_FOOTER.test(text)) return true;
@@ -21,6 +29,11 @@ export function isExamHeader(line) {
   return false;
 }
 
+/**
+ * Normalize OCR line endings and spacing while preserving option boundaries.
+ * @param {string} text Extracted page text.
+ * @returns {string[]} Nonempty normalized lines.
+ */
 function normalizedLines(text) {
   return String(text || '')
     .replace(/\r\n?/g, '\n')
@@ -32,17 +45,45 @@ function normalizedLines(text) {
     .filter(Boolean);
 }
 
-function keyPairsFromLine(line) {
+/**
+ * Parse OCR number/letter answer-key entries. Tolerant mode only permits
+ * leftover OCR punctuation, never ordinary words or extra numbers; e.g.
+ * "42. A ~~" is salvageable, but "42. A garbled word" is not evidence.
+ * @param {string} line OCR text from a classified key-only page.
+ * @param {boolean} strict Whether to reject all residual OCR artifacts.
+ * @returns {{number:number,answer:string}[]} Verified-looking printed pairs.
+ */
+function stripKeyHeadingPrefix(line) {
+  return String(line || '').replace(KEY_TITLE, '').replace(OCR_KEY_HEADING_PREFIX, '');
+}
+
+function keyPairsFromLine(line, strict = true) {
   const value = String(line || '').trim()
     .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
   const matches = [...value.matchAll(KEY_PAIR)];
   if (!matches.length) return [];
   // Entire line must contain key pairs separated only by punctuation/whitespace.
   // This prevents question text ("1. A system...") from being mistaken for a key.
-  if (value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
+  const residue = value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '');
+  if (strict && residue) return [];
+  // Salvage OCR punctuation only. Residual letters/digits indicate a
+  // question stem, a word, or a second corrupted pair; never confirm from it.
+  if (!strict && (/[\p{L}\p{N}]/u.test(residue) || residue.length > matches.length * 4)) return [];
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
+// Validate the entire printed pair before treating a damaged heading as a
+// section boundary. "Answer 2 a question" is prose, not an answer key.
+function hasInlineOcrKeyHeading(line) {
+  return OCR_KEY_HEADING_PREFIX.test(line) &&
+    keyPairsFromLine(stripKeyHeadingPrefix(line)).length > 0;
+}
+
+/**
+ * Recognize a numbered question stem, not an isolated key letter.
+ * @param {string} line OCR text line.
+ * @returns {{number:number,question:string}|null} Question start if present.
+ */
 function numberedQuestion(line) {
   const m = String(line || '').match(QUESTION) || String(line || '').match(QUESTION_WITHOUT_PUNCT);
   if (!m) return null;
@@ -51,20 +92,30 @@ function numberedQuestion(line) {
   return { number, question };
 }
 
+/**
+ * Keep OCR columns together by stable source ID, not filenames. Two uploads
+ * may share a filename while only one has been marked as an answer key.
+ * @param {Array<object>} pages Ordered OCR sections.
+ * @returns {Array<{sourcePage:string,sourceKey:string,sections:Array<object>}>}
+ */
 function sectionsBySource(pages) {
   const groups = [];
   for (const page of pages) {
     const sourcePage = String(page.sourcePage || page.name || 'uploaded page');
+    const sourceKey = page.sourceId == null ? 'name:' + sourcePage : 'id:' + String(page.sourceId);
     const last = groups[groups.length - 1];
-    if (last && last.sourcePage === sourcePage) last.sections.push(page);
-    else groups.push({ sourcePage, sections: [page] });
+    if (last && last.sourceKey === sourceKey) last.sections.push(page);
+    else groups.push({ sourcePage, sourceKey, sections: [page] });
   }
   return groups;
 }
 
-// A wrong tens digit in a printed key can be recognized as another valid
-// number (e.g. 88 becomes 58). Only repair when both adjacent printed keys
-// agree on the exact missing number AND its units digit is preserved.
+/**
+ * Repair a key number only when neighboring entries prove the expected number
+ * and OCR preserved the units digit; no answer letters are synthesized.
+ * @param {Array<{number:number,answer:string}>} entries Ordered key entries.
+ * @returns {Array<object>} Safe key-number corrections.
+ */
 function repairKeyNumberSequence(entries) {
   const present = new Set(entries.map(entry => entry.number));
   const repaired = entries.map(entry => ({...entry}));
@@ -82,23 +133,63 @@ function repairKeyNumberSequence(entries) {
   return repaired;
 }
 
+/**
+ * Identify a short printed answer-key heading even when OCR loses characters.
+ * @param {string} line OCR text line.
+ * @returns {boolean} Whether the line resembles a standalone key heading.
+ */
+function looksLikeKeyHeading(line) {
+  const value = String(line || '').trim();
+  if (KEY_TITLE.test(value) || hasInlineOcrKeyHeading(value)) return true;
+  // Tesseract on a narrow answer-key list often reads "ANSWER KEY" as
+  // "ANSWEI", "ANSWE", "ANSWFR KEY", etc. Only accept a short heading.
+  return /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*$/i.test(value) && value.length <= 22;
+}
+
+/**
+ * Classify all columns of one source page together before parsing questions.
+ * Accept only standalone printed key entries; random words cannot supply
+ * answer letters or cause a noise-only page to appear readable.
+ * @param {{sections:Array<object>}} group Adjacent sections of one source.
+ * @returns {{sections:Array<object>,isKeyPage:boolean,pairs:Array<object>,unreadable:boolean}}
+ */
 function inspectKeyGroup(group) {
   const sections = group.sections.map(section => ({ page: section, lines: normalizedLines(section.text) }));
   const all = sections.flatMap(section => section.lines);
-  const explicitHeading = all.some(line => KEY_TITLE.test(line));
-  const pairs = sections.flatMap(section =>
-    repairKeyNumberSequence(section.lines.flatMap(keyPairsFromLine)));
-  const meaningful = all.filter(line => !isExamHeader(line) && !KEY_TITLE.test(line));
-  const questionLike = meaningful.filter(line => numberedQuestion(line) && !keyPairsFromLine(line).length).length;
-  const options = meaningful.filter(line => OPTION.test(line)).length;
-  // A photographed key has lots of numbered-letter pairs, two parallel
-  // columns and a title that may appear only over the LEFT column.
-  const density = pairs.length / Math.max(meaningful.length, 1);
-  const isKeyPage = pairs.length >= 2 && questionLike === 0 && options === 0 &&
-    (explicitHeading || density >= 0.62 || sections.some(section => section.page.keyLane));
-  return { sections, isKeyPage, pairs, explicitHeading };
+  const meaningful = all.filter(line => !isExamHeader(line) && !looksLikeKeyHeading(line));
+  const knownKeyLayout = sections.some(section => section.page.keyLane === true || section.page.scanRole === 'answer-key');
+  const heading = all.slice(0, 14).some(looksLikeKeyHeading);
+  const strictPairs = sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(stripKeyHeadingPrefix(line)))));
+  const keyLikeLines = meaningful.filter(line =>
+    keyPairsFromLine(line).length || /^(?:q(?:uestion)?\s*)?\d{1,3}\s*[.):,\-]?\s*[A-H0O€¢]\s*$/i.test(line)).length;
+  const fullQuestionLines = meaningful.filter(line =>
+    numberedQuestion(line) && !keyPairsFromLine(line).length).length;
+  const choiceLines = meaningful.filter(line => OPTION.test(line)).length;
+  // Visual narrow-strip metadata is stronger than OCR text. Even a totally
+  // unreadable key must never become a 31st exam question.
+  const denseKey = (keyLikeLines >= 3 &&
+    keyLikeLines / Math.max(meaningful.length, 1) >= 0.52 &&
+    choiceLines <= 1 && fullQuestionLines <= 1) ||
+    (strictPairs.length >= 2 && meaningful.length <= 2 &&
+      choiceLines === 0 && fullQuestionLines === 0);
+  // A legitimate quiz can include "Answer key: 1 B" *after* its questions.
+  // That does not make the preceding questions an answer-key-only image.
+  const headerKey = heading && fullQuestionLines === 0 && choiceLines === 0;
+  const isKeyPage = knownKeyLayout || headerKey || denseKey;
+  // Salvage number-letter pairs on noisy lines only AFTER classifying the
+  // entire source as a key, never in question or option text.
+  const pairs = isKeyPage ? sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(stripKeyHeadingPrefix(line), false)))) : strictPairs;
+  return { sections, isKeyPage, pairs, heading, knownKeyLayout,
+    unreadable: isKeyPage && pairs.length === 0 };
 }
 
+/**
+ * Split inline A/C or B/D choices without reassigning their printed letters.
+ * @param {string} line OCR text line containing inline choice labels.
+ * @returns {string[]} Separate choice chunks or the unmodified text.
+ */
 function splitInlineChoices(line) {
   const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.):,;])\s+/g)];
   if (markers.length < 2) return [line];
@@ -111,19 +202,35 @@ function splitInlineChoices(line) {
   return chunks.filter(Boolean);
 }
 
+/**
+ * Finalize the current question without guessing unreadable option labels.
+ * @param {object|null} q Mutable question being assembled.
+ * @param {Array<object>} output Parsed questions accumulator.
+ * @returns {object|null} The finalized question so later stray options may
+ *   be marked incomplete when they appear after a file boundary.
+ */
 function completeQuestion(q, output) {
-  if (!q || !q.question || q.question.trim().length < 3) return;
+  if (!q || !q.question || q.question.trim().length < 3) return null;
   const present = Object.keys(q.optionsByLetter).sort();
   const highest = Math.max(1, ...present.map(letter => ALPHABET.indexOf(letter)));
   // Empty placeholders preserve printed option positions. They are explicitly
   // marked incomplete and must be reviewed; NO answer is fabricated.
   const options = Array.from({ length: highest + 1 }, (_, i) => q.optionsByLetter[ALPHABET[i]] || '');
   const missingChoices = options.map((value, i) => value.trim() ? null : ALPHABET[i]).filter(Boolean);
-  output.push({ number: q.number, question: q.question.trim(), options: options.map(text => text.trim()),
+  const entry = { number: q.number, question: q.question.trim(), options: options.map(text => text.trim()),
     incomplete: missingChoices.length > 0 || present.length < 2,
-    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source });
+    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source, sourceId: q.sourceId };
+  output.push(entry);
+  return entry;
 }
 
+/**
+ * Confirm an answer only when its printed key is unique, in-range, and its
+ * question has all recognized choices. Conflicts remain unconfirmed.
+ * @param {Array<object>} questions Parsed questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Printed keys.
+ * @returns {Array<object>} Questions with reviewed/confirmed answer state.
+ */
 export function reconcileOfflineAnswerKeys(questions, answerKeys) {
   const keys = new Map();
   for (const entry of answerKeys) {
@@ -151,6 +258,12 @@ export function reconcileOfflineAnswerKeys(questions, answerKeys) {
   });
 }
 
+/**
+ * Record missing/duplicate question numbers and answer-key match counts.
+ * @param {Array<object>} questions Parsed questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Parsed printed keys.
+ * @returns {object} Diagnostics for human review.
+ */
 function auditNumbers(questions, answerKeys) {
   const numbers = [...new Set(questions.map(q => q.number).filter(Number.isInteger))].sort((a,b) => a-b);
   const keyNumbers = [...new Set(answerKeys.map(k => Number(k.number)).filter(Number.isInteger))].sort((a,b) => a-b);
@@ -178,20 +291,27 @@ function auditNumbers(questions, answerKeys) {
     matchedKeyCount: questions.filter(q=>q.answerProvided).length };
 }
 
-// A truncated tens digit is a common OCR error ("17." -> "7.").
-// Recover only when both neighbors, the separate printed answer key, and
-// the final numeral agree; never infer a missing question or its contents.
+/**
+ * Restore a damaged number only when adjacent questions, the printed key,
+ * and the units digit all support the same correction. Never invent a stem.
+ * @param {Array<object>} questions Mutable recognized questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Printed keys.
+ * @returns {void}
+ */
 function repairUnambiguousQuestionNumbers(questions, answerKeys) {
   const keyNums = new Set(answerKeys.map(key => Number(key.number)));
   const currentNumbers = new Set(questions.map(q => q.number));
   for (let i = 1; i < questions.length - 1; i++) {
     const prev = questions[i - 1], item = questions[i], next = questions[i + 1];
     const expected = prev.number + 1;
-    if (prev.source !== item.source || item.source !== next.source ||
+    const prevSource = prev.sourceId ?? prev.source;
+    const itemSource = item.sourceId ?? item.source;
+    const nextSource = next.sourceId ?? next.source;
+    if (prevSource !== itemSource || itemSource !== nextSource ||
         expected + 1 !== next.number ||
-        expected < 10 || item.number >= expected ||
+        expected < 10 || item.number === expected ||
         currentNumbers.has(expected) || !keyNums.has(expected) ||
-        !String(expected).endsWith(String(item.number))) continue;
+        expected % 10 !== item.number % 10) continue;
     currentNumbers.delete(item.number);
     item.originalOcrNumber = item.number;
     item.number = expected;
@@ -200,23 +320,43 @@ function repairUnambiguousQuestionNumbers(questions, answerKeys) {
   }
 }
 
+/**
+ * Parse offline OCR sections in reading order and match printed answer keys.
+ * Known key pages are never treated as question pages. Distinct uploaded
+ * sources remain isolated even when they have identical filenames.
+ * @param {Array<object>} pages OCR pages and per-column sections.
+ * @returns {object} Parsed questions, keys, and review diagnostics.
+ */
 export function parseOfflineQuizPages(pages) {
   if (!Array.isArray(pages) || !pages.length) {
     return { questions: [], answerKeys: [], skipped: 0, needsReview: 0,
       missingQuestionNumbers: [], incompleteNumbers: [], duplicateNumbers: [], answerKeyCount: 0, matchedKeyCount: 0 };
   }
   const groups = sectionsBySource(pages), answerKeys = [], raw = [];
+  const detectedKeyPages = [], unreadableKeyPages = [];
   let current = null;
   let previousColumn = null;
+  let finalizedAtBoundary = null;
 
   for (const group of groups) {
     const assessment = inspectKeyGroup(group);
     if (assessment.isKeyPage) {
+      detectedKeyPages.push(group.sourcePage);
+      if (assessment.unreadable) unreadableKeyPages.push(group.sourcePage);
       completeQuestion(current, raw);
       current = null;
+      finalizedAtBoundary = null;
       previousColumn = null;
       answerKeys.push(...assessment.pairs);
       continue;
+    }
+    // Finalizing prevents the next upload's OCR prose being appended to the
+    // previous question. If the next page starts with C/D options, record them
+    // as missing rather than silently considering A/B a complete question.
+    finalizedAtBoundary = null;
+    if (current && Object.keys(current.optionsByLetter).length >= 2) {
+      finalizedAtBoundary = completeQuestion(current, raw);
+      current = null;
     }
     let inKeySection = false;
     for (const section of assessment.sections) {
@@ -227,12 +367,13 @@ export function parseOfflineQuizPages(pages) {
       if (column && previousColumn && column !== previousColumn) {
         completeQuestion(current, raw);
         current = null;
+        finalizedAtBoundary = null;
       }
       previousColumn = column;
       for (const line of section.lines) {
-        if (KEY_TITLE.test(line)) {
+        if (KEY_TITLE.test(line) || hasInlineOcrKeyHeading(line)) {
           inKeySection = true;
-          const tail = line.replace(KEY_TITLE,'').trim();
+          const tail = stripKeyHeadingPrefix(line).trim();
           if (tail) answerKeys.push(...keyPairsFromLine(tail));
           continue;
         }
@@ -255,16 +396,40 @@ export function parseOfflineQuizPages(pages) {
                 current.lastOption = letter;
                 current.inOption = true;
               }
+            } else if (finalizedAtBoundary) {
+              // A new page began with choices but no question number; never
+              // silently drop C/D and confirm an incomplete preceding question.
+              const letter = (option[1] || option[2]).toUpperCase();
+              const index = ALPHABET.indexOf(letter);
+              if (index >= 0 && !finalizedAtBoundary.options[index]) {
+                for (let slot = finalizedAtBoundary.options.length; slot <= index; slot++) {
+                  finalizedAtBoundary.options[slot] = '';
+                }
+                finalizedAtBoundary.incomplete = true;
+                for (let slot = 0; slot <= index; slot++) {
+                  const missing = ALPHABET[slot];
+                  if (!finalizedAtBoundary.options[slot] &&
+                      !finalizedAtBoundary.missingChoices.includes(missing))
+                    finalizedAtBoundary.missingChoices.push(missing);
+                }
+              }
             }
             continue;
           }
           const question = numberedQuestion(part);
           if (question) {
             completeQuestion(current, raw);
+            finalizedAtBoundary = null;
             current = { ...question, optionsByLetter: Object.create(null),
               lastOption: null, inOption: false, explicitAnswer: null,
-              source: String(section.page.name || '') };
+              source: String(section.page.name || ''), sourceId: section.page.sourceId };
             continue;
+          }
+          if (!current && finalizedAtBoundary && part.trim()) {
+            // Unlabelled text at the next page's start may continue a wrapped
+            // answer choice. We cannot safely assign it to a specific option;
+            // require human review instead of confirming the previous answer.
+            finalizedAtBoundary.incomplete = true;
           }
           if (current && part.trim()) {
             if (current.inOption && current.lastOption) current.optionsByLetter[current.lastOption] += ' ' + part;
@@ -278,5 +443,6 @@ export function parseOfflineQuizPages(pages) {
   repairUnambiguousQuestionNumbers(raw, answerKeys);
   const questions = reconcileOfflineAnswerKeys(raw, answerKeys);
   const audit = auditNumbers(questions, answerKeys);
-  return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length, ...audit };
+  return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length,
+    detectedKeyPages, unreadableKeyPages, ...audit };
 }
