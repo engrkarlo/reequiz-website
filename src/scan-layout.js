@@ -27,10 +27,19 @@ export function detectTwoColumnSplit({ width, height, data }) {
     return sum / Math.max(1, b - a);
   }
 
-  const leftInk = mean(0.14, 0.40);
-  const rightInk = mean(0.60, 0.86);
-  if (Math.min(leftInk, rightInk) < 0.024) return null;
-  const threshold = Math.min(0.018, Math.min(leftInk, rightInk) * 0.23);
+  // Sparse answer keys consist of narrow strips of "1. C" and "52. A".
+  // Mean ink in the middle of each half is nearly zero for those pages,
+  // although both columns are clearly present. Inspect peak activity instead.
+  const peak = (from, to) => {
+    let value = 0;
+    for (let x = Math.floor(width * from); x < Math.ceil(width * to); x++)
+      value = Math.max(value, profile[x] || 0);
+    return value;
+  };
+  const leftPeak = peak(0.025, 0.43);
+  const rightPeak = peak(0.51, 0.975);
+  if (Math.min(leftPeak, rightPeak) < 0.045) return null;
+  const threshold = Math.min(0.018, Math.min(leftPeak, rightPeak) * 0.19);
 
   const searchStart = Math.floor(width * 0.43);
   const searchEnd = Math.ceil(width * 0.57);
@@ -69,8 +78,11 @@ export function detectTwoColumnSplit({ width, height, data }) {
       }
       return ink / Math.max(total, 1);
     };
-    if (scanSide(0.14, 0.40) > 0.014) leftBands++;
-    if (scanSide(0.60, 0.86) > 0.014) rightBands++;
+    // Cover the narrow numeric lists close to the outer edges as well as
+    // wider question text. Requiring many occupied bands blocks false splits
+    // on a few side-by-side multiple-choice answers.
+    if (scanSide(0.025, Math.max(0.38, best.center / width - 0.02)) > 0.0025) leftBands++;
+    if (scanSide(Math.min(0.57, best.center / width + 0.03), 0.975) > 0.0025) rightBands++;
   }
   if (Math.min(leftBands, rightBands) < 7) return null;
 
