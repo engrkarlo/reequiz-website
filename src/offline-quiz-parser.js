@@ -80,7 +80,10 @@ function splitInlineChoices(line) {
 
 function finalizeQuestion(current, target) {
   if (!current) return;
-  const options = current.options.map(option => option.trim()).filter(Boolean);
+  const ordered = Object.entries(current.optionsByLetter).sort(([a], [b]) => a.localeCompare(b));
+  // Never shift answer letters when OCR finds C before B or misses a label.
+  const contiguous = ordered.every(([letter], index) => letter === 'ABCDEFGH'[index]);
+  const options = contiguous ? ordered.map(([, value]) => value.trim()).filter(Boolean) : [];
   if (!current.question.trim()) return;
   target.push({ number: current.number, question: current.question.trim(), options,
     explicitAnswer: current.explicitAnswer, source: current.source });
@@ -137,12 +140,10 @@ export function parseOfflineQuizPages(pages) {
         const optionMatch = line.match(OPTION);
         if (optionMatch) {
           if (current) {
-            const index = (optionMatch[1] || optionMatch[2]).toUpperCase().charCodeAt(0) - 65;
-            if (index === current.options.length && index < 8) {
-              current.options.push(optionMatch[3]);
-              current.inOption = true;
-            } else if (index < current.options.length) {
-              // Ignore duplicate OCR labels rather than shifting answer choices.
+            const letter = (optionMatch[1] || optionMatch[2]).toUpperCase();
+            if (!Object.hasOwn(current.optionsByLetter, letter)) {
+              current.optionsByLetter[letter] = optionMatch[3];
+              current.lastOption = letter;
               current.inOption = true;
             }
           }
@@ -153,14 +154,13 @@ export function parseOfflineQuizPages(pages) {
           // "1. B" alone is ambiguous; don't manufacture a question.
           if (/^[A-H]$/i.test(questionMatch[2])) continue;
           finalizeQuestion(current, rawQuestions);
-          current = { number: Number(questionMatch[1]), question: questionMatch[2], options: [],
+          current = { number: Number(questionMatch[1]), question: questionMatch[2], optionsByLetter: Object.create(null), lastOption: null,
             inOption: false, explicitAnswer: null, source: String(page.name || '') };
           continue;
         }
         if (current && line && !KEY_HEADING.test(line)) {
-          if (current.inOption && current.options.length) {
-            const index = current.options.length - 1;
-            current.options[index] += ' ' + line;
+          if (current.inOption && current.lastOption) {
+            current.optionsByLetter[current.lastOption] += ' ' + line;
           } else current.question += ' ' + line;
         }
       }
