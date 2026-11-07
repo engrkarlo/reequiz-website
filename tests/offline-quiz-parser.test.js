@@ -257,3 +257,67 @@ test('isolated OCR key number without supporting neighbors remains unverified', 
   ]);
   assert.equal(parsed.questions[0].answerProvided,false);
 });
+
+
+test('unreadable OCR answer-key photo must never become question 31 or corrupt question 30', () => {
+  const page = Array.from({length: 30}, (_,i) =>
+    `${i+1}. Thermodynamics question ${i+1}?\nA. One\nB. Two\nC. Three\nD. Four`).join('\n');
+  const scanned = parseOfflineQuizPages([
+    {name:'exam left',sourcePage:'exam.jpg',text:page},
+    {name:'key left',sourcePage:'answer.jpg',column:'left column',keyLane:true,
+      text:'ANSWEI\n31. Weird number artifact\n1.€\n2.D\n3.B\n4.D\n5B\n6.B'},
+    {name:'key right',sourcePage:'answer.jpg',column:'right column',keyLane:true,
+      text:'52.A\n53.A\n54.D'}
+  ]);
+  assert.equal(scanned.questions.length, 30);
+  assert.equal(scanned.questions.at(-1).number, 30);
+  assert.ok(!scanned.questions.some(q=>q.number===31));
+  assert.deepEqual(scanned.detectedKeyPages,['answer.jpg']);
+  assert.ok(scanned.answerKeyCount >= 6);
+  assert.equal(scanned.questions.find(q=>q.number===2).answer,3);
+});
+
+test('even a completely illegible visually detected key photo cannot be parsed as question', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. What is heat?\nA. Energy\nB. Matter'},
+    {name:'key',sourcePage:'key.jpeg',column:'left column',keyLane:true,text:'31. Garbled text instead of key\nBroken answer words'},
+    {name:'key',sourcePage:'key.jpeg',column:'right column',keyLane:true,text:'xx %% ?!'}
+  ]);
+  assert.equal(scanned.questions.length,1);
+  assert.equal(scanned.answerKeyCount,0);
+  assert.deepEqual(scanned.unreadableKeyPages,['key.jpeg']);
+  assert.deepEqual(scanned.detectedKeyPages,['key.jpeg']);
+});
+
+test('manual answer-key file marking prevents bogus questions even when automatic OCR has no clues', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. A question?\nA. Yes\nB. No'},
+    {name:'key',sourcePage:'photo.jpg',scanRole:'answer-key',
+      text:'31. This is garbled\n42. Nonsense word\n43. unreadable letters'}
+  ]);
+  assert.equal(scanned.questions.length,1);
+  assert.equal(scanned.answerKeyCount,0);
+  assert.deepEqual(scanned.unreadableKeyPages,['photo.jpg']);
+});
+
+test('fuzzy ANSWEI heading plus three numbered key entries is a key even without visual metadata', () => {
+  const scanned=parseOfflineQuizPages([
+    {name:'exam',text:'1. What?\nA. One\nB. Two\nC. Three\n2. Why?\nA. One\nB. Two\nC. Three'},
+    {name:'key photo',text:'ANSWEI\n31. Some OCR garbage\n1. C\n2. B\n3. A'}
+  ]);
+  assert.equal(scanned.questions.length,2);
+  assert.ok(scanned.answerKeyCount>=3);
+  assert.equal(scanned.questions.find(q=>q.number===1).answer,2);
+  assert.equal(scanned.questions.find(q=>q.number===2).answer,1);
+});
+
+test('OCR reads question 17 as duplicate 27, verified adjacent numbers and key recover it safely', () => {
+  const output=parseOfflineQuizPages([
+    {name:'right',sourcePage:'exam.jpg',text:'16. Select entropy statements?\nA. I only C. I and II\nB, II only D, Neither\n27. What device encloses a boundary?\nA. Closed system C. Isolated system\nB. Open system D. All of these\n18. What mass flows?\nA. Open\nB. Closed\nC. Isolated\nD. None\n27. Which force?\nA. x\nB. y\nC. z\nD. w'},
+    {name:'key',sourcePage:'key.jpg',scanRole:'answer-key',text:'16. C\n17. B\n18. B\n27. B'}
+  ]);
+  assert.ok(output.questions.some(q=>q.number===17));
+  assert.equal(output.duplicateNumbers.includes(27),false);
+  assert.equal(output.questions.find(q=>q.number===16).answer,2);
+  assert.equal(output.questions.find(q=>q.number===17).answer,1);
+});
