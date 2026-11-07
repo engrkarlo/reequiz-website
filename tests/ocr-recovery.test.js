@@ -65,5 +65,5 @@ test('late rescue does not repeatedly retry a column already checked', () => {
     {name:'right',sourcePage:'page.jpg',column:'right column',type:'ocr',
       text:'4. Fourth?\nA. a\nB. b'}
   ];
-  assert.deepEqual(lateRetryColumnIndices(pages,[2]),[]);
+  assert.deepEqual(lateRetryColumnIndices(pages,[1]),[]);
 });
