@@ -416,3 +416,18 @@ test('two same-name question files stay separate when one is marked key and unre
   assert.equal(parsed.questions[0].number,1);
   assert.deepEqual(parsed.unreadableKeyPages,['duplicate.jpg']);
 });
+
+
+test('question number repair does not borrow evidence across same-named files', () => {
+  const parsed = parseOfflineQuizPages([
+    {name:'same.jpg',sourcePage:'same.jpg',sourceId:'file:0:image',
+      text:'16. First?\nA. true\nB. false'},
+    {name:'same.jpg',sourcePage:'same.jpg',sourceId:'file:1:image',
+      text:'27. Second?\nA. true\nB. false\n18. Third?\nA. true\nB. false'},
+    {name:'key',sourceId:'file:2:image',scanRole:'answer-key',
+      text:'16. B\n17. A\n18. A'}
+  ]);
+  assert.ok(parsed.questions.some(q => q.number === 27));
+  assert.ok(!parsed.questions.some(q => q.number === 17));
+  assert.ok(parsed.missingQuestionNumbers.includes(17));
+});
