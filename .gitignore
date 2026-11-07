@@ -50,3 +50,6 @@ Thumbs.db
 # Local test artifacts
 playwright-report/
 test-results/
+
+# Copied locally hosted OCR assets (generated from npm dependencies)
+public/ocr/
