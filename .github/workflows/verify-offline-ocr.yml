@@ -1,0 +1,36 @@
+name: Verify offline scanning
+
+on:
+  push:
+    branches:
+      - feat/quiz-studio-fully-offline-ocr
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-ocr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies and prepare local OCR assets
+        run: npm install --no-audit --no-fund
+      - name: Run regression tests
+        run: npm test
+      - name: Build Vite bundle and offline assets
+        run: npm run build
+      - name: Verify fully local assets
+        run: |
+          test -s dist/ocr/worker.min.js
+          test -s dist/ocr/lang/eng.traineddata.gz
+          test -s dist/ocr/core/tesseract-core-simd-lstm.wasm
+          test -s dist/ocr/core/tesseract-core-simd-lstm.wasm.js
+          test -s dist/offline-manifest.json
+          test -s dist/ocr/precache.json
+          test -s dist/sw.js
