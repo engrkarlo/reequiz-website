@@ -1,6 +1,9 @@
 // Fully local, deterministic OCR/PDF question and answer-key parser.
 // Keeps incomplete numbered questions for review instead of silently dropping them.
 const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
+// Strip OCR-damaged "ANSWER KEY" prefixes only when a numbered key entry
+// immediately follows. Standalone headings retain their existing handling.
+const OCR_KEY_HEADING_PREFIX = /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*(?=\d)/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
 const OPTION = /^(?:\(([A-H])\)|([A-H])[.):,;\]\-])\s*(\S.*)$/i;
@@ -50,6 +53,10 @@ function normalizedLines(text) {
  * @param {boolean} strict Whether to reject all residual OCR artifacts.
  * @returns {{number:number,answer:string}[]} Verified-looking printed pairs.
  */
+function stripKeyHeadingPrefix(line) {
+  return String(line || '').replace(KEY_TITLE, '').replace(OCR_KEY_HEADING_PREFIX, '');
+}
+
 function keyPairsFromLine(line, strict = true) {
   const value = String(line || '').trim()
     .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
@@ -126,7 +133,7 @@ function repairKeyNumberSequence(entries) {
  */
 function looksLikeKeyHeading(line) {
   const value = String(line || '').trim();
-  if (KEY_TITLE.test(value)) return true;
+  if (KEY_TITLE.test(value) || OCR_KEY_HEADING_PREFIX.test(value)) return true;
   // Tesseract on a narrow answer-key list often reads "ANSWER KEY" as
   // "ANSWEI", "ANSWE", "ANSWFR KEY", etc. Only accept a short heading.
   return /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*$/i.test(value) && value.length <= 22;
@@ -146,7 +153,7 @@ function inspectKeyGroup(group) {
   const knownKeyLayout = sections.some(section => section.page.keyLane === true || section.page.scanRole === 'answer-key');
   const heading = all.slice(0, 14).some(looksLikeKeyHeading);
   const strictPairs = sections.flatMap(section =>
-    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line))));
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(stripKeyHeadingPrefix(line)))));
   const keyLikeLines = meaningful.filter(line =>
     keyPairsFromLine(line).length || /^(?:q(?:uestion)?\s*)?\d{1,3}\s*[.):,\-]?\s*[A-H0O€¢]\s*$/i.test(line)).length;
   const fullQuestionLines = meaningful.filter(line =>
@@ -166,7 +173,7 @@ function inspectKeyGroup(group) {
   // Salvage number-letter pairs on noisy lines only AFTER classifying the
   // entire source as a key, never in question or option text.
   const pairs = isKeyPage ? sections.flatMap(section =>
-    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line.replace(KEY_TITLE, ''), false)))) : strictPairs;
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(stripKeyHeadingPrefix(line), false)))) : strictPairs;
   return { sections, isKeyPage, pairs, heading, knownKeyLayout,
     unreadable: isKeyPage && pairs.length === 0 };
 }
@@ -357,9 +364,9 @@ export function parseOfflineQuizPages(pages) {
       }
       previousColumn = column;
       for (const line of section.lines) {
-        if (KEY_TITLE.test(line)) {
+        if (KEY_TITLE.test(line) || OCR_KEY_HEADING_PREFIX.test(line)) {
           inKeySection = true;
-          const tail = line.replace(KEY_TITLE,'').trim();
+          const tail = stripKeyHeadingPrefix(line).trim();
           if (tail) answerKeys.push(...keyPairsFromLine(tail));
           continue;
         }
