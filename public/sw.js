@@ -1,4 +1,4 @@
-const CACHE_NAME = "reequiz-offline-v18";
+const CACHE_NAME = "reequiz-offline-v19";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/reequiz-icon.svg"];
 
 async function assetsForOffline() {
