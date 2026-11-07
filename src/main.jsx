@@ -289,7 +289,23 @@ function App(){
    if(!scanFiles.length){setError('Choose at least one image or PDF to scan.');return}
    if(scanFiles.some(file=>!isSupportedScanFile(file))){setError('Use PDF, JPEG, PNG, WEBP, or GIF files.');return}
    try{validateCombinedScanSize(scanFiles)}catch(error){setError(error.message);return}
-   setScanBusy(true);setScanProgress('Starting offline scanner…');setError('');setNotice(`Offline scan extracted ${parsed.length} questions from ${result.pages.length} image/PDF page(s). `+
+   setScanBusy(true);setScanProgress('Starting offline scanner…');setError('');setNotice('');
+   try{
+    // All recognition, parsing, and key matching runs on this device.
+    const { scanQuizFilesOffline } = await import('./offline-scan.js');
+    const result = await scanQuizFilesOffline(scanFiles, setScanProgress);
+    const parsed = result.questions.map(q => ({
+     question: String(q.question||'').trim(),
+     options: (Array.isArray(q.options)?q.options:[]).map(o=>String(o||'').trim()).filter(Boolean).slice(0,8),
+     answer: q.answerProvided && Number.isInteger(q.answer) ? q.answer : 0,
+     explanation: String(q.explanation||''),
+     verified: q.answerProvided===true && Number.isInteger(q.answer),
+     sourceAnswer: q.answerProvided===true?'Offline answer key matching':''
+    })).filter(q=>q.question&&q.options.length>=2);
+    if(!parsed.length)throw new Error('No complete multiple-choice questions were detected. Use clearer images or provide numbered questions with A–D choices.');
+    setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);
+    const unreadable=result.pages.filter(p=>p.type==='ocr'&&p.confidence!==null&&p.confidence<55).length;
+    setNotice(`Offline scan extracted ${parsed.length} questions from ${result.pages.length} image/PDF page(s). `+
      (result.skipped?`${result.skipped} incomplete question(s) skipped. `:'')+
      (result.needsReview?`${result.needsReview} answers need review because no unambiguous printed key was found. `:'')+
      (unreadable?'Some pages have low OCR confidence; double-check the text.':''));
