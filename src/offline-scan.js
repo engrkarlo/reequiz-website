@@ -3,7 +3,7 @@ import * as pdfjs from 'pdfjs-dist/build/pdf.mjs';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { isSupportedScanFile, validateCombinedScanSize, MAX_SCAN_IMAGES } from './scan-utils.js';
 import { parseOfflineQuizPages } from './offline-quiz-parser.js';
-import { scanRegionsFromImageData, detectNarrowKeyLanes } from './scan-layout.js';
+import { scanRegionsFromImageData, detectNarrowKeyLanes, initialOcrMode, retryOcrMode } from './scan-layout.js';
 import { retryColumnsForOCR, ocrResultScore, lateRetryColumnIndices } from './ocr-recovery.js';
 
 const OCR_BASE = '/ocr';
@@ -84,7 +84,7 @@ function regionsForCanvas(canvas) {
 async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false) {
   const regions = regionsForCanvas(canvas);
   const worker = await getCachedWorker(onProgress);
-  const mode = (forceAnswerKey || regions.some(region => region.keyLane)) ? '6' : regions.length > 1 ? '4' : '3';
+  const mode = initialOcrMode(regions, forceAnswerKey);
   if (currentPSM !== mode) {
     await worker.setParameters({ tessedit_pageseg_mode: mode });
     currentPSM = mode;
@@ -124,7 +124,8 @@ async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false)
     // Recover only suspicious columns. This costs an extra OCR pass solely
     // where the numbered sequence has gaps, options are incomplete, or a
     // printed answer-key list is missing entries.
-    const retryIndices = (forceAnswerKey || regions.some(region => region.keyLane)) ? [] : retryColumnsForOCR(results);
+    const fallbackMode = retryOcrMode(regions, forceAnswerKey);
+    const retryIndices = fallbackMode ? retryColumnsForOCR(results) : [];
     for (const i of retryIndices) {
       const region = regions[i];
       const x = Math.floor(canvas.width * region.left);
@@ -138,9 +139,9 @@ async function recognizeCanvas(canvas, name, onProgress, forceAnswerKey = false)
       results[i].retryAttempted = true;
       onProgress('Double-checking ' + (region.label || 'page') + ' for missing numbers…');
       try {
-        if (currentPSM !== '6') {
-          await worker.setParameters({ tessedit_pageseg_mode: '6' });
-          currentPSM = '6';
+        if (currentPSM !== fallbackMode) {
+          await worker.setParameters({ tessedit_pageseg_mode: fallbackMode });
+          currentPSM = fallbackMode;
         }
         const alternate = await worker.recognize(crop);
         const candidate = {
