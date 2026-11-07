@@ -3,7 +3,7 @@
 const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
 // Strip OCR-damaged "ANSWER KEY" prefixes only when a numbered key entry
 // immediately follows. Standalone headings retain their existing handling.
-const OCR_KEY_HEADING_PREFIX = /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*(?=\d)/i;
+const OCR_KEY_HEADING_PREFIX = /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*(?=\d{1,4}\s*[.):,\-«¢·•]*\s*[A-H](?![A-Za-z]))/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
 const OPTION = /^(?:\(([A-H])\)|([A-H])[.):,;\]\-])\s*(\S.*)$/i;
@@ -72,6 +72,13 @@ function keyPairsFromLine(line, strict = true) {
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
+// Validate the entire printed pair before treating a damaged heading as a
+// section boundary. "Answer 2 a question" is prose, not an answer key.
+function hasInlineOcrKeyHeading(line) {
+  return OCR_KEY_HEADING_PREFIX.test(line) &&
+    keyPairsFromLine(stripKeyHeadingPrefix(line)).length > 0;
+}
+
 /**
  * Recognize a numbered question stem, not an isolated key letter.
  * @param {string} line OCR text line.
@@ -133,7 +140,7 @@ function repairKeyNumberSequence(entries) {
  */
 function looksLikeKeyHeading(line) {
   const value = String(line || '').trim();
-  if (KEY_TITLE.test(value) || OCR_KEY_HEADING_PREFIX.test(value)) return true;
+  if (KEY_TITLE.test(value) || hasInlineOcrKeyHeading(value)) return true;
   // Tesseract on a narrow answer-key list often reads "ANSWER KEY" as
   // "ANSWEI", "ANSWE", "ANSWFR KEY", etc. Only accept a short heading.
   return /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*$/i.test(value) && value.length <= 22;
@@ -364,7 +371,7 @@ export function parseOfflineQuizPages(pages) {
       }
       previousColumn = column;
       for (const line of section.lines) {
-        if (KEY_TITLE.test(line) || OCR_KEY_HEADING_PREFIX.test(line)) {
+        if (KEY_TITLE.test(line) || hasInlineOcrKeyHeading(line)) {
           inKeySection = true;
           const tail = stripKeyHeadingPrefix(line).trim();
           if (tail) answerKeys.push(...keyPairsFromLine(tail));
