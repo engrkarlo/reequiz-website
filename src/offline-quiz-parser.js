@@ -105,9 +105,14 @@ function inspectKeyGroup(group) {
   const choiceLines = meaningful.filter(line => OPTION.test(line)).length;
   // Visual narrow-strip metadata is stronger than OCR text. Even a totally
   // unreadable key must never become a 31st exam question.
-  const denseKey = keyLikeLines >= 3 && keyLikeLines / Math.max(meaningful.length, 1) >= 0.52 &&
-    choiceLines <= 1;
-  const headerKey = heading && (choiceLines < 3 || fullQuestionLines === 0);
+  const denseKey = (keyLikeLines >= 3 &&
+    keyLikeLines / Math.max(meaningful.length, 1) >= 0.52 &&
+    choiceLines <= 1 && fullQuestionLines <= 1) ||
+    (strictPairs.length >= 2 && meaningful.length <= 2 &&
+      choiceLines === 0 && fullQuestionLines === 0);
+  // A legitimate quiz can include "Answer key: 1 B" *after* its questions.
+  // That does not make the preceding questions an answer-key-only image.
+  const headerKey = heading && fullQuestionLines === 0 && choiceLines === 0;
   const isKeyPage = knownKeyLayout || headerKey || denseKey;
   // Salvage number-letter pairs on noisy lines only AFTER classifying the
   // entire source as a key, never in question or option text.
