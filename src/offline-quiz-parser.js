@@ -1,5 +1,5 @@
 // Pure, deterministic parser for local OCR/PDF text. No requests or AI services.
-const KEY_HEADING = /^(?:answer\s*(?:key|sheet|list|guide)?|correct\s+answers?|solutions?\s*(?:key|list)?)\s*[:\-–]?\s*/i;
+const KEY_HEADING = /^(?:answer\s+(?:key|sheet|list|guide)|answers\b|correct\s+answers?\b|solutions?\s*(?:key|list)?\b)\s*[:\-–]?\s*/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const OPTION = /^\s*(?:\(([A-H])\)|([A-H])[.)\]:\-])\s*(\S.*)$/i;
 const INLINE_ANSWER = /^(?:correct\s+answer|answer|ans\.?|key)\s*[:=\-–]\s*(?:option\s*)?\(?([A-H])\)?(?:\s|[.!]|$)/i;
