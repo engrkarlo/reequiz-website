@@ -6616,3 +6616,29 @@ body > .explanation-backdrop .explanation-confirm-modal .ai-offline-note {
   }
   .app-shell .ai-scan-status { font-size: 11px; }
 }
+
+
+/* Explicit key-file override remains a compact, accessible control on mobile. */
+.app-shell .ai-upload-list .ai-key-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 64px;
+  height: 28px;
+  padding: 4px 7px;
+  border: 1px solid var(--line, #e6e7f0);
+  border-radius: 7px;
+  color: var(--muted, #85899e);
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.app-shell .ai-upload-list .ai-key-toggle.active {
+  border-color: color-mix(in srgb, var(--gold, #d6a62e) 65%, transparent);
+  color: var(--gold, #d6a62e);
+  background: color-mix(in srgb, var(--gold, #d6a62e) 12%, transparent);
+}
+.app-shell .ai-upload-list .ai-key-toggle:disabled { opacity: .65; cursor: wait; }
