@@ -1,5 +1,5 @@
 // Pure, deterministic parser for local OCR/PDF text. No requests or AI services.
-const KEY_HEADING = /^(?:answer\s+(?:key|sheet|list|guide)|answers\b|correct\s+answers?\b|solutions?\s*(?:key|list)?\b)\s*[:\-–]?\s*/i;
+const KEY_HEADING = /^(?:answer\s+(?:key|sheet|list|guide)|answers\b|correct\s+answers\b|correct\s+answer\s+key\b|solutions?\s*(?:key|list)?\b)\s*[:\-–]?\s*/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const OPTION = /^\s*(?:\(([A-H])\)|([A-H])[.)\]:\-])\s*(\S.*)$/i;
 const INLINE_ANSWER = /^(?:correct\s+answer|answer|ans\.?|key)\s*[:=\-–]\s*(?:option\s*)?\(?([A-H])\)?(?:\s|[.!]|$)/i;
@@ -102,7 +102,8 @@ function matchedAnswers(questions, answerKeys) {
   return questions.map(q => {
     const keyedLetter = q.number !== null && counts.get(q.number) === 1 ? keyMap.get(q.number) : null;
     const inlineLetter = q.explicitAnswer;
-    const conflict = keyedLetter && inlineLetter && keyedLetter !== inlineLetter;
+    const conflictingKeys = q.number !== null && counts.get(q.number) === 1 && keyMap.has(q.number) && keyMap.get(q.number) === null;
+    const conflict = conflictingKeys || (keyedLetter && inlineLetter && keyedLetter !== inlineLetter);
     const letter = conflict ? null : (keyedLetter || inlineLetter);
     const index = letter ? letter.charCodeAt(0) - 65 : -1;
     return { number: q.number, question: q.question, options: q.options,
