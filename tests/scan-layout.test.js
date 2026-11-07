@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectTwoColumnSplit, scanRegionsFromImageData } from '../src/scan-layout.js';
+import { detectTwoColumnSplit, scanRegionsFromImageData, detectNarrowKeyLanes } from '../src/scan-layout.js';
 
 // Pure pixel fixtures. Tests exercise layout, not Tesseract output or a network.
 function fixture({ left = true, right = true, singleColumn = false, rightBands = 10, header = false } = {}) {
@@ -72,4 +72,39 @@ test('sparse answer-key columns near page margins are detected', () => {
   assert.equal(regions.length,2);
   assert.equal(regions[0].label,'left column');
   assert.ok(regions[0].right>0.44 && regions[0].right<0.56);
+});
+
+
+test('narrow two-column answer key strips are cropped around the printed numbers and letters', () => {
+  // Pixel positions model the actual uploaded key after 360px downscaling:
+  // left key at x20–41, right at x185–203, broad blank areas elsewhere.
+  const width=360,height=640,data=new Uint8ClampedArray(width*height*4).fill(255);
+  for(let y=90;y<556;y+=10) {
+    for(const [x0,x1] of [[20,42],[185,204]]) {
+      for(let yy=y;yy<y+4;yy++)for(let x=x0;x<x1;x++){
+        const k=(yy*width+x)*4;
+        data[k]=30;data[k+1]=30;data[k+2]=30;
+      }
+    }
+  }
+  const lanes=detectNarrowKeyLanes({width,height,data});
+  assert.equal(lanes.length,2);
+  assert.ok(lanes.every(lane=>lane.keyLane));
+  assert.ok(lanes[0].left<.05 && lanes[0].right<.18);
+  assert.ok(lanes[1].left>.45 && lanes[1].right<.65);
+  assert.ok(lanes.every(lane=>lane.right-lane.left<.14));
+});
+
+test('question columns with long printed sentences must not trigger answer-key strip mode', () => {
+  assert.equal(detectNarrowKeyLanes(fixture()),null);
+});
+
+test('a single narrow numbered list is not misclassified as a two-column answer key', () => {
+  const width=360,height=640,data=new Uint8ClampedArray(width*height*4).fill(255);
+  for(let y=90;y<556;y+=10) for(let yy=y;yy<y+4;yy++)
+    for(let x=20;x<43;x++) {
+      const k=(yy*width+x)*4;
+      data[k]=30;data[k+1]=30;data[k+2]=30;
+    }
+  assert.equal(detectNarrowKeyLanes({width,height,data}),null);
 });
