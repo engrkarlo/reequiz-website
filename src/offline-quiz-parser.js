@@ -9,6 +9,11 @@ const KEY_PAIR = /(?:^|[\s,;|/])(?:q(?:uestion)?\s*)?(\d{1,4})\s*[.):,\-]?\s*([A
 const PAGE_FOOTER = /^(?:page\s*\d+\s*(?:of\s*\d+)?|p(?:age)?\.\s*\d+\s*(?:of\s*\d+)?|name\s*:|date\s*:|section\s*:|instructions\s*:|directions?\s*:)\s*$/i;
 const ALPHABET = 'ABCDEFGH';
 
+/**
+ * Exclude printed subject banners and page footers from parsed choices.
+ * @param {string} line Printed OCR line.
+ * @returns {boolean} Whether the text is an ignorable exam header.
+ */
 export function isExamHeader(line) {
   const text = String(line || '').trim();
   if (!text || PAGE_FOOTER.test(text)) return true;
@@ -21,6 +26,11 @@ export function isExamHeader(line) {
   return false;
 }
 
+/**
+ * Normalize OCR line endings and spacing while preserving option boundaries.
+ * @param {string} text Extracted page text.
+ * @returns {string[]} Nonempty normalized lines.
+ */
 function normalizedLines(text) {
   return String(text || '')
     .replace(/\r\n?/g, '\n')
@@ -55,6 +65,11 @@ function keyPairsFromLine(line, strict = true) {
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
+/**
+ * Recognize a numbered question stem, not an isolated key letter.
+ * @param {string} line OCR text line.
+ * @returns {{number:number,question:string}|null} Question start if present.
+ */
 function numberedQuestion(line) {
   const m = String(line || '').match(QUESTION) || String(line || '').match(QUESTION_WITHOUT_PUNCT);
   if (!m) return null;
@@ -81,9 +96,12 @@ function sectionsBySource(pages) {
   return groups;
 }
 
-// A wrong tens digit in a printed key can be recognized as another valid
-// number (e.g. 88 becomes 58). Only repair when both adjacent printed keys
-// agree on the exact missing number AND its units digit is preserved.
+/**
+ * Repair a key number only when neighboring entries prove the expected number
+ * and OCR preserved the units digit; no answer letters are synthesized.
+ * @param {Array<{number:number,answer:string}>} entries Ordered key entries.
+ * @returns {Array<object>} Safe key-number corrections.
+ */
 function repairKeyNumberSequence(entries) {
   const present = new Set(entries.map(entry => entry.number));
   const repaired = entries.map(entry => ({...entry}));
@@ -153,6 +171,11 @@ function inspectKeyGroup(group) {
     unreadable: isKeyPage && pairs.length === 0 };
 }
 
+/**
+ * Split inline A/C or B/D choices without reassigning their printed letters.
+ * @param {string} line OCR text line containing inline choice labels.
+ * @returns {string[]} Separate choice chunks or the unmodified text.
+ */
 function splitInlineChoices(line) {
   const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.):,;])\s+/g)];
   if (markers.length < 2) return [line];
@@ -221,6 +244,12 @@ export function reconcileOfflineAnswerKeys(questions, answerKeys) {
   });
 }
 
+/**
+ * Record missing/duplicate question numbers and answer-key match counts.
+ * @param {Array<object>} questions Parsed questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Parsed printed keys.
+ * @returns {object} Diagnostics for human review.
+ */
 function auditNumbers(questions, answerKeys) {
   const numbers = [...new Set(questions.map(q => q.number).filter(Number.isInteger))].sort((a,b) => a-b);
   const keyNumbers = [...new Set(answerKeys.map(k => Number(k.number)).filter(Number.isInteger))].sort((a,b) => a-b);
@@ -248,9 +277,13 @@ function auditNumbers(questions, answerKeys) {
     matchedKeyCount: questions.filter(q=>q.answerProvided).length };
 }
 
-// A truncated tens digit is a common OCR error ("17." -> "7.").
-// Recover only when both neighbors, the separate printed answer key, and
-// the final numeral agree; never infer a missing question or its contents.
+/**
+ * Restore a damaged number only when adjacent questions, the printed key,
+ * and the units digit all support the same correction. Never invent a stem.
+ * @param {Array<object>} questions Mutable recognized questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Printed keys.
+ * @returns {void}
+ */
 function repairUnambiguousQuestionNumbers(questions, answerKeys) {
   const keyNums = new Set(answerKeys.map(key => Number(key.number)));
   const currentNumbers = new Set(questions.map(q => q.number));
