@@ -229,3 +229,31 @@ test('no neighbor-only guess: truncated numbers require matching explicit printe
   assert.ok(parsed.questions.some(q=>q.number===7));
   assert.ok(parsed.missingQuestionNumbers.includes(17));
 });
+
+
+test('key OCR "43«¢C" is read as an explicit printed C, not an AI guess', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'questions',text:'42. Which?\nA. one\nB. two\nC. three\n43. Another?\nA. one\nB. two\nC. three\n44. Next?\nA. one\nB. two\nC. three'},
+    {name:'key',sourcePage:'key-image',keyLane:true,text:'42.A\n43«¢C\n44. B'}
+  ]);
+  assert.equal(parsed.answerKeyCount,3);
+  assert.equal(parsed.matchedKeyCount,3);
+  assert.equal(parsed.questions[1].answer,2);
+});
+
+test('key numbers with corroborated neighbors repair 58->88 without changing the printed answer letter', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'exam',text:'87. Q?\nA. one\nB. two\n88. Q?\nA. one\nB. two\n89. Q?\nA. one\nB. two'},
+    {name:'key image',keyLane:true,text:'87.B\n58. A\n89. B'}
+  ]);
+  assert.equal(parsed.answerKeyCount,3);
+  assert.equal(parsed.questions.find(q=>q.number===88).answer,0);
+});
+
+test('isolated OCR key number without supporting neighbors remains unverified', () => {
+  const parsed=parseOfflineQuizPages([
+    {name:'exam',text:'88. Which?\nA. yes\nB. no'},
+    {name:'key',keyLane:true,text:'58. A\n90. B'}
+  ]);
+  assert.equal(parsed.questions[0].answerProvided,false);
+});
