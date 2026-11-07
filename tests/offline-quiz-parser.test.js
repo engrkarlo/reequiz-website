@@ -243,7 +243,7 @@ test('key OCR "43«¢C" is read as an explicit printed C, not an AI guess', () =
 
 test('key numbers with corroborated neighbors repair 58->88 without changing the printed answer letter', () => {
   const parsed=parseOfflineQuizPages([
-    {name:'exam',text:'87. Q?\nA. one\nB. two\n88. Q?\nA. one\nB. two\n89. Q?\nA. one\nB. two'},
+    {name:'exam',text:'87. Which?\nA. one\nB. two\n88. Which?\nA. one\nB. two\n89. Which?\nA. one\nB. two'},
     {name:'key image',keyLane:true,text:'87.B\n58. A\n89. B'}
   ]);
   assert.equal(parsed.answerKeyCount,3);
