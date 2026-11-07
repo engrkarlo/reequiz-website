@@ -85,3 +85,23 @@ test('incomplete questions are skipped without inventing answer choices', () => 
   assert.equal(result.questions.length, 1);
   assert.equal(result.questions[0].answer, null);
 });
+
+
+test('side-by-side A/C and B/D choices are reordered by label before key matching', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'left column', text: '1. Which is correct?\nA. First C. Third\nB. Second D. Fourth' },
+    { name: 'answer key', text: 'Answer Key\n1. C' }
+  ]);
+  assert.deepEqual(parsed.questions[0].options, ['First', 'Second', 'Third', 'Fourth']);
+  assert.equal(parsed.questions[0].answer, 2);
+  assert.equal(parsed.questions[0].answerProvided, true);
+});
+
+test('missing internal choice letter cannot silently shift the answer', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'page', text: '1. Which?\nA. One\nC. Three\nD. Four' },
+    { name: 'key', text: 'Answer Key\n1. C' }
+  ]);
+  assert.equal(parsed.questions.length, 0);
+  assert.equal(parsed.skipped, 1);
+});
