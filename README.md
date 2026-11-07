@@ -46,7 +46,7 @@ Run REEQUIZ locally using the steps below, import a quiz from **My Library**, an
 
 ### Run it on your computer
 
-You’ll need Node.js 18 or newer.
+You’ll need Node.js 20 or newer (Node.js 22 recommended for deployment).
 
 ```bash
 npm install
