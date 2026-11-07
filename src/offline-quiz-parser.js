@@ -33,12 +33,13 @@ function normalizedLines(text) {
 }
 
 function keyPairsFromLine(line) {
-  const value = String(line || '').trim();
+  const value = String(line || '').trim()
+    .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
   const matches = [...value.matchAll(KEY_PAIR)];
   if (!matches.length) return [];
   // Entire line must contain key pairs separated only by punctuation/whitespace.
   // This prevents question text ("1. A system...") from being mistaken for a key.
-  if (value.replace(KEY_PAIR, '').replace(/[\s,;|/]+/g, '')) return [];
+  if (value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
@@ -61,11 +62,32 @@ function sectionsBySource(pages) {
   return groups;
 }
 
+// A wrong tens digit in a printed key can be recognized as another valid
+// number (e.g. 88 becomes 58). Only repair when both adjacent printed keys
+// agree on the exact missing number AND its units digit is preserved.
+function repairKeyNumberSequence(entries) {
+  const present = new Set(entries.map(entry => entry.number));
+  const repaired = entries.map(entry => ({...entry}));
+  for (let i=1; i<repaired.length-1; i++) {
+    const prev=repaired[i-1], entry=repaired[i], next=repaired[i+1];
+    const expected=prev.number+1;
+    if (next.number!==expected+1 || entry.number===expected ||
+        expected<10 || present.has(expected) ||
+        entry.number%10!==expected%10 || entry.number>=expected) continue;
+    present.delete(entry.number);
+    entry.originalOcrNumber=entry.number;
+    entry.number=expected;
+    present.add(expected);
+  }
+  return repaired;
+}
+
 function inspectKeyGroup(group) {
   const sections = group.sections.map(section => ({ page: section, lines: normalizedLines(section.text) }));
   const all = sections.flatMap(section => section.lines);
   const explicitHeading = all.some(line => KEY_TITLE.test(line));
-  const pairs = all.flatMap(keyPairsFromLine);
+  const pairs = sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(keyPairsFromLine)));
   const meaningful = all.filter(line => !isExamHeader(line) && !KEY_TITLE.test(line));
   const questionLike = meaningful.filter(line => numberedQuestion(line) && !keyPairsFromLine(line).length).length;
   const options = meaningful.filter(line => OPTION.test(line)).length;
