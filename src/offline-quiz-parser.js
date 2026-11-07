@@ -3,7 +3,7 @@
 const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
-const OPTION = /^(?:\(([A-H])\)|([A-H])[.)\]:\-])\s*(\S.*)$/i;
+const OPTION = /^(?:\(([A-H])\)|([A-H])[.):,;\]\-])\s*(\S.*)$/i;
 const INLINE_ANSWER = /^(?:correct\s+answer|answer|ans\.?|key)\s*[:=\-–]\s*(?:option\s*)?\(?([A-H])\)?(?:\s|[.!]|$)/i;
 const KEY_PAIR = /(?:^|[\s,;|/])(?:q(?:uestion)?\s*)?(\d{1,4})\s*[.):,\-]?\s*([A-H])(?=$|[\s,;|/])/gi;
 const PAGE_FOOTER = /^(?:page\s*\d+\s*(?:of\s*\d+)?|p(?:age)?\.\s*\d+\s*(?:of\s*\d+)?|name\s*:|date\s*:|section\s*:|instructions\s*:|directions?\s*:)\s*$/i;
@@ -73,12 +73,12 @@ function inspectKeyGroup(group) {
   // columns and a title that may appear only over the LEFT column.
   const density = pairs.length / Math.max(meaningful.length, 1);
   const isKeyPage = pairs.length >= 2 && questionLike === 0 && options === 0 &&
-    (explicitHeading || density >= 0.62);
+    (explicitHeading || density >= 0.62 || sections.some(section => section.page.keyLane));
   return { sections, isKeyPage, pairs, explicitHeading };
 }
 
 function splitInlineChoices(line) {
-  const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.)])\s+/g)];
+  const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.):,;])\s+/g)];
   if (markers.length < 2) return [line];
   const positions = markers.map(match => match.index + (match[0][0] === ' ' ? 1 : 0));
   const chunks = [];
