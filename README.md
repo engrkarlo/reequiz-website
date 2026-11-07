@@ -110,6 +110,15 @@ Printed question numbers are audited for gaps and duplicates. Only suspicious co
 
 On mobile, the scan button shows a compact loading label and detailed progress appears below it, wrapping safely within the available width. The browser still does all processing locally with no AI service calls. Performance varies by hardware; the extra OCR pass is **selective**, not applied to every page.
 
+
+### Two-column answer-key photo and question 16 reliability
+
+Some exam pages have broad columns of questions but an answer-key sheet contains **two very narrow numbered lists**. An earlier half-page crop and Tesseract PSM 4 could miss virtually all keys in the left list. The scanner now detects narrow ink strips independently of the standard question-column layout and applies **tightly cropped, locally enlarged PSM 6** recognition to each strip. This handles a separately uploaded answer-key photo whose first list runs from 1–51 and second from 52–100. If the printed key does not fully OCR, unmatched answers still require manual confirmation.
+
+OCR sometimes reads side-by-side multiple-choice lines such as \`A. I only C. I and II\` followed by \`B, II only D, Neither I nor II\`. The parser now recognizes both periods **and commas** after choice letters, restoring A/B/C/D ordering before matching the key. A truncated question number (e.g., \`17\` OCR'd as \`7\`) can be repaired only when both adjacent question numbers and an explicit printed answer-key entry agree. Similarly, key-number repairs use neighboring entries and never invent answer letters.
+
+The improved scanner remains fully offline and uses the existing 20 MB upload cap. Regression tests include OCR text transcribed from the supplied thermodynamics photos, the first 30 printed key entries, and narrow key-strip pixel layouts. Actual browser results can still vary with photograph quality, lighting, and OCR engine behavior.
+
 The manual **AI validate & explain** action in My Library remains an optional **online** feature using Groq/Gemini; it is separate from the fully offline Quiz Studio scanner.
 
 Keep provider keys on the server. **Never put API keys in frontend code or in variables prefixed with `VITE_`.** Redeploy after changing environment variables. Model availability and provider limits may change.

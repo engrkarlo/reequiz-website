@@ -3,7 +3,7 @@ import * as pdfjs from 'pdfjs-dist/build/pdf.mjs';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { isSupportedScanFile, validateCombinedScanSize, MAX_SCAN_IMAGES } from './scan-utils.js';
 import { parseOfflineQuizPages } from './offline-quiz-parser.js';
-import { scanRegionsFromImageData } from './scan-layout.js';
+import { scanRegionsFromImageData, detectNarrowKeyLanes } from './scan-layout.js';
 import { retryColumnsForOCR, ocrResultScore, lateRetryColumnIndices } from './ocr-recovery.js';
 
 const OCR_BASE = '/ocr';
@@ -50,7 +50,8 @@ function regionsForCanvas(canvas) {
     const ctx = preview.getContext('2d', { willReadFrequently: true });
     if (!ctx) return [{ label: null, left: 0, right: 1 }];
     ctx.drawImage(canvas, 0, 0, preview.width, preview.height);
-    return scanRegionsFromImageData(ctx.getImageData(0, 0, preview.width, preview.height));
+    const previewData = ctx.getImageData(0, 0, preview.width, preview.height);
+    return detectNarrowKeyLanes(previewData) || scanRegionsFromImageData(previewData);
   } catch {
     return [{ label: null, left: 0, right: 1 }];
   } finally {
@@ -65,7 +66,7 @@ function regionsForCanvas(canvas) {
 async function recognizeCanvas(canvas, name, onProgress) {
   const regions = regionsForCanvas(canvas);
   const worker = await getCachedWorker(onProgress);
-  const mode = regions.length > 1 ? '4' : '3';
+  const mode = regions.some(region => region.keyLane) ? '6' : regions.length > 1 ? '4' : '3';
   if (currentPSM !== mode) {
     await worker.setParameters({ tessedit_pageseg_mode: mode });
     currentPSM = mode;
@@ -75,18 +76,28 @@ async function recognizeCanvas(canvas, name, onProgress) {
   try {
     for (const region of regions) {
       const x = Math.floor(canvas.width * region.left);
-      crop.width = Math.max(1, Math.ceil(canvas.width * region.right) - x);
-      crop.height = canvas.height;
+      const sourceWidth = Math.max(1, Math.ceil(canvas.width * region.right) - x);
+      // Printed answer-key glyphs are much smaller than exam question text.
+      // A tight, 2x enlarged strip with PSM 6 recovers lines that PSM 4
+      // silently skips when a mostly empty half-page is passed to Tesseract.
+      const keyLane = Boolean(region.keyLane);
+      const sourceY = keyLane ? Math.floor(canvas.height * 0.09) : 0;
+      const sourceHeight = keyLane ? Math.ceil(canvas.height * 0.83) : canvas.height;
+      const upscale = keyLane && sourceWidth < 450 ? 2 : 1;
+      crop.width = sourceWidth * upscale;
+      crop.height = sourceHeight * upscale;
       const context = crop.getContext('2d');
       if (!context) throw new Error('Image cropping is unavailable in this browser.');
       context.fillStyle = '#ffffff';
       context.fillRect(0, 0, crop.width, crop.height);
-      context.drawImage(canvas, x, 0, crop.width, canvas.height, 0, 0, crop.width, crop.height);
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(canvas, x, sourceY, sourceWidth, sourceHeight, 0, 0, crop.width, crop.height);
       const label = region.label ? name + ' — ' + region.label : name;
       onProgress('Reading ' + label + ' offline…');
       const ocr = await worker.recognize(crop);
       results.push({
-        name: label, sourcePage: name, column: region.label,
+        name: label, sourcePage: name, column: region.label, keyLane: Boolean(region.keyLane),
         text: ocr?.data?.text || '', confidence: ocr?.data?.confidence ?? null, type: 'ocr'
       });
     }
@@ -94,7 +105,7 @@ async function recognizeCanvas(canvas, name, onProgress) {
     // Recover only suspicious columns. This costs an extra OCR pass solely
     // where the numbered sequence has gaps, options are incomplete, or a
     // printed answer-key list is missing entries.
-    const retryIndices = retryColumnsForOCR(results);
+    const retryIndices = regions.some(region => region.keyLane) ? [] : retryColumnsForOCR(results);
     for (const i of retryIndices) {
       const region = regions[i];
       const x = Math.floor(canvas.width * region.left);

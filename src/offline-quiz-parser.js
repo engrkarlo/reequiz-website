@@ -3,7 +3,7 @@
 const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
-const OPTION = /^(?:\(([A-H])\)|([A-H])[.)\]:\-])\s*(\S.*)$/i;
+const OPTION = /^(?:\(([A-H])\)|([A-H])[.):,;\]\-])\s*(\S.*)$/i;
 const INLINE_ANSWER = /^(?:correct\s+answer|answer|ans\.?|key)\s*[:=\-–]\s*(?:option\s*)?\(?([A-H])\)?(?:\s|[.!]|$)/i;
 const KEY_PAIR = /(?:^|[\s,;|/])(?:q(?:uestion)?\s*)?(\d{1,4})\s*[.):,\-]?\s*([A-H])(?=$|[\s,;|/])/gi;
 const PAGE_FOOTER = /^(?:page\s*\d+\s*(?:of\s*\d+)?|p(?:age)?\.\s*\d+\s*(?:of\s*\d+)?|name\s*:|date\s*:|section\s*:|instructions\s*:|directions?\s*:)\s*$/i;
@@ -33,12 +33,13 @@ function normalizedLines(text) {
 }
 
 function keyPairsFromLine(line) {
-  const value = String(line || '').trim();
+  const value = String(line || '').trim()
+    .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
   const matches = [...value.matchAll(KEY_PAIR)];
   if (!matches.length) return [];
   // Entire line must contain key pairs separated only by punctuation/whitespace.
   // This prevents question text ("1. A system...") from being mistaken for a key.
-  if (value.replace(KEY_PAIR, '').replace(/[\s,;|/]+/g, '')) return [];
+  if (value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
@@ -61,11 +62,32 @@ function sectionsBySource(pages) {
   return groups;
 }
 
+// A wrong tens digit in a printed key can be recognized as another valid
+// number (e.g. 88 becomes 58). Only repair when both adjacent printed keys
+// agree on the exact missing number AND its units digit is preserved.
+function repairKeyNumberSequence(entries) {
+  const present = new Set(entries.map(entry => entry.number));
+  const repaired = entries.map(entry => ({...entry}));
+  for (let i=1; i<repaired.length-1; i++) {
+    const prev=repaired[i-1], entry=repaired[i], next=repaired[i+1];
+    const expected=prev.number+1;
+    if (next.number!==expected+1 || entry.number===expected ||
+        expected<10 || present.has(expected) ||
+        entry.number%10!==expected%10 || entry.number>=expected) continue;
+    present.delete(entry.number);
+    entry.originalOcrNumber=entry.number;
+    entry.number=expected;
+    present.add(expected);
+  }
+  return repaired;
+}
+
 function inspectKeyGroup(group) {
   const sections = group.sections.map(section => ({ page: section, lines: normalizedLines(section.text) }));
   const all = sections.flatMap(section => section.lines);
   const explicitHeading = all.some(line => KEY_TITLE.test(line));
-  const pairs = all.flatMap(keyPairsFromLine);
+  const pairs = sections.flatMap(section =>
+    repairKeyNumberSequence(section.lines.flatMap(keyPairsFromLine)));
   const meaningful = all.filter(line => !isExamHeader(line) && !KEY_TITLE.test(line));
   const questionLike = meaningful.filter(line => numberedQuestion(line) && !keyPairsFromLine(line).length).length;
   const options = meaningful.filter(line => OPTION.test(line)).length;
@@ -73,12 +95,12 @@ function inspectKeyGroup(group) {
   // columns and a title that may appear only over the LEFT column.
   const density = pairs.length / Math.max(meaningful.length, 1);
   const isKeyPage = pairs.length >= 2 && questionLike === 0 && options === 0 &&
-    (explicitHeading || density >= 0.62);
+    (explicitHeading || density >= 0.62 || sections.some(section => section.page.keyLane));
   return { sections, isKeyPage, pairs, explicitHeading };
 }
 
 function splitInlineChoices(line) {
-  const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.)])\s+/g)];
+  const markers = [...line.matchAll(/(?:^|\s)(?:\([A-H]\)|[A-H][.):,;])\s+/g)];
   if (markers.length < 2) return [line];
   const positions = markers.map(match => match.index + (match[0][0] === ' ' ? 1 : 0));
   const chunks = [];
@@ -156,6 +178,28 @@ function auditNumbers(questions, answerKeys) {
     matchedKeyCount: questions.filter(q=>q.answerProvided).length };
 }
 
+// A truncated tens digit is a common OCR error ("17." -> "7.").
+// Recover only when both neighbors, the separate printed answer key, and
+// the final numeral agree; never infer a missing question or its contents.
+function repairUnambiguousQuestionNumbers(questions, answerKeys) {
+  const keyNums = new Set(answerKeys.map(key => Number(key.number)));
+  const currentNumbers = new Set(questions.map(q => q.number));
+  for (let i = 1; i < questions.length - 1; i++) {
+    const prev = questions[i - 1], item = questions[i], next = questions[i + 1];
+    const expected = prev.number + 1;
+    if (prev.source !== item.source || item.source !== next.source ||
+        expected + 1 !== next.number ||
+        expected < 10 || item.number >= expected ||
+        currentNumbers.has(expected) || !keyNums.has(expected) ||
+        !String(expected).endsWith(String(item.number))) continue;
+    currentNumbers.delete(item.number);
+    item.originalOcrNumber = item.number;
+    item.number = expected;
+    item.numberRecovered = true;
+    currentNumbers.add(expected);
+  }
+}
+
 export function parseOfflineQuizPages(pages) {
   if (!Array.isArray(pages) || !pages.length) {
     return { questions: [], answerKeys: [], skipped: 0, needsReview: 0,
@@ -231,6 +275,7 @@ export function parseOfflineQuizPages(pages) {
     }
   }
   completeQuestion(current, raw);
+  repairUnambiguousQuestionNumbers(raw, answerKeys);
   const questions = reconcileOfflineAnswerKeys(raw, answerKeys);
   const audit = auditNumbers(questions, answerKeys);
   return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length, ...audit };
