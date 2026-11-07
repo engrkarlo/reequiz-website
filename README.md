@@ -148,3 +148,11 @@ To override automatic detection for a difficult or unusually formatted answer-ke
 
 After installing a new deployment, open the site once while online and reload it so the revised offline service-worker cache is installed. Stored OCR engines and PDF models remain local.
 
+
+### Two-column scan reliability (30 questions + separate marked answer key)
+
+For photographed exam sheets, the offline scanner now recognizes each wide question column with Tesseract **PSM 6** instead of PSM 4. On the supplied thermodynamics page, a local OCR check with PSM 4 detached the left-side question numbers from the stems; PSM 6 kept question numbers **1–14** and **15–30** in reading order. The separate, explicitly marked answer-key photo continues to use local PSM 6 for its narrow columns; correctly read entries are matched by number, while unreadable or ambiguous letters remain unconfirmed.
+
+An OCR fragment consisting of a number and a stem but **no printed answer-choice labels** is no longer imported as a fabricated blank quiz question. Its number is shown in an **Unrecognized question candidates** review warning for rescanning or manual addition. Questions with some, but incomplete, choice text remain editable and unverified. The combined upload limit remains 20 MB; no scanning data is uploaded.
+
+After deploying, open REEQUIZ once while online and reload so the service-worker cache installs the updated scanner. Browser OCR quality may vary by device; the local CLI reproduction is not a guarantee of perfect Android OCR.
