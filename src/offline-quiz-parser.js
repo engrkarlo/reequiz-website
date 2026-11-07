@@ -1,6 +1,6 @@
 // Fully local, deterministic OCR/PDF question and answer-key parser.
 // Keeps incomplete numbered questions for review instead of silently dropping them.
-const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+answers?(?:\s+key)?|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
+const KEY_TITLE = /^(?:answer\s*(?:key|sheet|list|guide)|correct\s+(?:answers\b|answer\s+key\b)|answers\s+key|solutions?\s*(?:key|list)?)\b[\s:.\-–]*/i;
 const QUESTION = /^(?:question\s*|q\s*)?(\d{1,4})\s*[.)\]:\-]\s*(\S.*)$/i;
 const QUESTION_WITHOUT_PUNCT = /^(?:question\s*|q\s*)?(\d{1,4})\s+([A-Za-z][\s\S]{9,})$/i;
 const OPTION = /^(?:\(([A-H])\)|([A-H])[.)\]:\-])\s*(\S.*)$/i;
