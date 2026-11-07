@@ -180,3 +180,52 @@ test('Correct Answer per-question marker remains separate from Answer Key headin
   const parsed = parseOfflineQuizPages([{name:'exam',text:'1. Question?\nA. no\nB. yes\nCorrect Answer: B'}]);
   assert.equal(parsed.questions[0].answer,1);
 });
+
+
+// Regression from the actual uploaded thermodynamics photo, with local
+// Tesseract PSM 4's choice punctuation and truncated 17 -> 7.
+test('Q16 recognizes A/C and B,/D, side-by-side choices and applies key 16.C', () => {
+  const pages=[
+    {name:'exam right',sourcePage:'exam.jpg',column:'right column',
+      text:'15. When two bodies isolated from other environment are in thermal equilibrium?\nA. Zeroth Law\nB. Second Law\nC. First Law\nD. Third Law\n16. The second law of thermodynamics can be stated as:\nI heat flows spontaneously from hot object to a cold one\nII- natural processes tend toward greater entropy.\nA. Lonly C. Land I\nB, II only D, Neither I or IL\n7. What do you call a system where matter flows?\nA. Closed system C. Isolated system\nB. Open system D. All of these\n18. What system has no mass exchange?\nA. Open system C. Isolated system\nB, Closed system D, No flow system'},
+    {name:'key left',sourcePage:'key.jpg',column:'left column',keyLane:true,
+      text:'ANSWE\n15.A\n16.C\n17.B\n18. B'}
+  ];
+  const result=parseOfflineQuizPages(pages);
+  const q16=result.questions.find(q=>q.number===16);
+  assert.ok(q16);
+  assert.deepEqual(q16.options,['Lonly','II only','Land I','Neither I or IL']);
+  assert.equal(q16.incomplete,false);
+  assert.equal(q16.answer,2);
+  assert.equal(q16.answerProvided,true);
+  assert.ok(result.questions.some(q=>q.number===17));
+  assert.equal(result.missingQuestionNumbers.length,0);
+  assert.equal(result.matchedKeyCount,4);
+});
+
+test('local OCR of the first 30 thermodynamics key entries confirms question 16', () => {
+  // This mirrors the narrow-strip OCR output of the actual uploaded answer-key
+  // image. The abbreviated "ANSWE" header must not block key recognition.
+  const ocrKey=[
+    'ANSWE','1.C','2.D','3. B','4.D','5.B','6. B','7.D','8.C','9.C',
+    '10. B','11.B','12.A','13.D','14. B','15.A','16.C','17.B','18. B',
+    '19.B','20. A','21.D','22. B','23. B','24. B','25. D','26. A',
+    '27.B','28. C','29.B','30.A'
+  ].join('\n');
+  const questions=Array.from({length:30},(_,index)=>`${index+1}. Exam question?\nA. One\nB. Two\nC. Three\nD. Four`).join('\n');
+  const parsed=parseOfflineQuizPages([
+    {name:'page 1',sourcePage:'questions.jpg',text:questions},
+    {name:'page 4 left',sourcePage:'answer.jpg',column:'left column',keyLane:true,text:ocrKey}
+  ]);
+  assert.equal(parsed.questions.length,30);
+  assert.equal(parsed.answerKeyCount,30);
+  assert.equal(parsed.matchedKeyCount,30);
+  assert.equal(parsed.questions[15].answer,2);
+});
+
+test('no neighbor-only guess: truncated numbers require matching explicit printed key', () => {
+  const raw='15. First?\nA. a\nB. b\n16. Second?\nA. a\nB. b\n7. Third?\nA. a\nB. b\n18. Fourth?\nA. a\nB. b';
+  const parsed=parseOfflineQuizPages([{name:'page',text:raw}]);
+  assert.ok(parsed.questions.some(q=>q.number===7));
+  assert.ok(parsed.missingQuestionNumbers.includes(17));
+});
