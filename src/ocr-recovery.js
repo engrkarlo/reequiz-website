@@ -47,3 +47,30 @@ export function ocrResultScore(sections) {
     - parsed.incompleteNumbers.length * 14
     - parsed.duplicateNumbers.length * 24;
 }
+
+
+// After the answer-key photo has been read, previously unknown first/last
+// question gaps can become visible. Retry at most the nearest untried image
+// columns, never manufacture missing question text from answer-key letters.
+export function lateRetryColumnIndices(sections, missingNumbers, limit = 4) {
+  if (!Array.isArray(sections) || !Array.isArray(missingNumbers) || !missingNumbers.length) return [];
+  const candidates = sections.map((section, index) => ({
+    index, section, numbers: parseOfflineQuizPages([section]).foundNumbers || []
+  })).filter(item=>item.section.type === 'ocr' && !item.section.retryAttempted && item.numbers.length);
+  const selected = new Set();
+  for (const missing of missingNumbers) {
+    let best = null;
+    for (const item of candidates) {
+      const first = item.numbers[0], last = item.numbers[item.numbers.length-1];
+      let distance;
+      if (missing >= first && missing <= last) distance = 0;
+      else if (missing === first-1 || missing === last+1) distance = 1;
+      else distance = Math.min(Math.abs(missing-first), Math.abs(missing-last));
+      if (distance > 2) continue;
+      if (!best || distance < best.distance) best = {index:item.index,distance};
+    }
+    if (best) selected.add(best.index);
+    if (selected.size >= limit) break;
+  }
+  return [...selected].sort((a,b)=>a-b);
+}
