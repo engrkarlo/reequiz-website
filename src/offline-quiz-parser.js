@@ -156,6 +156,28 @@ function auditNumbers(questions, answerKeys) {
     matchedKeyCount: questions.filter(q=>q.answerProvided).length };
 }
 
+// A truncated tens digit is a common OCR error ("17." -> "7.").
+// Recover only when both neighbors, the separate printed answer key, and
+// the final numeral agree; never infer a missing question or its contents.
+function repairUnambiguousQuestionNumbers(questions, answerKeys) {
+  const keyNums = new Set(answerKeys.map(key => Number(key.number)));
+  const currentNumbers = new Set(questions.map(q => q.number));
+  for (let i = 1; i < questions.length - 1; i++) {
+    const prev = questions[i - 1], item = questions[i], next = questions[i + 1];
+    const expected = prev.number + 1;
+    if (prev.source !== item.source || item.source !== next.source ||
+        expected + 1 !== next.number ||
+        expected < 10 || item.number >= expected ||
+        currentNumbers.has(expected) || !keyNums.has(expected) ||
+        !String(expected).endsWith(String(item.number))) continue;
+    currentNumbers.delete(item.number);
+    item.originalOcrNumber = item.number;
+    item.number = expected;
+    item.numberRecovered = true;
+    currentNumbers.add(expected);
+  }
+}
+
 export function parseOfflineQuizPages(pages) {
   if (!Array.isArray(pages) || !pages.length) {
     return { questions: [], answerKeys: [], skipped: 0, needsReview: 0,
@@ -231,6 +253,7 @@ export function parseOfflineQuizPages(pages) {
     }
   }
   completeQuestion(current, raw);
+  repairUnambiguousQuestionNumbers(raw, answerKeys);
   const questions = reconcileOfflineAnswerKeys(raw, answerKeys);
   const audit = auditNumbers(questions, answerKeys);
   return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length, ...audit };
