@@ -144,3 +144,21 @@ export function detectNarrowKeyLanes({ width, height, data }) {
     keyLane: true
   }));
 }
+
+
+/**
+ * Tesseract PSM 4 drops left-margin question numbers on many photographed
+ * two-column exams by treating the number gutter as a separate text block.
+ * PSM 6 keeps each cropped column's numbers attached to the question text.
+ * The fallback is only used on questionable columns and may never silently
+ * replace a more complete first pass.
+ */
+export function initialOcrMode(regions, forceAnswerKey = false) {
+  if (forceAnswerKey || regions.some(region => region.keyLane)) return '6';
+  return regions.length > 1 ? '6' : '3';
+}
+
+export function retryOcrMode(regions, forceAnswerKey = false) {
+  if (forceAnswerKey || regions.some(region => region.keyLane)) return null;
+  return regions.length > 1 ? '4' : '6';
+}

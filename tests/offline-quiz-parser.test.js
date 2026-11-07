@@ -79,13 +79,13 @@ test('printed answer letters outside the number of choices are never accepted', 
   assert.equal(result.questions[0].answer, null);
 });
 
-test('incomplete questions are retained with explicit missing-choice slots for human review', () => {
+test('a question number with no labeled choices is reported, not imported as a fake question', () => {
   const result = parseOfflineQuizPages([{ name: 'questions', text: '1. Missing options?\n2. Good one?\nA. 1\nB. 2' }]);
-  assert.equal(result.skipped, 0);
-  assert.equal(result.questions.length, 2);
-  assert.equal(result.questions[0].incomplete, true);
-  assert.deepEqual(result.questions[0].options, ['', '']);
-  assert.equal(result.questions[0].answer, null);
+  assert.equal(result.skipped, 1);
+  assert.equal(result.questions.length, 1);
+  assert.deepEqual(result.unparsedQuestionNumbers, [1]);
+  assert.equal(result.questions[0].number, 2);
+  assert.deepEqual(result.questions[0].options, ['1', '2']);
 });
 
 
@@ -615,4 +615,55 @@ test('standalone damaged key heading still uses subsequent printed answer lines'
   ]);
   assert.equal(parsed.answerKeyCount, 1);
   assert.equal(parsed.questions[0].answer, 1);
+});
+
+
+test('30-question two-column exam plus separately marked 100-answer key never imports key lines as questions', () => {
+  const question = number => number === 16
+    ? `${number}. The second law can be stated as:\nI - heat flows spontaneously from hot to cold\nII - entropy increases.\nA. I only C. I and II\nB, II only D, Neither I nor II`
+    : `${number}. What is the thermodynamics property for item ${number}?\nA. Alpha C. Gamma\nB. Beta D. Delta`;
+  const pages = [
+    { sourceId:'file:0:image', name:'exam left',sourcePage:'exam.jpg',column:'left column',
+      text:'THERMODYNAMICS\n'+Array.from({length:14},(_,i)=>question(i+1)).join('\n') },
+    { sourceId:'file:0:image', name:'exam right',sourcePage:'exam.jpg',column:'right column',
+      text:'THERMODYNAMICS\n'+Array.from({length:16},(_,i)=>question(i+15)).join('\n') },
+    { sourceId:'file:1:image', name:'key left',sourcePage:'key.jpg',column:'left column',
+      keyLane:true,scanRole:'answer-key',
+      text:'ANSWEI\n'+Array.from({length:51},(_,i)=>`${i+1}. ${i===15?'C':'B'}`).join('\n') },
+    { sourceId:'file:1:image', name:'key right',sourcePage:'key.jpg',column:'right column',
+      keyLane:true,scanRole:'answer-key',
+      text:Array.from({length:49},(_,i)=>`${i+52}. A`).join('\n') }
+  ];
+  const result=parseOfflineQuizPages(pages);
+  assert.equal(result.questions.length,30);
+  assert.deepEqual(result.questions.map(q=>q.number),Array.from({length:30},(_,i)=>i+1));
+  assert.equal(result.answerKeyCount,100);
+  assert.equal(result.matchedKeyCount,30);
+  assert.equal(result.questions.find(q=>q.number===16).answer,2);
+  assert.deepEqual(result.unparsedQuestionNumbers,[]);
+  assert.deepEqual(result.detectedKeyPages,['key.jpg']);
+  assert.deepEqual(result.missingQuestionNumbers,[]);
+});
+
+test('spurious numbered text with zero option letters is not imported as a multiple choice question', () => {
+  const result=parseOfflineQuizPages([
+    { name:'exam',sourceId:'exam',
+      text:'1. Real question?\nA. One\nB. Two\n31. OCR artifact of another sheet without choices\n2. Another real question?\nA. One\nB. Two'},
+    { name:'key',sourceId:'key',scanRole:'answer-key',text:'1. B\n2. A'}
+  ]);
+  assert.deepEqual(result.questions.map(q=>q.number),[1,2]);
+  assert.deepEqual(result.unparsedQuestionNumbers,[31]);
+  assert.equal(result.skipped,1);
+  assert.deepEqual(result.questions.map(q=>q.answer),[1,0]);
+});
+
+test('questions with one printed option remain editable but require review', () => {
+  const result=parseOfflineQuizPages([
+    {name:'exam',text:'1. Which choice?\nA. Option one\n2. Full choice?\nA. alpha\nB. beta'},
+    {name:'key',scanRole:'answer-key',text:'1. A\n2. B'}
+  ]);
+  assert.equal(result.questions.length,2);
+  assert.equal(result.questions[0].incomplete,true);
+  assert.equal(result.questions[0].answerProvided,false);
+  assert.equal(result.questions[1].answer,1);
 });

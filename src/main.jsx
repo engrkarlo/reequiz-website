@@ -306,12 +306,13 @@ function App(){
     setBuilder(b=>({...b,questions:parsed}));setPasteOpen(false);
     const unreadable=result.pages.filter(p=>p.type==='ocr'&&p.confidence!==null&&p.confidence<55).length;
     const missing=result.missingQuestionNumbers||[];
+    const unparsed=result.unparsedQuestionNumbers||[];
     const incomplete=result.incompleteNumbers||[];
     const duplicates=result.duplicateNumbers||[];
     const keyPages=result.detectedKeyPages||[];
     const unreadableKeyPages=result.unreadableKeyPages||[];
     const displayNumbers=nums=>nums.slice(0,24).join(', ')+(nums.length>24?' and more':'');
-    setScanAudit({missing,incomplete,duplicates,matchedKeyCount:result.matchedKeyCount||0,
+    setScanAudit({missing,unparsed,incomplete,duplicates,matchedKeyCount:result.matchedKeyCount||0,
       answerKeyCount:result.answerKeyCount||0,retried:result.retriedRegions||0,
       keyPages,unreadableKeyPages});
     setNotice(`Offline scan extracted ${parsed.length} numbered questions from ${result.pageCount} page(s). `+
@@ -319,6 +320,7 @@ function App(){
      (result.answerKeyCount?`Matched ${result.matchedKeyCount}/${result.answerKeyCount} printed answer-key entries. `:
        keyPages.length?'An answer-key page was detected, but no reliable entries were read. ': 'No printed answer key detected. ')+
      (missing.length?`Missing question #${displayNumbers(missing)} — verify against the images. `:'')+
+     (unparsed.length?`Question-number OCR fragments ${displayNumbers(unparsed)} were not added as blank questions. Check these numbers against your image. `:'')+
      (incomplete.length?`Incomplete choices in question #${displayNumbers(incomplete)} — correct them before saving. `:'')+
      (unreadable?'Some images had low OCR confidence; check the text.':''));
     setScanFiles([]);setScanKeyIndices([]);
@@ -397,11 +399,12 @@ Answer: B`} rows={12}/><div className="paste-actions"><span><Check size={14}/> T
     {scanFiles.length>0&&<div className="ai-upload-list">{scanFiles.map((f,i)=><div key={f.name+i}><FileText size={15}/><span>{f.name}</span><small>{(f.size/1024).toFixed(0)} KB</small><button type="button" className={`ai-key-toggle ${scanKeyIndices.includes(i)?'active':''}`} aria-pressed={scanKeyIndices.includes(i)} aria-label={`${scanKeyIndices.includes(i)?'Unmark':'Mark'} ${f.name} as an answer key`} disabled={scanBusy} onClick={()=>setScanKeyIndices(prev=>prev.includes(i)?prev.filter(j=>j!==i):[...prev,i])}>{scanKeyIndices.includes(i)?'Key ✓':'Mark key'}</button><button type="button" aria-label={`Remove ${f.name}`} disabled={scanBusy} onClick={()=>{setScanFiles(prev=>prev.filter((_,j)=>j!==i));setScanKeyIndices(prev=>prev.filter(j=>j!==i).map(j=>j>i?j-1:j))}}><X size={14}/></button></div>)}</div>}
     <div className="ai-scan-note"><Brain size={15}/><span>Offline OCR reads text, and local matching finds printed answer keys even in a different image or PDF page. Missing, conflicting, or unclear keys remain unconfirmed. If an answer-key photo is not recognized automatically, tap Mark key beside its filename. No scanning files are uploaded.</span></div>
     <div className="ai-scan-actions"><span>{scanFiles.length? `${scanFiles.length} file(s) · ${(scanFiles.reduce((n,f)=>n+f.size,0)/1024/1024).toFixed(1)} / 20 MB`:'Your files never leave this browser. Offline after the first visit is cached.'}</span><button className="button primary" onClick={scanUploadsIntoBuilder} disabled={scanBusy||!scanFiles.length}>{scanBusy?<><span className="ai-scan-spinner"/> Scanning offline…</>:<><WandSparkles size={16}/> Scan offline & build questions</>}</button></div>{scanBusy&&scanProgress&&<p className="ai-scan-status" role="status" aria-live="polite">{scanProgress}</p>}</section>}
-    {scanAudit&&<div className={`ocr-review-banner ${scanAudit.missing.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'ocr-review-warning':''}`} role="status">
-     <strong>{scanAudit.missing.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'OCR scan requires review':'Offline scan completed'}</strong>
+    {scanAudit&&<div className={`ocr-review-banner ${scanAudit.missing.length||scanAudit.unparsed?.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'ocr-review-warning':''}`} role="status">
+     <strong>{scanAudit.missing.length||scanAudit.unparsed?.length||scanAudit.incomplete.length||scanAudit.duplicates.length?'OCR scan requires review':'Offline scan completed'}</strong>
      <p>{scanAudit.answerKeyCount?`${scanAudit.matchedKeyCount} of ${scanAudit.answerKeyCount} printed answers matched. `:
       scanAudit.keyPages?.length?'Answer-key image detected, but its entries could not be read. Try a sharper photo or mark the key file explicitly. ':'No printed key was recognized; try Mark key on the answer-key file. '}
      {scanAudit.missing.length?`Missing question numbers: ${scanAudit.missing.slice(0,40).join(', ')}. Please add or rescan them. `:''}
+     {scanAudit.unparsed?.length?`Unrecognized question candidates: ${scanAudit.unparsed.slice(0,40).join(', ')}. Add or rescan these rather than treating them as extra questions. `:''}
      {scanAudit.incomplete.length?`Incomplete options in question numbers ${scanAudit.incomplete.slice(0,40).join(', ')}. Replace OCR placeholders and confirm answers. `:''}
      {scanAudit.duplicates.length?`Repeated numbers ${scanAudit.duplicates.join(', ')} require checking. `:''}</p>
     </div>}

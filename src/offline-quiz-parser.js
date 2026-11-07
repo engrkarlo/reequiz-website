@@ -330,7 +330,7 @@ function repairUnambiguousQuestionNumbers(questions, answerKeys) {
 export function parseOfflineQuizPages(pages) {
   if (!Array.isArray(pages) || !pages.length) {
     return { questions: [], answerKeys: [], skipped: 0, needsReview: 0,
-      missingQuestionNumbers: [], incompleteNumbers: [], duplicateNumbers: [], answerKeyCount: 0, matchedKeyCount: 0 };
+      missingQuestionNumbers: [], unparsedQuestionNumbers: [], incompleteNumbers: [], duplicateNumbers: [], answerKeyCount: 0, matchedKeyCount: 0 };
   }
   const groups = sectionsBySource(pages), answerKeys = [], raw = [];
   const detectedKeyPages = [], unreadableKeyPages = [];
@@ -440,9 +440,18 @@ export function parseOfflineQuizPages(pages) {
     }
   }
   completeQuestion(current, raw);
-  repairUnambiguousQuestionNumbers(raw, answerKeys);
-  const questions = reconcileOfflineAnswerKeys(raw, answerKeys);
+  // A number plus OCR debris is not yet a multiple-choice question. Without
+  // even one printed option label, importing it as a blank two-choice item
+  // creates spurious questions (e.g. 37 items from a 30-question sheet).
+  // Report the number for manual recovery instead of losing the evidence.
+  const unparsedQuestionNumbers = [...new Set(raw
+    .filter(q => q.options.every(option => !option.trim()))
+    .map(q => q.number))].sort((a, b) => a - b);
+  const recognized = raw.filter(q => q.options.some(option => option.trim()));
+  repairUnambiguousQuestionNumbers(recognized, answerKeys);
+  const questions = reconcileOfflineAnswerKeys(recognized, answerKeys);
   const audit = auditNumbers(questions, answerKeys);
-  return { questions, answerKeys, skipped: 0, needsReview: questions.filter(q=>!q.answerProvided).length,
+  return { questions, answerKeys, skipped: unparsedQuestionNumbers.length,
+    unparsedQuestionNumbers, needsReview: questions.filter(q=>!q.answerProvided).length,
     detectedKeyPages, unreadableKeyPages, ...audit };
 }
