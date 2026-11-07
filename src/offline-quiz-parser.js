@@ -205,7 +205,7 @@ function completeQuestion(q, output) {
   const missingChoices = options.map((value, i) => value.trim() ? null : ALPHABET[i]).filter(Boolean);
   const entry = { number: q.number, question: q.question.trim(), options: options.map(text => text.trim()),
     incomplete: missingChoices.length > 0 || present.length < 2,
-    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source };
+    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source, sourceId: q.sourceId };
   output.push(entry);
   return entry;
 }
@@ -290,7 +290,10 @@ function repairUnambiguousQuestionNumbers(questions, answerKeys) {
   for (let i = 1; i < questions.length - 1; i++) {
     const prev = questions[i - 1], item = questions[i], next = questions[i + 1];
     const expected = prev.number + 1;
-    if (prev.source !== item.source || item.source !== next.source ||
+    const prevSource = prev.sourceId ?? prev.source;
+    const itemSource = item.sourceId ?? item.source;
+    const nextSource = next.sourceId ?? next.source;
+    if (prevSource !== itemSource || itemSource !== nextSource ||
         expected + 1 !== next.number ||
         expected < 10 || item.number === expected ||
         currentNumbers.has(expected) || !keyNums.has(expected) ||
@@ -405,7 +408,7 @@ export function parseOfflineQuizPages(pages) {
             finalizedAtBoundary = null;
             current = { ...question, optionsByLetter: Object.create(null),
               lastOption: null, inOption: false, explicitAnswer: null,
-              source: String(section.page.name || '') };
+              source: String(section.page.name || ''), sourceId: section.page.sourceId };
             continue;
           }
           if (current && part.trim()) {
