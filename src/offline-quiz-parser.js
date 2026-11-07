@@ -32,6 +32,14 @@ function normalizedLines(text) {
     .filter(Boolean);
 }
 
+/**
+ * Parse OCR number/letter answer-key entries. Tolerant mode only permits
+ * leftover OCR punctuation, never ordinary words or extra numbers; e.g.
+ * "42. A ~~" is salvageable, but "42. A garbled word" is not evidence.
+ * @param {string} line OCR text from a classified key-only page.
+ * @param {boolean} strict Whether to reject all residual OCR artifacts.
+ * @returns {{number:number,answer:string}[]} Verified-looking printed pairs.
+ */
 function keyPairsFromLine(line, strict = true) {
   const value = String(line || '').trim()
     .replace(/(\d)\s*[«¢·•]+\s*([A-H])(?=$|[\s.,;|/])/gi, '$1. $2');
@@ -39,7 +47,11 @@ function keyPairsFromLine(line, strict = true) {
   if (!matches.length) return [];
   // Entire line must contain key pairs separated only by punctuation/whitespace.
   // This prevents question text ("1. A system...") from being mistaken for a key.
-  if (strict && value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '')) return [];
+  const residue = value.replace(KEY_PAIR, '').replace(/[\s.,:;|/]+/g, '');
+  if (strict && residue) return [];
+  // Salvage OCR punctuation only. Residual letters/digits indicate a
+  // question stem, a word, or a second corrupted pair; never confirm from it.
+  if (!strict && (/[\p{L}\p{N}]/u.test(residue) || residue.length > matches.length * 4)) return [];
   return matches.map(match => ({ number: Number(match[1]), answer: match[2].toUpperCase() }));
 }
 
@@ -51,13 +63,20 @@ function numberedQuestion(line) {
   return { number, question };
 }
 
+/**
+ * Keep OCR columns together by stable source ID, not filenames. Two uploads
+ * may share a filename while only one has been marked as an answer key.
+ * @param {Array<object>} pages Ordered OCR sections.
+ * @returns {Array<{sourcePage:string,sourceKey:string,sections:Array<object>}>}
+ */
 function sectionsBySource(pages) {
   const groups = [];
   for (const page of pages) {
     const sourcePage = String(page.sourcePage || page.name || 'uploaded page');
+    const sourceKey = page.sourceId == null ? 'name:' + sourcePage : 'id:' + String(page.sourceId);
     const last = groups[groups.length - 1];
-    if (last && last.sourcePage === sourcePage) last.sections.push(page);
-    else groups.push({ sourcePage, sections: [page] });
+    if (last && last.sourceKey === sourceKey) last.sections.push(page);
+    else groups.push({ sourcePage, sourceKey, sections: [page] });
   }
   return groups;
 }
@@ -82,6 +101,11 @@ function repairKeyNumberSequence(entries) {
   return repaired;
 }
 
+/**
+ * Identify a short printed answer-key heading even when OCR loses characters.
+ * @param {string} line OCR text line.
+ * @returns {boolean} Whether the line resembles a standalone key heading.
+ */
 function looksLikeKeyHeading(line) {
   const value = String(line || '').trim();
   if (KEY_TITLE.test(value)) return true;
@@ -90,6 +114,13 @@ function looksLikeKeyHeading(line) {
   return /^ANSW[A-Z]{0,6}(?:\s+K[A-Z]{1,3})?[:.\s-]*$/i.test(value) && value.length <= 22;
 }
 
+/**
+ * Classify all columns of one source page together before parsing questions.
+ * Accept only standalone printed key entries; random words cannot supply
+ * answer letters or cause a noise-only page to appear readable.
+ * @param {{sections:Array<object>}} group Adjacent sections of one source.
+ * @returns {{sections:Array<object>,isKeyPage:boolean,pairs:Array<object>,unreadable:boolean}}
+ */
 function inspectKeyGroup(group) {
   const sections = group.sections.map(section => ({ page: section, lines: normalizedLines(section.text) }));
   const all = sections.flatMap(section => section.lines);
@@ -119,7 +150,7 @@ function inspectKeyGroup(group) {
   const pairs = isKeyPage ? sections.flatMap(section =>
     repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line, false)))) : strictPairs;
   return { sections, isKeyPage, pairs, heading, knownKeyLayout,
-    unreadable: isKeyPage && pairs.length < 2 };
+    unreadable: isKeyPage && pairs.length === 0 };
 }
 
 function splitInlineChoices(line) {
@@ -134,19 +165,35 @@ function splitInlineChoices(line) {
   return chunks.filter(Boolean);
 }
 
+/**
+ * Finalize the current question without guessing unreadable option labels.
+ * @param {object|null} q Mutable question being assembled.
+ * @param {Array<object>} output Parsed questions accumulator.
+ * @returns {object|null} The finalized question so later stray options may
+ *   be marked incomplete when they appear after a file boundary.
+ */
 function completeQuestion(q, output) {
-  if (!q || !q.question || q.question.trim().length < 3) return;
+  if (!q || !q.question || q.question.trim().length < 3) return null;
   const present = Object.keys(q.optionsByLetter).sort();
   const highest = Math.max(1, ...present.map(letter => ALPHABET.indexOf(letter)));
   // Empty placeholders preserve printed option positions. They are explicitly
   // marked incomplete and must be reviewed; NO answer is fabricated.
   const options = Array.from({ length: highest + 1 }, (_, i) => q.optionsByLetter[ALPHABET[i]] || '');
   const missingChoices = options.map((value, i) => value.trim() ? null : ALPHABET[i]).filter(Boolean);
-  output.push({ number: q.number, question: q.question.trim(), options: options.map(text => text.trim()),
+  const entry = { number: q.number, question: q.question.trim(), options: options.map(text => text.trim()),
     incomplete: missingChoices.length > 0 || present.length < 2,
-    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source });
+    missingChoices, explicitAnswer: q.explicitAnswer, source: q.source };
+  output.push(entry);
+  return entry;
 }
 
+/**
+ * Confirm an answer only when its printed key is unique, in-range, and its
+ * question has all recognized choices. Conflicts remain unconfirmed.
+ * @param {Array<object>} questions Parsed questions.
+ * @param {Array<{number:number,answer:string}>} answerKeys Printed keys.
+ * @returns {Array<object>} Questions with reviewed/confirmed answer state.
+ */
 export function reconcileOfflineAnswerKeys(questions, answerKeys) {
   const keys = new Map();
   for (const entry of answerKeys) {
@@ -223,6 +270,13 @@ function repairUnambiguousQuestionNumbers(questions, answerKeys) {
   }
 }
 
+/**
+ * Parse offline OCR sections in reading order and match printed answer keys.
+ * Known key pages are never treated as question pages. Distinct uploaded
+ * sources remain isolated even when they have identical filenames.
+ * @param {Array<object>} pages OCR pages and per-column sections.
+ * @returns {object} Parsed questions, keys, and review diagnostics.
+ */
 export function parseOfflineQuizPages(pages) {
   if (!Array.isArray(pages) || !pages.length) {
     return { questions: [], answerKeys: [], skipped: 0, needsReview: 0,
@@ -232,6 +286,7 @@ export function parseOfflineQuizPages(pages) {
   const detectedKeyPages = [], unreadableKeyPages = [];
   let current = null;
   let previousColumn = null;
+  let finalizedAtBoundary = null;
 
   for (const group of groups) {
     const assessment = inspectKeyGroup(group);
@@ -240,14 +295,17 @@ export function parseOfflineQuizPages(pages) {
       if (assessment.unreadable) unreadableKeyPages.push(group.sourcePage);
       completeQuestion(current, raw);
       current = null;
+      finalizedAtBoundary = null;
       previousColumn = null;
       answerKeys.push(...assessment.pairs);
       continue;
     }
-    // Do not let a completed question absorb OCR noise from a new file.
-    // Incomplete, single-choice questions may continue on a following page.
+    // Finalizing prevents the next upload's OCR prose being appended to the
+    // previous question. If the next page starts with C/D options, record them
+    // as missing rather than silently considering A/B a complete question.
+    finalizedAtBoundary = null;
     if (current && Object.keys(current.optionsByLetter).length >= 2) {
-      completeQuestion(current, raw);
+      finalizedAtBoundary = completeQuestion(current, raw);
       current = null;
     }
     let inKeySection = false;
@@ -259,6 +317,7 @@ export function parseOfflineQuizPages(pages) {
       if (column && previousColumn && column !== previousColumn) {
         completeQuestion(current, raw);
         current = null;
+        finalizedAtBoundary = null;
       }
       previousColumn = column;
       for (const line of section.lines) {
@@ -287,12 +346,30 @@ export function parseOfflineQuizPages(pages) {
                 current.lastOption = letter;
                 current.inOption = true;
               }
+            } else if (finalizedAtBoundary) {
+              // A new page began with choices but no question number; never
+              // silently drop C/D and confirm an incomplete preceding question.
+              const letter = (option[1] || option[2]).toUpperCase();
+              const index = ALPHABET.indexOf(letter);
+              if (index >= 0 && !finalizedAtBoundary.options[index]) {
+                for (let slot = finalizedAtBoundary.options.length; slot <= index; slot++) {
+                  finalizedAtBoundary.options[slot] = '';
+                }
+                finalizedAtBoundary.incomplete = true;
+                for (let slot = 0; slot <= index; slot++) {
+                  const missing = ALPHABET[slot];
+                  if (!finalizedAtBoundary.options[slot] &&
+                      !finalizedAtBoundary.missingChoices.includes(missing))
+                    finalizedAtBoundary.missingChoices.push(missing);
+                }
+              }
             }
             continue;
           }
           const question = numberedQuestion(part);
           if (question) {
             completeQuestion(current, raw);
+            finalizedAtBoundary = null;
             current = { ...question, optionsByLetter: Object.create(null),
               lastOption: null, inOption: false, explicitAnswer: null,
               source: String(section.page.name || '') };
