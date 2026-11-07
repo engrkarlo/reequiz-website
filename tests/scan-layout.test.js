@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { detectTwoColumnSplit, scanRegionsFromImageData, detectNarrowKeyLanes } from '../src/scan-layout.js';
+import { detectTwoColumnSplit, scanRegionsFromImageData, detectNarrowKeyLanes, initialOcrMode, retryOcrMode } from '../src/scan-layout.js';
 
 // Pure pixel fixtures. Tests exercise layout, not Tesseract output or a network.
 function fixture({ left = true, right = true, singleColumn = false, rightBands = 10, header = false } = {}) {
@@ -107,4 +107,32 @@ test('a single narrow numbered list is not misclassified as a two-column answer 
       data[k]=30;data[k+1]=30;data[k+2]=30;
     }
   assert.equal(detectNarrowKeyLanes({width,height,data}),null);
+});
+
+
+test('Tesseract uses PSM 6 for each broad two-column exam half, retaining question numbers', () => {
+  const regions=scanRegionsFromImageData(fixture({header:true}));
+  assert.equal(regions.length,2);
+  assert.equal(initialOcrMode(regions), '6');
+  assert.equal(retryOcrMode(regions), '4');
+});
+
+test('marked answer-key photos stay in key OCR mode even without narrow-key lane detection', () => {
+  const regions=[{label:'left column',left:0,right:.5},{label:'right column',left:.5,right:1}];
+  assert.equal(initialOcrMode(regions,true),'6');
+  assert.equal(retryOcrMode(regions,true),null);
+  assert.equal(initialOcrMode([{label:null,left:0,right:1}],true),'6');
+});
+
+test('single-column pages preserve automatic-layout OCR and limited recovery', () => {
+  const regions=scanRegionsFromImageData(fixture({singleColumn:true}));
+  assert.equal(regions.length,1);
+  assert.equal(initialOcrMode(regions),'3');
+  assert.equal(retryOcrMode(regions),'6');
+});
+
+test('narrow answer-key lanes always use block text PSM 6', () => {
+  const regions=[{label:'left column',left:.02,right:.14,keyLane:true},{label:'right column',left:.5,right:.62,keyLane:true}];
+  assert.equal(initialOcrMode(regions),'6');
+  assert.equal(retryOcrMode(regions),null);
 });
