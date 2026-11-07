@@ -431,3 +431,69 @@ test('question number repair does not borrow evidence across same-named files', 
   assert.ok(!parsed.questions.some(q => q.number === 17));
   assert.ok(parsed.missingQuestionNumbers.includes(17));
 });
+
+
+test('answer-key heading and several printed pairs on one line are recognized', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'questions', sourceId: 'file:0', text: '1. First question?\nA. one\nB. two\nC. three\n2. Second question?\nA. one\nB. two\nC. three\n3. Third question?\nA. one\nB. two\nC. three' },
+    { name: 'key', sourceId: 'file:1', text: 'Answer Key: 1. B 2. C 3. A' }
+  ]);
+  assert.equal(result.questions.length, 3);
+  assert.equal(result.answerKeyCount, 3);
+  assert.equal(result.matchedKeyCount, 3);
+  assert.deepEqual(result.questions.map(q => q.answer), [1, 2, 0]);
+  assert.deepEqual(result.unreadableKeyPages, []);
+});
+
+test('key heading with inline pair followed by separate numbered entries is preserved', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First?\nA. one\nB. two\n2. Second?\nA. one\nB. two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key', text: 'ANSWER KEY: 1. B\n2. A' }
+  ]);
+  assert.equal(result.answerKeyCount, 2);
+  assert.deepEqual(result.questions.map(q => q.answer), [1, 0]);
+});
+
+test('inline key heading never permits OCR prose to supply an answer', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First?\nA. one\nB. two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key', text: 'Answer Key: 1. A garbled word' }
+  ]);
+  assert.equal(result.answerKeyCount, 0);
+  assert.equal(result.questions[0].answerProvided, false);
+  assert.deepEqual(result.unreadableKeyPages, ['key']);
+});
+
+test('unlabelled text on a new page flags the page-finalized answer as incomplete', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Which option?\nA. no\nB. choice whose last line' },
+    { name: 'page2', sourceId: 'page2', text: 'continues at the start of another image.' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B' }
+  ]);
+  assert.equal(result.questions.length, 1);
+  assert.equal(result.questions[0].incomplete, true);
+  assert.equal(result.questions[0].answerProvided, false);
+  assert.deepEqual(result.incompleteNumbers, [1]);
+});
+
+test('a repeated header on a following page does not trigger a false incompleteness warning', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Which option?\nA. no\nB. yes' },
+    { name: 'page2', sourceId: 'page2', text: 'THERMODYNAMICS\nPage 2 of 4' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B' }
+  ]);
+  assert.equal(result.questions[0].incomplete, false);
+  assert.equal(result.questions[0].answerProvided, true);
+});
+
+test('unlabelled text after a new numbered question stays with the new question', () => {
+  const result = parseOfflineQuizPages([
+    { name: 'page1', sourceId: 'page1', text: '1. Completed?\nA. no\nB. yes' },
+    { name: 'page2', sourceId: 'page2', text: '2. New question?\ncontinued stem\nA. true\nB. false' },
+    { name: 'key', sourceId: 'key', text: 'Answer Key\n1. B\n2. A' }
+  ]);
+  assert.equal(result.questions.length, 2);
+  assert.equal(result.questions[0].incomplete, false);
+  assert.equal(result.questions[1].question, 'New question? continued stem');
+  assert.deepEqual(result.questions.map(q => q.answerProvided), [true, true]);
+});
