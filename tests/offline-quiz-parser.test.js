@@ -561,3 +561,58 @@ test('damaged heading followed by prose cannot silently confirm a key', () => {
   assert.equal(parsed.questions[0].answerProvided, false);
   assert.deepEqual(parsed.unreadableKeyPages, ['key']);
 });
+
+
+test('ordinary Answer 2 of the following continuation never switches to answer-key mode', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'exam', text:
+      '1. First question?\nA. one\nB. first line\nAnswer 2 of the following statements.\n2. Second question?\nA. yes\nB. no\n3. Third question?\nA. left\nB. right' },
+    { name:'key', sourceId:'key', text:'Answer Key\n1. B\n2. A\n3. B' }
+  ]);
+  assert.equal(parsed.questions.length, 3);
+  assert.deepEqual(parsed.questions.map(q => q.number), [1, 2, 3]);
+  assert.ok(parsed.questions[0].options[1].includes('Answer 2 of the following'));
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 0, 1]);
+  assert.deepEqual(parsed.detectedKeyPages, ['key']);
+});
+
+test('even prose resembling Answer 2 A is not accepted as a printed key entry', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'page', text:'1. Choose?\nA. first\nB. second\nAnswer 2 A question should continue here.\n2. Next?\nA. one\nB. two' },
+    { name:'key', text:'Answer Key\n1. B\n2. A' }
+  ]);
+  assert.equal(parsed.questions.length, 2);
+  assert.deepEqual(parsed.questions.map(q => q.number), [1, 2]);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 0]);
+});
+
+test('noisy ANSWEI 1«B key is recognized and confirmed on a separate key image', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam.jpg', sourceId:'exam', text:'1. Which answer?\nA. incorrect\nB. correct' },
+    { name:'key.jpg', sourceId:'key', text:'ANSWEI 1«B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('noisy ANSWEI 1«B can be applied inside a mixed question-and-key page', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'same-page',
+      text:'1. Which answer?\nA. incorrect\nB. correct\nANSWEI 1«B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+  assert.equal(parsed.questions[0].answer, 1);
+});
+
+test('standalone damaged key heading still uses subsequent printed answer lines', () => {
+  const parsed = parseOfflineQuizPages([
+    { name:'exam', sourceId:'exam', text:'1. Which answer?\nA. false\nB. true' },
+    { name:'key', sourceId:'key', text:'ANSWEI\n1«B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+});
