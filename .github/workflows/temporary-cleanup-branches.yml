@@ -19,7 +19,7 @@ jobs:
         run: |
           set -euo pipefail
           for spec in \
-            "feat/quiz-studio-20mb-ai-fallback:eb2a4c643d4975aa7eea7a9c55d12495a628b92a" \
+            "feat/quiz-studio-20mb-ai-fallback:f1c86acb3f676e1148dbb29bf6909eedf3b2a068" \
             "feat/quiz-studio-fully-offline-ocr:856063612248480d61159e296e7392730867c745"
           do
             branch="${spec%%:*}"
