@@ -497,3 +497,67 @@ test('unlabelled text after a new numbered question stays with the new question'
   assert.equal(result.questions[1].question, 'New question? continued stem');
   assert.deepEqual(result.questions.map(q => q.answerProvided), [true, true]);
 });
+
+
+test('OCR-damaged key heading followed by inline entries is classified and confirmed automatically', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. First question?\nA. One\nB. Two\n2. Next question?\nA. One\nB. Two\nC. Three' },
+    { name: 'key-photo', sourceId: 'key', text: 'ANSWEI 1. B 2. C' }
+  ]);
+  assert.equal(parsed.questions.length, 2);
+  assert.equal(parsed.answerKeyCount, 2);
+  assert.equal(parsed.matchedKeyCount, 2);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [1, 2]);
+  assert.deepEqual(parsed.detectedKeyPages, ['key-photo']);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('OCR-damaged heading with inline entries is recovered on visually identified key pages', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two\n2. Another choice?\nA. One\nB. Two' },
+    { name: 'photo', sourceId: 'key', keyLane: true, text: 'ANSWFR KEY: 1. A 2. B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 2);
+  assert.deepEqual(parsed.questions.map(q => q.answer), [0, 1]);
+  assert.deepEqual(parsed.unreadableKeyPages, []);
+});
+
+test('OCR-damaged heading with inline key in a question page is parsed via the non-key path', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'page', sourceId: 'page', text: '1. Select answer?\nA. One\nB. Two\nANSWEI 1. B' }
+  ]);
+  assert.equal(parsed.questions.length, 1);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answer, 1);
+});
+
+test('standalone OCR-damaged heading still allows entries on subsequent lines', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'page', sourceId: 'page', text: '1. Select answer?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', text: 'ANSWEI\n1. B' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 1);
+  assert.equal(parsed.questions[0].answerProvided, true);
+});
+
+test('OCR prefix without a following digit does not turn key prose into an answer', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', scanRole: 'answer-key',
+      text: 'ANSWEI note 1. B 2. A' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 0);
+  assert.equal(parsed.questions[0].answerProvided, false);
+  assert.deepEqual(parsed.unreadableKeyPages, ['key']);
+});
+
+test('damaged heading followed by prose cannot silently confirm a key', () => {
+  const parsed = parseOfflineQuizPages([
+    { name: 'exam', sourceId: 'exam', text: '1. Which choice?\nA. One\nB. Two' },
+    { name: 'key', sourceId: 'key', keyLane: true,
+      text: 'ANSWEI 1. B garbled note' }
+  ]);
+  assert.equal(parsed.answerKeyCount, 0);
+  assert.equal(parsed.questions[0].answerProvided, false);
+  assert.deepEqual(parsed.unreadableKeyPages, ['key']);
+});
