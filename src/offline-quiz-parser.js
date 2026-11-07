@@ -166,7 +166,7 @@ function inspectKeyGroup(group) {
   // Salvage number-letter pairs on noisy lines only AFTER classifying the
   // entire source as a key, never in question or option text.
   const pairs = isKeyPage ? sections.flatMap(section =>
-    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line, false)))) : strictPairs;
+    repairKeyNumberSequence(section.lines.flatMap(line => keyPairsFromLine(line.replace(KEY_TITLE, ''), false)))) : strictPairs;
   return { sections, isKeyPage, pairs, heading, knownKeyLayout,
     unreadable: isKeyPage && pairs.length === 0 };
 }
@@ -410,6 +410,12 @@ export function parseOfflineQuizPages(pages) {
               lastOption: null, inOption: false, explicitAnswer: null,
               source: String(section.page.name || ''), sourceId: section.page.sourceId };
             continue;
+          }
+          if (!current && finalizedAtBoundary && part.trim()) {
+            // Unlabelled text at the next page's start may continue a wrapped
+            // answer choice. We cannot safely assign it to a specific option;
+            // require human review instead of confirming the previous answer.
+            finalizedAtBoundary.incomplete = true;
           }
           if (current && part.trim()) {
             if (current.inOption && current.lastOption) current.optionsByLetter[current.lastOption] += ' ' + part;
